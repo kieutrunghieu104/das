@@ -1,0 +1,129 @@
+﻿import { toObjectId } from "../config/mongodb.js";
+import { COLLECTIONS } from "../models/index.js";
+import {
+  findById,
+  findMany,
+  insertDocuments,
+  populate
+} from "./mongoRepository.js";
+
+const publicDentistProjection =
+  "fullName email phone avatar avatarUrl yearsOfExperience bio role status createdAt";
+
+export function findActiveServices() {
+  return findMany(COLLECTIONS.dentalServices, { isActive: { $ne: false } }, { sort: { name: 1 } });
+}
+
+export async function findClinicInformation() {
+  const [settings, receptionist] = await Promise.all([
+    findMany(COLLECTIONS.clinicSettings, { key: "public" }, { limit: 1 }),
+    findMany(
+      COLLECTIONS.users,
+      { role: "receptionist", status: "active" },
+      { projection: "fullName phone", sort: { phone: 1 }, limit: 1 }
+    )
+  ]);
+
+  return {
+    ...(settings[0] || {}),
+    receptionist: receptionist[0] || null,
+    receptionistPhone: receptionist[0]?.phone || ""
+  };
+}
+
+function normalizeDentist(user, profile) {
+  return {
+    _id: user._id,
+    fullName: user.fullName,
+    email: user.email,
+    phone: user.phone,
+    avatar: user.avatar,
+    avatarUrl: user.avatarUrl,
+    yearsOfExperience: Number(user.yearsOfExperience || profile?.experienceYears || 0),
+    qualification: profile?.qualification || "Bác sĩ Răng Hàm Mặt",
+    bio: user.bio || profile?.description || "",
+    description: profile?.description || user.bio || "",
+    createdAt: user.createdAt
+  };
+}
+
+async function attachDentistProfiles(users) {
+  if (!users.length) return [];
+  const profiles = await findMany(COLLECTIONS.dentists, {
+    user: { $in: users.map((user) => user._id) },
+    status: "active"
+  });
+  const profileMap = new Map(profiles.map((profile) => [profile.user.toString(), profile]));
+  return users.map((user) => normalizeDentist(user, profileMap.get(user._id.toString())));
+}
+
+export async function findActiveDentists() {
+  const users = await findMany(
+    COLLECTIONS.users,
+    { role: "dentist", status: "active" },
+    { projection: publicDentistProjection, sort: { fullName: 1 } }
+  );
+  return attachDentistProfiles(users);
+}
+
+export async function findActiveDentistById(id) {
+  const user = await findById(COLLECTIONS.users, id, publicDentistProjection);
+  if (!user || user.role !== "dentist" || user.status !== "active") return null;
+  const [dentist] = await attachDentistProfiles([user]);
+  return dentist;
+}
+
+export async function findActiveRooms() {
+  const rooms = await findMany(COLLECTIONS.clinicRooms, { isActive: { $ne: false } }, { sort: { name: 1 } });
+  await populate(rooms, {
+    path: "assignedDentist",
+    select: "fullName avatarUrl yearsOfExperience bio phone"
+  });
+  await populate(rooms, {
+    path: "assignedNurse",
+    select: "fullName phone"
+  });
+  return rooms;
+}
+
+export async function findPublicReviews(limit = 8) {
+  const reviews = await findMany(
+    COLLECTIONS.reviews,
+    { comment: { $exists: true, $ne: "" }, isHidden: { $ne: true } },
+    { sort: { createdAt: -1 }, limit }
+  );
+  await populate(reviews, [
+    { path: "patient", select: "fullName" },
+    { path: "service", select: "name" },
+    { path: "dentist", select: "fullName" }
+  ]);
+  return reviews;
+}
+
+export async function findReviewsByDentist(dentistId, limit = 10) {
+  const reviews = await findMany(
+    COLLECTIONS.reviews,
+    { dentist: toObjectId(dentistId), isHidden: { $ne: true } },
+    { sort: { createdAt: -1 }, limit }
+  );
+  await populate(reviews, { path: "patient", select: "fullName" });
+  return reviews;
+}
+
+export async function getPublicBootstrapData() {
+  const [services, dentists, rooms, reviews, clinic] = await Promise.all([
+    findActiveServices(),
+    findActiveDentists(),
+    findActiveRooms(),
+    findPublicReviews(8),
+    findClinicInformation()
+  ]);
+  return { services, dentists, rooms, reviews, clinic };
+}
+
+export function createConsultationRequest(data) {
+  return insertDocuments(COLLECTIONS.consultationRequests, {
+    status: "new",
+    ...data
+  });
+}

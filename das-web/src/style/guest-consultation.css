@@ -1,0 +1,103 @@
+.smile-contact {
+  background: linear-gradient(180deg, #eef7f2, #ffffff);
+}
+
+.smile-consult-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px 26px;
+  width: min(1160px, 100%);
+  margin: 0 auto;
+  padding: 48px;
+}
+
+.smile-segmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  grid-column: 1 / -1;
+}
+
+.smile-segmented label {
+  position: relative;
+  cursor: pointer;
+}
+
+.smile-segmented input {
+  position: absolute;
+  opacity: 0;
+}
+
+.smile-segmented span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  border: 1px solid var(--smile-line);
+  border-radius: 999px;
+  padding: 8px 18px;
+  color: var(--smile-muted);
+  font-weight: 820;
+}
+
+.smile-segmented input:checked + span {
+  border-color: rgba(3, 184, 158, 0.6);
+  background: rgba(3, 184, 158, 0.16);
+  color: var(--smile-text);
+}
+
+.smile-consult-form label {
+  display: grid;
+  gap: 10px;
+  color: var(--smile-text);
+  font-weight: 840;
+}
+
+.smile-consult-form label.wide {
+  grid-column: 1 / -1;
+}
+
+.smile-consult-form input,
+.smile-consult-form select,
+.smile-consult-form textarea {
+  width: 100%;
+  border: 1px solid rgba(21, 70, 76, 0.16);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--smile-text);
+}
+
+.smile-consult-form input,
+.smile-consult-form select {
+  min-height: 60px;
+  padding: 0 20px;
+}
+
+.smile-consult-form textarea {
+  min-height: 112px;
+  padding: 18px 20px;
+  resize: vertical;
+}
+
+.smile-consult-form input::placeholder,
+.smile-consult-form textarea::placeholder {
+  color: rgba(94, 114, 120, 0.66);
+}
+
+.smile-consult-form select option {
+  color: #17212b;
+}
+
+.smile-consult-form small {
+  justify-self: end;
+  color: var(--smile-muted);
+  font-weight: 600;
+}
+
+.smile-submit {
+  grid-column: 1 / -1;
+  min-height: 62px;
+  border-radius: 999px;
+  background: var(--smile-teal);
+  color: white;
+  font-size: 1rem;
+}

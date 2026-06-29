@@ -1,0 +1,221 @@
+.smile-footer {
+  padding: 76px 70px 34px;
+  background: linear-gradient(90deg, #ffffff, #e8f5ef);
+  color: var(--smile-text);
+}
+
+.smile-footer-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 1.4fr) repeat(3, minmax(150px, 0.6fr));
+  gap: 54px;
+}
+
+.smile-footer-brand {
+  display: inline-block;
+  color: var(--smile-text);
+  font-size: 1.8rem;
+}
+
+.smile-footer-brand span {
+  color: var(--smile-teal);
+}
+
+.smile-footer h3 {
+  margin-bottom: 22px;
+  font-size: 1.1rem;
+}
+
+.smile-footer a {
+  display: block;
+  margin-bottom: 14px;
+  font-weight: 700;
+}
+
+.smile-footer a:hover {
+  color: var(--smile-teal-dark);
+}
+
+.smile-footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 58px;
+  border-top: 1px solid var(--smile-line);
+  padding-top: 26px;
+}
+
+@media (max-width: 1240px) {
+  .smile-header {
+    padding: 0 34px;
+  }
+
+  .smile-hero,
+  .smile-section,
+  .smile-footer {
+    padding-right: 34px;
+    padding-left: 34px;
+  }
+
+  .smile-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .smile-hero-copy {
+    max-width: 780px;
+  }
+
+  .smile-hero-gallery {
+    min-height: 520px;
+  }
+
+  .smile-testimonial-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .smile-header {
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding-top: 18px;
+    padding-bottom: 18px;
+  }
+
+  .smile-nav {
+    order: 3;
+    justify-content: flex-start;
+    gap: 22px;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .smile-header-actions {
+    gap: 12px;
+  }
+
+  .smile-phone span {
+    display: none;
+  }
+
+  .smile-hero-copy h1,
+  .smile-section-heading h2,
+  .smile-about-copy h2 {
+    font-size: 3.2rem;
+  }
+
+  .smile-hero-gallery,
+  .smile-service-grid,
+  .smile-about,
+  .smile-faq-layout,
+  .smile-dentist-grid,
+  .smile-footer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .smile-hero-gallery {
+    grid-template-rows: 320px 220px 220px;
+    min-height: auto;
+  }
+
+  .smile-photo-main {
+    grid-row: auto;
+  }
+
+  .smile-service-card.large {
+    grid-row: auto;
+    min-height: 260px;
+  }
+
+  .smile-faq-photo {
+    min-height: 280px;
+  }
+}
+
+@media (max-width: 680px) {
+  .smile-header,
+  .smile-hero,
+  .smile-section,
+  .smile-footer {
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+
+  .smile-brand {
+    font-size: 1.65rem;
+  }
+
+  .smile-primary-link {
+    min-height: 46px;
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+
+  .smile-header-actions {
+    width: 100%;
+  }
+
+  .smile-header-actions .smile-primary-link {
+    flex: 1;
+  }
+
+  .smile-hero {
+    gap: 30px;
+    padding-top: 40px;
+    padding-bottom: 50px;
+  }
+
+  .smile-hero-copy,
+  .smile-hero-copy h1,
+  .smile-hero-copy p,
+  .smile-hero-actions {
+    width: 100%;
+    max-width: calc(100vw - 52px);
+  }
+
+  .smile-hero-copy h1,
+  .smile-section-heading h2,
+  .smile-about-copy h2 {
+    font-size: 1.9rem;
+    line-height: 1.08;
+  }
+
+  .smile-hero-copy p,
+  .smile-section-heading p,
+  .smile-about-copy p {
+    font-size: 0.96rem;
+  }
+
+  .smile-hero-actions .hero-action,
+  .smile-secondary-link {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .smile-stats,
+  .smile-testimonial-grid,
+  .smile-consult-form {
+    grid-template-columns: 1fr;
+  }
+
+  .smile-stats span {
+    text-align: left;
+  }
+
+  .smile-consult-form {
+    padding: 22px;
+  }
+
+  .smile-consult-form label.wide,
+  .smile-submit,
+  .smile-segmented {
+    grid-column: auto;
+  }
+
+  .smile-footer-bottom {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

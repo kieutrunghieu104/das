@@ -1,0 +1,118 @@
+.smile-section {
+  padding: 92px 70px;
+  background: var(--smile-bg);
+}
+
+.smile-section:nth-of-type(even) {
+  background: var(--smile-bg-soft);
+}
+
+.smile-section-heading {
+  display: grid;
+  gap: 16px;
+  max-width: 760px;
+  margin-bottom: 42px;
+}
+
+.smile-section-heading.centered {
+  justify-items: center;
+  max-width: 880px;
+  margin-right: auto;
+  margin-left: auto;
+  text-align: center;
+}
+
+.smile-section-heading h2,
+.smile-about-copy h2 {
+  margin: 0;
+  color: var(--smile-text);
+  font-size: 3.15rem;
+  line-height: 1.08;
+  overflow-wrap: anywhere;
+}
+
+.smile-service-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: minmax(230px, auto);
+  gap: 26px;
+}
+
+.smile-service-card {
+  position: relative;
+  display: grid;
+  align-content: end;
+  gap: 10px;
+  min-height: 230px;
+  overflow: hidden;
+  border: 1px solid var(--smile-line);
+  border-radius: 8px;
+  padding: 30px;
+  background: linear-gradient(135deg, #ffffff, #e9f7f2);
+  box-shadow: 0 18px 42px rgba(35, 79, 81, 0.08);
+}
+
+.smile-service-card.large {
+  grid-row: span 2;
+  min-height: 486px;
+}
+
+.smile-service-card.tone-cosmetic {
+  background: linear-gradient(135deg, #ffffff, #f6f0df);
+}
+
+.smile-service-card.tone-ortho {
+  background: linear-gradient(135deg, #ffffff, #e7f2fb);
+}
+
+.smile-service-card.tone-general {
+  background: linear-gradient(135deg, #ffffff, #f3f7eb);
+}
+
+.smile-icon-bubble {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  background: rgba(11, 61, 145, 0.12);
+  color: var(--smile-teal-dark);
+}
+
+.smile-service-card h3,
+.smile-dentist-card h3,
+.smile-faq-list button,
+.smile-testimonial-grid strong,
+.smile-footer h3 {
+  margin: 0;
+  color: var(--smile-text);
+  font-family: var(--font-main);
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.smile-service-card h3 {
+  font-size: 1.8rem;
+}
+
+.smile-service-card p,
+.smile-dentist-card p,
+.smile-faq-list p,
+.smile-testimonial-grid p,
+.smile-footer p,
+.smile-footer a,
+.smile-footer-bottom {
+  color: var(--smile-muted);
+  line-height: 1.6;
+}
+
+.smile-service-card p {
+  max-width: 520px;
+  margin: 0;
+  font-weight: 690;
+}
+
+.smile-service-card small {
+  color: #9b6c00;
+  font-weight: 900;
+}

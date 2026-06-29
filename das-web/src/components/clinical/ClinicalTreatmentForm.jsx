@@ -1,0 +1,355 @@
+﻿import { useEffect, useMemo, useState } from "react";
+import { ClipboardPenLine } from "lucide-react";
+import StatusBadge from "../StatusBadge.jsx";
+import { formatDateTime } from "../../utils/format.js";
+
+export default function ClinicalTreatmentForm({
+  appointments,
+  form,
+  onChange,
+  onSubmit,
+  records = [],
+  selectedAppointment,
+  treatmentVisits = [],
+  user
+}) {
+  const isNurse = user?.role === "nurse";
+  const isDentist = user?.role === "dentist";
+  const [dentistSearch, setDentistSearch] = useState("");
+  const [activeRecordIndex, setActiveRecordIndex] = useState(0);
+  const [activeVisit, setActiveVisit] = useState(1);
+  const [visitCount, setVisitCount] = useState(5);
+
+  const selectedPatientId = selectedAppointment?.patient?._id || selectedAppointment?.patient;
+  const selectedAppointmentId = selectedAppointment?._id?.toString?.();
+  const dentistRecords = useMemo(() => {
+    const keyword = dentistSearch.trim().toLowerCase();
+    return records
+      .filter((record) => {
+        const recordAppointmentId = (record.appointment?._id || record.appointment)?.toString?.();
+        if (selectedAppointmentId) return recordAppointmentId === selectedAppointmentId;
+        const patientId = record.patient?._id || record.patient;
+        const bySelectedAppointment = selectedPatientId ? patientId?.toString?.() === selectedPatientId?.toString?.() : false;
+        if (!keyword) return bySelectedAppointment;
+        const name = record.patient?.fullName?.toLowerCase?.() || "";
+        const phone = record.patient?.phone?.toLowerCase?.() || "";
+        const matchesKeyword = name.includes(keyword) || phone.includes(keyword);
+        return selectedPatientId ? matchesKeyword && bySelectedAppointment : matchesKeyword;
+      })
+      .sort((first, second) => new Date(second.treatmentDate || second.updatedAt || 0) - new Date(first.treatmentDate || first.updatedAt || 0));
+  }, [dentistSearch, records, selectedPatientId, selectedAppointmentId]);
+  const activeRecord = dentistRecords[Math.min(activeRecordIndex, Math.max(dentistRecords.length - 1, 0))];
+  const dentistVisits = useMemo(() => normalizeRecordVisits(activeRecord), [activeRecord]);
+  const activeDentistVisit = dentistVisits.find((visit) => visit.visitNumber === activeVisit) || dentistVisits[dentistVisits.length - 1];
+  const activeNurseVisit = treatmentVisits.find((visit) => visit.visitNumber === Number(form.visitNumber));
+  const visibleVisitCount = Math.max(visitCount, treatmentVisits.length + 1, 5);
+  const nextAllowedVisit = treatmentVisits.length + 1;
+
+  useEffect(() => {
+    setActiveVisit(Number(form.visitNumber || 1));
+  }, [form.visitNumber]);
+
+  useEffect(() => {
+    if (isDentist && dentistVisits.length) {
+      setActiveVisit(dentistVisits[dentistVisits.length - 1].visitNumber);
+    }
+  }, [activeRecord?._id, dentistVisits.length, isDentist]);
+
+  function addVisitPage() {
+    setVisitCount((current) => current + 1);
+  }
+
+  function chooseVisit(visitNumber) {
+    setActiveVisit(visitNumber);
+    onChange("visitNumber", visitNumber);
+  }
+
+  return (
+    <section className="panel clinical-treatment-panel">
+      <div className="section-title">
+        <ClipboardPenLine size={20} />
+        <h2>Hồ sơ điều trị</h2>
+      </div>
+      <form className="stack" onSubmit={onSubmit}>
+        <label className="field">
+          <span>Lịch khám</span>
+          <select value={form.appointmentId} onChange={(event) => onChange("appointmentId", event.target.value)}>
+            <option value="">Chọn lịch khám</option>
+            {appointments.map((appointment) => (
+              <option key={appointment._id} value={appointment._id}>
+                {appointment.patient?.fullName || "Bệnh nhân"} - {appointment.service?.name || "Dịch vụ"} - {formatDateTime(appointment.startAt)}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {selectedAppointment && (
+          <div className="clinical-selected-card">
+            <strong>{selectedAppointment.patient?.fullName}</strong>
+            <span>{selectedAppointment.service?.name} / {selectedAppointment.room?.name}</span>
+            <StatusBadge value={selectedAppointment.status} />
+          </div>
+        )}
+
+        {isDentist ? (
+          <div className="clinical-record-browser">
+            <label className="field">
+              <span>Tìm hồ sơ theo tên hoặc SĐT</span>
+              <input
+                value={dentistSearch}
+                onChange={(event) => {
+                  setDentistSearch(event.target.value);
+                  setActiveRecordIndex(0);
+                }}
+                placeholder="Nhập tên hoặc số điện thoại bệnh nhân"
+              />
+            </label>
+            {dentistRecords.length ? (
+              <>
+                {!selectedPatientId && dentistRecords.length > 1 && (
+                  <div className="treatment-page-tabs">
+                    {dentistRecords.map((record, index) => (
+                      <button
+                        className={index === Math.min(activeRecordIndex, dentistRecords.length - 1) ? "active" : ""}
+                        key={record._id || index}
+                        onClick={() => {
+                          setActiveRecordIndex(index);
+                          setActiveVisit(1);
+                        }}
+                        type="button"
+                      >
+                        {record.patient?.fullName || "Bệnh nhân"}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {dentistVisits.length ? (
+                  <div className="treatment-page-tabs">
+                    {dentistVisits.map((visit) => (
+                    <button
+                      className={visit.visitNumber === activeVisit ? "active" : ""}
+                      key={`${activeRecord?._id}-visit-${visit.visitNumber}`}
+                      onClick={() => setActiveVisit(visit.visitNumber)}
+                      type="button"
+                    >
+                      Lần {visit.visitNumber}
+                    </button>
+                    ))}
+                  </div>
+                ) : null}
+                <div className="readonly-record-grid">
+                  <div className="clinical-selected-card wide">
+                    <strong>{activeRecord.patient?.fullName || "Bệnh nhân"}</strong>
+                    <span>{activeRecord.patient?.phone || "Chưa có SĐT"}</span>
+                    <span>Cập nhật: {formatDateTime(activeDentistVisit?.updatedAt || activeRecord.updatedAt)}</span>
+                  </div>
+                  <ReadOnlyField label="Huyết áp" value={activeDentistVisit?.vitalSigns?.bloodPressure} />
+                  <ReadOnlyField label="Nhịp tim" value={activeDentistVisit?.vitalSigns?.heartRate} />
+                  <ReadOnlyField label="SpO2" value={activeDentistVisit?.vitalSigns?.spo2} />
+                  <ReadOnlyField label="Nhiệt độ" value={activeDentistVisit?.vitalSigns?.temperature} />
+                  <ReadOnlyField label="Nhịp thở" value={activeDentistVisit?.vitalSigns?.respiratoryRate} />
+                  <ReadOnlyField label="Chẩn đoán" value={activeDentistVisit?.diagnosis} wide />
+                  <ReadOnlyField label="Điều trị đã thực hiện" value={activeDentistVisit?.treatmentResult} wide />
+                  <ReadOnlyField label="Đơn thuốc" value={activeDentistVisit?.prescription} wide />
+                  <ReadOnlyField label="Điều trị dự kiến" value={activeDentistVisit?.treatmentPlan} wide />
+                  <ReadOnlyField label="Hướng dẫn sau điều trị" value={activeDentistVisit?.aftercareInstructions} wide />
+                  <ReadOnlyField label="Ghi chú điều trị" value={activeDentistVisit?.treatmentNote} wide />
+                </div>
+              </>
+            ) : (
+              <div className="empty-state">
+                <strong>Không có hồ sơ điều trị</strong>
+                <span>Không tìm thấy hồ sơ điều trị phù hợp với bệnh nhân hoặc từ khóa hiện tại.</span>
+              </div>
+            )}
+          </div>
+        ) : isNurse && selectedAppointment ? (
+          <div className="form-grid">
+            <div className="treatment-page-tabs wide">
+              {Array.from({ length: visibleVisitCount }, (_, index) => {
+                const visitNumber = index + 1;
+                const disabled = visitNumber > nextAllowedVisit;
+                return (
+                  <button
+                    className={Number(form.visitNumber) === visitNumber ? "active" : ""}
+                    disabled={disabled}
+                    key={visitNumber}
+                    onClick={() => chooseVisit(visitNumber)}
+                    title={disabled ? `Cần cập nhật lần ${nextAllowedVisit} trước` : undefined}
+                    type="button"
+                  >
+                    Lần {visitNumber}
+                  </button>
+                );
+              })}
+              <button className="add-page" onClick={addVisitPage} type="button">
+                +
+              </button>
+            </div>
+            <div className="clinical-selected-card wide">
+              <strong>Lần {form.visitNumber}</strong>
+              <span>{activeNurseVisit?.updatedAt ? `Cập nhật: ${formatDateTime(activeNurseVisit.updatedAt)}` : "Chưa cập nhật"}</span>
+            </div>
+            <label className="field">
+              <span>Huyết áp</span>
+              <input disabled={isDentist} value={form.bloodPressure} onChange={(event) => onChange("bloodPressure", event.target.value)} />
+            </label>
+            <label className="field">
+              <span>Nhịp tim</span>
+              <input disabled={isDentist} value={form.heartRate} onChange={(event) => onChange("heartRate", event.target.value)} />
+            </label>
+            <label className="field">
+              <span>SpO2</span>
+              <input disabled={isDentist} value={form.spo2} onChange={(event) => onChange("spo2", event.target.value)} />
+            </label>
+            <label className="field">
+              <span>Nhiệt độ</span>
+              <input disabled={isDentist} value={form.temperature} onChange={(event) => onChange("temperature", event.target.value)} />
+            </label>
+            <label className="field">
+              <span>Nhịp thở</span>
+              <input disabled={isDentist} value={form.respiratoryRate} onChange={(event) => onChange("respiratoryRate", event.target.value)} />
+            </label>
+            <label className="field wide">
+              <span>Ghi chú hỗ trợ chẩn đoán</span>
+              <textarea disabled={isDentist} value={form.treatmentNote} onChange={(event) => onChange("treatmentNote", event.target.value)} rows="3" />
+            </label>
+            <label className="field wide">
+              <span>Chẩn đoán</span>
+              <textarea disabled={isDentist} value={form.diagnosis} onChange={(event) => onChange("diagnosis", event.target.value)} rows="3" />
+            </label>
+            <label className="field wide">
+              <span>Tiền sử bệnh án</span>
+              <textarea disabled={isDentist} value={form.medicalHistory || ""} onChange={(event) => onChange("medicalHistory", event.target.value)} rows="3" />
+            </label>
+            <label className="field wide">
+              <span>Điều trị đã thực hiện</span>
+              <textarea disabled={isDentist} value={form.treatmentResult} onChange={(event) => onChange("treatmentResult", event.target.value)} rows="3" />
+            </label>
+            <label className="field wide">
+              <span>Đơn thuốc</span>
+              <textarea disabled={isDentist} value={form.prescription} onChange={(event) => onChange("prescription", event.target.value)} rows="3" />
+            </label>
+            <label className="field wide">
+              <span>Điều trị dự kiến</span>
+              <textarea disabled={isDentist} value={form.treatmentPlan} onChange={(event) => onChange("treatmentPlan", event.target.value)} rows="3" />
+            </label>
+            <label className="field wide">
+              <span>Hướng dẫn sau điều trị</span>
+              <textarea disabled={isDentist} value={form.aftercareInstructions} onChange={(event) => onChange("aftercareInstructions", event.target.value)} rows="3" />
+            </label>
+          </div>
+        ) : isNurse ? (
+          <div className="empty-state">
+            <strong>Chọn lịch khám</strong>
+            <span>Hồ sơ điều trị chỉ hiển thị sau khi y tá chọn một lịch khám của bệnh nhân.</span>
+          </div>
+        ) : (
+          <>
+            {isDentist && (
+              <div className="form-grid">
+                <label className="field">
+                  <span>Huyết áp</span>
+                  <input disabled value={form.bloodPressure} onChange={(event) => onChange("bloodPressure", event.target.value)} />
+                </label>
+                <label className="field">
+                  <span>Nhịp tim</span>
+                  <input disabled value={form.heartRate} onChange={(event) => onChange("heartRate", event.target.value)} />
+                </label>
+                <label className="field">
+                  <span>SpO2</span>
+                  <input disabled value={form.spo2} onChange={(event) => onChange("spo2", event.target.value)} />
+                </label>
+                <label className="field">
+                  <span>Nhiệt độ</span>
+                  <input disabled value={form.temperature} onChange={(event) => onChange("temperature", event.target.value)} />
+                </label>
+                <label className="field">
+                  <span>Nhịp thở</span>
+                  <input disabled value={form.respiratoryRate} onChange={(event) => onChange("respiratoryRate", event.target.value)} />
+                </label>
+              </div>
+            )}
+            <label className="field">
+              <span>Chẩn đoán</span>
+              <textarea disabled={isDentist} value={form.diagnosis} onChange={(event) => onChange("diagnosis", event.target.value)} rows="3" />
+            </label>
+            <label className="field">
+              <span>Điều trị dự kiến</span>
+              <textarea disabled={isDentist} value={form.treatmentPlan} onChange={(event) => onChange("treatmentPlan", event.target.value)} rows="3" />
+            </label>
+            <label className="field">
+              <span>Đơn thuốc</span>
+              <textarea disabled={isDentist} value={form.prescription} onChange={(event) => onChange("prescription", event.target.value)} rows="3" />
+            </label>
+            <div className="form-grid">
+              <label className="field">
+                <span>Chi phí dự kiến</span>
+                <input disabled={isDentist} type="number" min="0" value={form.estimatedCost} onChange={(event) => onChange("estimatedCost", event.target.value)} />
+              </label>
+              <label className="field">
+                <span>Điều trị đã thực hiện</span>
+                <input disabled={isDentist} value={form.treatmentResult} onChange={(event) => onChange("treatmentResult", event.target.value)} />
+              </label>
+            </div>
+            <label className="field">
+              <span>Ghi chú điều trị</span>
+              <textarea disabled={isDentist} value={form.treatmentNote} onChange={(event) => onChange("treatmentNote", event.target.value)} rows="3" />
+            </label>
+            <label className="field">
+              <span>Hướng dẫn sau điều trị</span>
+              <textarea disabled={isDentist} value={form.aftercareInstructions} onChange={(event) => onChange("aftercareInstructions", event.target.value)} rows="3" />
+            </label>
+          </>
+        )}
+        {!isDentist && (
+          <div className="row-actions clinical-treatment-actions">
+            <button className="button primary">{isNurse ? "Lưu thông tin chung" : "Lưu điều trị"}</button>
+          </div>
+        )}
+      </form>
+    </section>
+  );
+}
+
+function ReadOnlyField({ label, value, wide = false }) {
+  return (
+    <div className={`readonly-record-field ${wide ? "wide" : ""}`}>
+      <span>{label}</span>
+      <strong>{value || "Chưa cập nhật"}</strong>
+    </div>
+  );
+}
+
+function normalizeRecordVisits(record) {
+  if (!record) return [];
+  const visits = Array.isArray(record.visits) ? record.visits.filter(Boolean) : [];
+  if (visits.length) {
+    return visits
+      .map((visit, index) => ({ ...visit, visitNumber: Number(visit.visitNumber || index + 1) }))
+      .sort((first, second) => first.visitNumber - second.visitNumber);
+  }
+
+  const hasLegacyData = [
+    record.vitalSigns,
+    record.diagnosis,
+    record.treatmentResult,
+    record.treatmentNote,
+    record.treatmentPlan,
+    record.prescription,
+    record.aftercareInstructions
+  ].some(Boolean);
+  return hasLegacyData
+    ? [{
+        visitNumber: 1,
+        vitalSigns: record.vitalSigns || {},
+        diagnosis: record.diagnosis || "",
+        treatmentResult: record.treatmentResult || "",
+        treatmentNote: record.treatmentNote || "",
+        treatmentPlan: record.treatmentPlan || "",
+        prescription: record.prescription || "",
+        aftercareInstructions: record.aftercareInstructions || "",
+        updatedAt: record.updatedAt || record.treatmentDate
+      }]
+    : [];
+}

@@ -1,0 +1,38 @@
+.reception-checkin-card {
+  grid-template-columns: minmax(360px, 1fr) minmax(260px, auto);
+  border-left-color: var(--primary);
+  background: linear-gradient(180deg, #ffffff 0%, #f3f7ff 100%);
+}
+
+.checkin-status-actions {
+  align-self: center;
+  justify-content: flex-end;
+}
+
+.checkin-status-actions select {
+  width: min(100%, 190px);
+}
+
+.invoice-payment-summary,
+.invoice-items-list {
+  display: grid;
+  gap: 6px;
+}
+
+.invoice-payment-summary {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px;
+  background: #ffffff;
+}
+
+.invoice-items-list span {
+  color: #425768;
+  font-size: 0.88rem;
+  font-weight: 760;
+}
+
+.paid-complete-note {
+  color: var(--success);
+  font-weight: 900;
+}

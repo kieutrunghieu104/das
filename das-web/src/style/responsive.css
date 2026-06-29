@@ -1,0 +1,311 @@
+@media (max-width: 1040px) {
+  .guest-header-inner {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+    padding: 14px 0;
+  }
+
+  .guest-nav {
+    justify-content: flex-start;
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .guest-actions {
+    flex-wrap: wrap;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .guest-service-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .guest-hero-inner {
+    grid-template-columns: 1fr;
+    gap: 26px;
+  }
+
+  .guest-title {
+    width: min(720px, 100%);
+  }
+
+  .guest-appointment-form {
+    justify-self: start;
+    width: min(720px, 100%);
+  }
+
+  .guest-branch-section {
+    grid-template-columns: 1fr;
+  }
+
+  .guest-branch-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 12px;
+    height: auto;
+    padding: 14px 18px;
+  }
+
+  .brand {
+    flex: 0 0 auto;
+  }
+
+  .nav-list {
+    display: flex;
+    width: 100%;
+    margin-top: 0;
+    overflow-x: auto;
+  }
+
+  .nav-item {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .auth-grid,
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .guest-header-inner {
+    width: min(calc(100% - 28px), 1420px);
+  }
+
+  .guest-brand-name {
+    font-size: 1.35rem;
+  }
+
+  .guest-brand-mark {
+    width: 54px;
+    height: 54px;
+  }
+
+  .guest-nav {
+    display: none;
+  }
+
+  .guest-action,
+  .guest-login {
+    min-width: 0;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 10px;
+    font-size: 0.84rem;
+    white-space: nowrap;
+  }
+
+  .guest-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .guest-hero {
+    min-height: auto;
+    padding: 34px 14px 56px;
+    background-image:
+      linear-gradient(180deg, rgba(6, 38, 48, 0.9) 0%, rgba(8, 71, 92, 0.78) 62%, rgba(8, 71, 92, 0.42) 100%),
+      url("../assets/clinic-hero.png");
+    background-position: center right;
+  }
+
+  .guest-title h1 {
+    font-size: 2.1rem;
+  }
+
+  .guest-title {
+    width: min(100%, calc(100vw - 28px));
+    text-align: left;
+  }
+
+  .guest-title p {
+    font-size: 0.98rem;
+  }
+
+  .guest-proof-row span {
+    min-height: 34px;
+    min-width: 0;
+    padding: 6px 8px;
+    font-size: 0.85rem;
+    overflow-wrap: anywhere;
+  }
+
+  .guest-proof-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .guest-proof-row span:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  .guest-appointment-form {
+    padding: 16px;
+  }
+
+  .guest-form-grid,
+  .guest-service-strip,
+  .guest-branch-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .guest-form-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .guest-captcha {
+    width: 100%;
+  }
+
+  .guest-submit {
+    width: 100%;
+  }
+
+  .guest-service-strip {
+    margin-top: -30px;
+  }
+
+  .guest-branch-section {
+    width: min(100%, calc(100vw - 28px));
+    margin-bottom: 86px;
+  }
+
+  .guest-bell {
+    display: none;
+  }
+
+  .guest-chat {
+    right: 16px;
+    bottom: 74px;
+    width: 62px;
+    height: 62px;
+    border-width: 6px;
+  }
+
+  .guest-bottom-actions {
+    display: flex;
+    left: 8px;
+    right: auto;
+    bottom: 8px;
+    width: min(374px, calc(100vw - 16px));
+    transform: none;
+  }
+
+  .guest-bottom-actions a {
+    flex-direction: column;
+    flex: 1 1 0;
+    max-width: none;
+    overflow: hidden;
+    min-height: 44px;
+    padding: 7px 4px;
+    gap: 2px;
+    font-size: 0.68rem;
+    line-height: 1.1;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .guest-bottom-actions svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .guest-bottom-actions a:nth-child(4) {
+    display: none;
+  }
+
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 16px;
+  }
+
+  .content {
+    padding: 16px;
+  }
+
+  .hero-panel {
+    min-height: 300px;
+    background-position: 58% center;
+  }
+
+  .hero-copy {
+    min-height: 300px;
+    padding: 22px;
+  }
+
+  .hero-copy h2 {
+    font-size: 1.5rem;
+  }
+
+  .form-grid,
+  .booking-controls,
+  .metrics-grid,
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-tabs {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .appointment-card,
+  .mini-row {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .reception-appointment-card {
+    grid-template-columns: 1fr;
+  }
+
+  .appointment-intake-actions,
+  .appointment-status-tools,
+  .appointment-reschedule-tools {
+    justify-content: flex-start;
+  }
+
+  .appointment-card-actions select,
+  .appointment-reschedule-tools select {
+    width: 100%;
+    max-width: none;
+  }
+
+  .row-actions {
+    justify-content: flex-start;
+  }
+
+  .auth-links,
+  .user-box {
+    flex-wrap: wrap;
+  }
+
+  .user-meta {
+    text-align: left;
+  }
+
+  .feedback-stack {
+    top: 78px;
+    right: 18px;
+  }
+}

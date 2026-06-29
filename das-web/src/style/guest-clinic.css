@@ -1,0 +1,74 @@
+.smile-about {
+  display: grid;
+  grid-template-columns: minmax(0, 0.96fr) minmax(380px, 0.74fr);
+  gap: 46px;
+  align-items: center;
+}
+
+.smile-about-copy {
+  display: grid;
+  gap: 18px;
+}
+
+.smile-feature-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.smile-feature-list span {
+  gap: 12px;
+  min-height: 48px;
+  border: 1px solid var(--smile-line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #284b54;
+  font-weight: 760;
+}
+
+.smile-feature-list svg {
+  color: var(--smile-teal);
+}
+
+.smile-clinic-panel {
+  display: grid;
+  gap: 14px;
+  border: 1px solid var(--smile-line);
+  border-radius: 8px;
+  padding: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(238, 247, 242, 0.92)),
+    url("../assets/clinic-hero.png") center / cover no-repeat;
+  box-shadow: 0 20px 54px rgba(35, 79, 81, 0.12);
+}
+
+.smile-clinic-panel article {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  min-height: 84px;
+  border: 1px solid rgba(21, 70, 76, 0.12);
+  border-radius: 8px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.84);
+}
+
+.smile-clinic-panel svg {
+  color: var(--smile-gold);
+}
+
+.smile-clinic-panel strong,
+.smile-clinic-panel span {
+  display: block;
+}
+
+.smile-clinic-panel strong {
+  color: var(--smile-text);
+}
+
+.smile-clinic-panel span {
+  margin-top: 3px;
+  color: var(--smile-muted);
+}

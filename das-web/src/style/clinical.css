@@ -1,0 +1,190 @@
+.clinical-treatment-actions {
+  justify-content: flex-start;
+}
+
+.clinical-schedule-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.clinical-room-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.room-chip {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #f8fcfa;
+  color: var(--primary-dark);
+  padding: 8px 10px;
+  font-size: 0.86rem;
+  font-weight: 780;
+}
+
+.clinical-room-status-chip {
+  max-width: 100%;
+}
+
+.room-chip-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.button.tiny {
+  min-height: 28px;
+  padding: 5px 8px;
+  border-radius: var(--radius);
+  font-size: 0.76rem;
+}
+
+.clinical-schedule-summary,
+.clinical-selected-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  padding: 10px 12px;
+}
+
+.clinical-schedule-summary strong {
+  font-size: 1.35rem;
+}
+
+.schedule-index-head {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+}
+
+.clinical-selected-card {
+  justify-content: space-between;
+  width: 100%;
+  background: #f8fbff;
+}
+
+.clinical-selected-card span {
+  color: var(--muted);
+}
+
+.clinical-selected-card.wide {
+  grid-column: 1 / -1;
+}
+
+.clinical-followup-panel .form-grid .button {
+  align-self: end;
+}
+
+.clinical-record-browser,
+.readonly-record-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.readonly-record-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.readonly-record-field {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px;
+  background: #ffffff;
+}
+
+.readonly-record-field.wide {
+  grid-column: 1 / -1;
+}
+
+.readonly-record-field span {
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 820;
+}
+
+.readonly-record-field strong {
+  color: #203744;
+  font-weight: 850;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.treatment-page-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.treatment-page-tabs.wide {
+  grid-column: 1 / -1;
+}
+
+.treatment-page-tabs button {
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 7px 11px;
+  background: #ffffff;
+  color: var(--primary-dark);
+  font-weight: 850;
+}
+
+.treatment-page-tabs button.active,
+.treatment-page-tabs button:hover {
+  border-color: #9ad6dc;
+  background: var(--primary-soft);
+}
+
+.treatment-page-tabs .add-page {
+  min-width: 38px;
+  color: #ffffff;
+  background: var(--primary);
+}
+
+.performed-service-list {
+  gap: 8px;
+}
+
+.performed-service-row {
+  grid-template-columns: minmax(0, 1fr) minmax(140px, 180px);
+}
+
+.performed-service-row input[type="number"] {
+  width: 100%;
+}
+
+.checkbox-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  color: #203744;
+  font-weight: 820;
+}
+
+.checkbox-line input {
+  width: 18px;
+  min-height: 18px;
+  accent-color: var(--primary);
+}

@@ -1,0 +1,67 @@
+.smile-dentists {
+  background: #ffffff;
+}
+
+.smile-dentist-carousel {
+  width: 100%;
+  padding: 0 54px 42px;
+}
+
+.smile-dentist-carousel .carousel-inner {
+  overflow: visible;
+}
+
+.smile-dentist-carousel .carousel-control-prev,
+.smile-dentist-carousel .carousel-control-next {
+  width: 42px;
+  opacity: 1;
+}
+
+.smile-dentist-carousel .carousel-control-prev {
+  left: 0;
+}
+
+.smile-dentist-carousel .carousel-control-next {
+  right: 0;
+}
+
+.smile-dentist-carousel .carousel-control-prev-icon,
+.smile-dentist-carousel .carousel-control-next-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background-color: var(--smile-orange);
+  background-size: 46%;
+  box-shadow: 0 12px 24px rgba(7, 40, 95, 0.18);
+}
+
+.smile-dentist-carousel .carousel-indicators {
+  bottom: -34px;
+  margin-bottom: 0;
+}
+
+.smile-dentist-carousel .carousel-indicators [data-bs-target] {
+  width: 9px;
+  height: 9px;
+  border: 0;
+  border-radius: 50%;
+  background-color: var(--smile-orange);
+}
+
+.smile-dentist-card {
+  justify-items: center;
+  min-height: 430px;
+  padding: 34px;
+  text-align: center;
+}
+
+.smile-dentist-initial,
+.smile-testimonial-grid article > div:last-child span {
+  background: linear-gradient(135deg, #eef1f5, #ffffff);
+  color: var(--smile-text);
+  box-shadow: inset 0 0 0 1px rgba(24, 33, 55, 0.12);
+}
+
+.smile-dentist-card strong {
+  color: var(--smile-orange-dark);
+}

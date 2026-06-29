@@ -1,0 +1,103 @@
+import { ClipboardList } from "lucide-react";
+import EmptyState from "../EmptyState.jsx";
+import StatusBadge from "../StatusBadge.jsx";
+import { formatSlotWithDate } from "../../utils/appointmentSlots.js";
+import { todayInput } from "../../utils/format.js";
+import { maxBookingDate } from "../../pages/BookingPage.jsx";
+import ReceptionAppointmentFilters from "./ReceptionAppointmentFilters.jsx";
+
+export default function ReceptionIntakeAppointments({
+  appointmentSearch,
+  appointments,
+  date,
+  loading,
+  onRejectAppointment,
+  manualSchedules,
+  rooms,
+  scheduleReceptionAppointment,
+  setAppointmentSearch,
+  setDate,
+  updateManualSchedule
+}) {
+  return (
+    <section className="panel">
+      <div className="section-title">
+        <ClipboardList size={20} />
+        <h2>Lịch hẹn chờ xác nhận</h2>
+      </div>
+
+      <ReceptionAppointmentFilters
+        date={date}
+        setDate={setDate}
+        appointmentSearch={appointmentSearch}
+        setAppointmentSearch={setAppointmentSearch}
+        showDate={false}
+      />
+
+      {loading ? (
+        <EmptyState title="Đang tải lịch hẹn" text="Hệ thống đang lấy dữ liệu mới nhất." />
+      ) : appointments.length ? (
+        <div className="appointment-list">
+          {appointments.map((appointment) => {
+            const manualForm = manualSchedules[appointment._id] || {
+              date: appointment.startAt ? new Date(appointment.startAt).toISOString().slice(0, 10) : todayInput(),
+              time: appointment.startAt ? new Date(appointment.startAt).toTimeString().slice(0, 5) : "08:00",
+              roomId: appointment.room?._id || rooms[0]?._id || ""
+            };
+            return (
+              <article className="appointment-card reception-appointment-card pending-intake" key={appointment._id}>
+                <div className="appointment-card-main">
+                  <div className="patient-contact-row">
+                    <div>
+                      <h4>{appointment.patient?.fullName || "Bệnh nhân"}</h4>
+                      <p>{appointment.patient?.phone || "Chưa có SĐT"}</p>
+                    </div>
+                    <StatusBadge value={appointment.status} />
+                  </div>
+                  <div className="appointment-slot-box">
+                    <strong>{appointment.service?.name || "Dịch vụ nha khoa"}</strong>
+                    <span>Slot bệnh nhân chọn: {formatSlotWithDate(appointment.startAt)}</span>
+                    <span>Bác sĩ: {appointment.dentist?.fullName || "Lễ tân sắp xếp"}</span>
+                    <span>Kênh: {appointment.channel === "online" ? "Online" : "Tại quầy"}</span>
+                  </div>
+                  {appointment.patientNote && <span className="mini">Ghi chú bệnh nhân: {appointment.patientNote}</span>}
+                </div>
+                <div className="appointment-card-actions">
+                  <div className="row-actions appointment-reschedule-tools manual-schedule-tools">
+                    <input
+                      type="date"
+                      min={todayInput()}
+                      max={maxBookingDate()}
+                      value={manualForm.date}
+                      onChange={(event) => updateManualSchedule(appointment, { date: event.target.value })}
+                    />
+                    <input type="time" value={manualForm.time} onChange={(event) => updateManualSchedule(appointment, { time: event.target.value })} />
+                    <select
+                      aria-label="Bác sĩ"
+                      value={manualForm.roomId}
+                      onChange={(event) => updateManualSchedule(appointment, { roomId: event.target.value })}
+                    >
+                      {rooms.filter((room) => room.assignedDentist?._id).map((room) => (
+                        <option value={room._id} key={room._id}>
+                          {room.assignedDentist.fullName}
+                        </option>
+                      ))}
+                    </select>
+                    <button className="button small danger" type="button" onClick={() => onRejectAppointment(appointment)}>
+                      Từ chối
+                    </button>
+                    <button className="button small primary" type="button" onClick={() => scheduleReceptionAppointment(appointment)}>
+                      Xác nhận
+                    </button>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      ) : (
+        <EmptyState title="Không có lịch hẹn" text="Lịch hẹn mới sẽ xuất hiện tại đây khi có dữ liệu trong hệ thống." />
+      )}
+    </section>
+  );
+}

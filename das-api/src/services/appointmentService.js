@@ -1,0 +1,588 @@
+import * as appointmentRepository from "../repository/appointmentRepository.js";
+import {
+  createAppointmentFromSlot,
+  rescheduleAppointmentFromSlot
+} from "./schedulingService.js";
+import { endOfLocalDay, startOfLocalDay } from "../utils/time.js";
+import {
+  appointmentNoteSchema,
+  appointmentPaymentSchema,
+  cancelAppointmentSchema,
+  checkInAppointmentSchema,
+  createAppointmentInvoiceSchema,
+  createAppointmentSchema,
+  receptionScheduleSchema,
+  rescheduleAppointmentSchema,
+  updateAppointmentStatusSchema
+} from "../validations/appointmentValidation.js";
+
+const STAFF_ROLES = new Set(["receptionist", "admin", "nurse"]);
+const LOCKED_APPOINTMENT_STATUSES = new Set(["cancelled", "rejected"]);
+
+function createError(message, statusCode) {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  return err;
+}
+
+function appointmentQueryForUser(user) {
+  if (user.role === "patient") return { patient: user._id };
+  if (user.role === "dentist") return { dentist: user._id };
+  if (user.role === "nurse") return { nurse: user._id };
+  return {};
+}
+
+function normalizeId(value) {
+  return value?._id || value;
+}
+
+function sameId(left, right) {
+  return normalizeId(left)?.toString() === normalizeId(right)?.toString();
+}
+
+function assertBookingWindow(user, dateText) {
+  if (!["patient", "receptionist", "admin"].includes(user.role)) return;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const nextMonth = new Date(today.getFullYear(), today.getMonth() + 2, 0);
+  const maxDate = new Date(
+    today.getFullYear(),
+    today.getMonth() + 1,
+    Math.min(today.getDate(), nextMonth.getDate())
+  );
+  const requestedDate = new Date(`${dateText}T00:00:00`);
+
+  if (requestedDate > maxDate) {
+    throw createError("Chỉ được đặt, đổi hoặc xếp lịch trong vòng 1 tháng.", 400);
+  }
+}
+
+function canAccessAppointment(user, appointment) {
+  if (["admin", "receptionist"].includes(user.role)) return true;
+  if (user.role === "patient") return sameId(appointment.patient, user._id);
+  if (user.role === "dentist") return sameId(appointment.dentist, user._id);
+  if (user.role === "nurse") return sameId(appointment.nurse, user._id);
+  return false;
+}
+
+function isPatientCancelled(appointment) {
+  return appointment.status === "cancelled" && appointment.cancelledByRole === "patient";
+}
+
+function assertAppointmentCanChange(appointment, user) {
+  if (isPatientCancelled(appointment)) {
+    throw createError("Lịch hẹn đã do bệnh nhân hủy nên lễ tân không thể cập nhật trạng thái.", 409);
+  }
+
+  if (appointment.status === "cancelled" && !STAFF_ROLES.has(user.role)) {
+    throw createError("Lịch hẹn đã hủy nên không thể cập nhật thêm.", 409);
+  }
+
+  if (LOCKED_APPOINTMENT_STATUSES.has(appointment.status)) {
+    throw createError("Lịch hẹn đã hủy hoặc bị từ chối nên không thể cập nhật thêm.", 409);
+  }
+}
+
+function formatClinicDateTime(value) {
+  return new Intl.DateTimeFormat("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23"
+  }).format(new Date(value));
+}
+
+async function notifyPatientOfReceptionDecision(appointment, status) {
+  const messages = {
+    confirmed: {
+      title: "Lịch hẹn đã được chấp nhận",
+      message: "Lễ tân đã chấp nhận lịch hẹn của bạn. Vui lòng đến đúng giờ."
+    },
+    waitlisted: {
+      title: "Lịch hẹn được chuyển vào hàng đợi",
+      message: "Lễ tân đã chuyển lịch hẹn của bạn vào hàng đợi và sẽ liên hệ khi có slot phù hợp."
+    },
+    rejected: {
+      title: "Lịch hẹn đã bị từ chối",
+      message: "Lễ tân đã từ chối lịch hẹn này. Bạn có thể chọn slot khác và gửi lại yêu cầu."
+    }
+  };
+  const content = messages[status];
+  if (!content) return;
+
+  await appointmentRepository.createPatientNotification({
+    user: normalizeId(appointment.patient),
+    title: content.title,
+    message: content.message,
+    isRead: false
+  });
+}
+
+function buildAppointmentQuery(user, query) {
+  const appointmentQuery = appointmentQueryForUser(user);
+
+  if (query.status) {
+    appointmentQuery.status = query.status;
+  }
+
+  if (query.date) {
+    appointmentQuery.startAt = {
+      $gte: startOfLocalDay(query.date),
+      $lte: endOfLocalDay(query.date)
+    };
+  }
+
+  return appointmentQuery;
+}
+
+async function requireAccessibleAppointment(appointmentId, user, populated = false) {
+  const appointment = populated
+    ? await appointmentRepository.findAppointmentByIdPopulated(appointmentId)
+    : await appointmentRepository.findAppointmentById(appointmentId);
+
+  if (!appointment || !canAccessAppointment(user, appointment)) {
+    throw createError("Không tìm thấy lịch hẹn.", 404);
+  }
+
+  return appointment;
+}
+
+export function getAppointments(user, query) {
+  return appointmentRepository.findAppointments(buildAppointmentQuery(user, query));
+}
+
+export function getAppointmentById(appointmentId, user) {
+  return requireAccessibleAppointment(appointmentId, user, true);
+}
+
+export async function createAppointment(user, body) {
+  const data = createAppointmentSchema.parse(body);
+  assertBookingWindow(user, data.date);
+
+  if (!["patient", "receptionist", "admin"].includes(user.role)) {
+    throw createError("Chỉ bệnh nhân, lễ tân hoặc quản trị viên được tạo lịch hẹn.", 403);
+  }
+
+  const patientId = user.role === "patient" ? user._id : data.patientId;
+  if (!patientId) {
+    throw createError("Cần chọn bệnh nhân khi nhân sự đặt lịch hộ.", 400);
+  }
+
+  const appointment = await createAppointmentFromSlot({
+    requester: user,
+    patientId,
+    serviceId: data.serviceId,
+    date: data.date,
+    startAt: data.startAt,
+    roomId: data.roomId,
+    channel: user.role === "patient" ? "online" : data.channel || "offline",
+    dentistPreference: data.dentistPreference,
+    note: data.note
+  });
+
+  await appointmentRepository.populateAppointment(appointment);
+  return appointment;
+}
+
+export async function rescheduleAppointment(appointmentId, user, body) {
+  const data = rescheduleAppointmentSchema.parse(body);
+  assertBookingWindow(user, data.date);
+  const appointment = await requireAccessibleAppointment(appointmentId, user);
+
+  assertAppointmentCanChange(appointment, user);
+  const previousStatus = appointment.status;
+  const updated = await rescheduleAppointmentFromSlot({
+    appointment,
+    serviceId: data.serviceId,
+    date: data.date,
+    startAt: data.startAt,
+    roomId: data.roomId
+  });
+
+  updated.status = user.role === "patient" ? "pending" : previousStatus === "pending" ? "pending" : "confirmed";
+  if (user.role === "patient") {
+    updated.receptionistNote = "Bệnh nhân đã thay đổi lịch và đang chờ lễ tân xác nhận lại.";
+  }
+  await appointmentRepository.saveAppointment(updated);
+
+  await appointmentRepository.populateAppointment(updated);
+  return updated;
+}
+
+export async function scheduleByReception(appointmentId, user, body) {
+  const data = receptionScheduleSchema.parse(body);
+  assertBookingWindow(user, data.date);
+  const appointment = await appointmentRepository.findAppointmentById(appointmentId);
+  if (!appointment) throw createError("Không tìm thấy lịch hẹn.", 404);
+
+  assertAppointmentCanChange(appointment, user);
+  const updated = await rescheduleAppointmentFromSlot({
+    appointment,
+    serviceId: data.serviceId,
+    date: data.date,
+    startAt: data.startAt,
+    roomId: data.roomId
+  });
+
+  updated.status = "scheduled";
+  updated.receptionist = user._id;
+  updated.receptionistNote = data.note || "Lễ tân đã xếp lịch khám cho bệnh nhân.";
+  await appointmentRepository.saveAppointment(updated);
+  await appointmentRepository.populateAppointment(updated);
+
+  await appointmentRepository.createPatientNotification({
+    user: normalizeId(updated.patient),
+    title: "Lễ tân đã xếp lịch khám",
+    message: `Lịch hẹn ${updated.service?.name || "khám"} của bạn đã được xếp lúc ${formatClinicDateTime(updated.startAt)} với ${updated.dentist?.fullName || "bác sĩ do lễ tân sắp xếp"}.`,
+    isRead: false
+  });
+
+  return updated;
+}
+
+export async function cancelAppointment(appointmentId, user, body) {
+  const data = cancelAppointmentSchema.parse(body);
+  const appointment = await requireAccessibleAppointment(appointmentId, user);
+
+  assertAppointmentCanChange(appointment, user);
+  appointment.status = "cancelled";
+  appointment.cancelledAt = new Date();
+  appointment.cancelledBy = user._id;
+  appointment.cancelledByRole = user.role;
+  appointment.cancellationReason = data.reason;
+  if (appointment.appointmentSlot) {
+    await appointmentRepository.updateAppointmentSlotStatus(appointment.appointmentSlot, "cancelled");
+  }
+  await appointmentRepository.updateAppointmentRoomStatus(normalizeId(appointment.room), "available");
+  await appointmentRepository.saveAppointment(appointment);
+  await appointmentRepository.createPatientNotification({
+    user: normalizeId(appointment.patient),
+    title: "Lịch hẹn đã hủy",
+    message: `Lịch hẹn đã được hủy. Lý do: ${data.reason}`,
+    isRead: false
+  });
+  await appointmentRepository.populateAppointment(appointment);
+  return appointment;
+}
+
+export async function updateAppointmentStatus(appointmentId, user, body) {
+  const data = updateAppointmentStatusSchema.parse(body);
+  const appointment = await appointmentRepository.findAppointmentWithService(appointmentId);
+  if (!appointment) throw createError("Không tìm thấy lịch hẹn.", 404);
+
+  assertAppointmentCanChange(appointment, user);
+  if (user.role === "nurse") {
+    if (!sameId(appointment.nurse, user._id)) {
+      throw createError("Y tá chỉ được cập nhật lịch khám được phân công.", 403);
+    }
+    if (!["in_treatment", "completed"].includes(data.status)) {
+      throw createError("Y tá chỉ được chuyển trạng thái đang khám hoặc hoàn tất.", 403);
+    }
+  }
+  if (user.role === "receptionist" && ["in_treatment", "completed"].includes(data.status)) {
+    throw createError("Lễ tân chỉ check-in hoặc ghi nhận vắng mặt, không hoàn tất lịch khám.", 403);
+  }
+  if (data.status === "in_treatment" && appointment.status !== "checked_in") {
+    throw createError("Cần check-in bệnh nhân trước khi chuyển sang đang khám.", 409);
+  }
+  if (data.status === "completed") {
+    const performedTotal = Number(appointment.performedTotal || 0);
+    const hasPerformedServices =
+      performedTotal > 0 ||
+      (appointment.performedServices || []).length > 0 ||
+      (appointment.extraCosts || []).length > 0;
+    if (appointment.status !== "in_treatment") {
+      throw createError("Chỉ có thể hoàn tất lịch đang khám.", 409);
+    }
+    if (!hasPerformedServices) {
+      throw createError("Cần xác nhận dịch vụ đã thực hiện và tổng tiền trước khi hoàn tất.", 409);
+    }
+  }
+  if (
+    ["checked_in", "in_treatment", "completed"].includes(data.status) &&
+    ["pending", "waitlisted", "rejected"].includes(appointment.status)
+  ) {
+    throw createError("Cần chấp nhận lịch hẹn trước khi cập nhật trạng thái khám.", 409);
+  }
+
+  if (
+    appointment.status === "waitlisted" &&
+    ["scheduled", "confirmed", "checked_in", "in_treatment", "completed"].includes(data.status)
+  ) {
+    throw createError("Cần đổi lịch sang slot trống trước khi xác nhận lịch hàng đợi.", 409);
+  }
+
+  const previousStatus = appointment.status;
+  appointment.status = data.status;
+  appointment.receptionistNote = data.note ?? appointment.receptionistNote;
+  if (
+    ["confirmed", "waitlisted", "rejected", "scheduled", "checked_in", "in_treatment", "completed", "cancelled", "no_show"].includes(data.status) &&
+    ["receptionist", "admin"].includes(user.role)
+  ) {
+    appointment.receptionist = user._id;
+  }
+  if (data.status === "checked_in" && !appointment.checkedInAt) {
+    appointment.checkedInAt = new Date();
+    appointment.checkInTime = appointment.checkedInAt;
+  }
+  if (data.status === "cancelled" || data.status === "rejected") {
+    appointment.cancelledAt = new Date();
+    appointment.cancelledBy = user._id;
+    appointment.cancelledByRole = user.role;
+    appointment.cancellationReason =
+      data.note || (data.status === "rejected" ? "Lễ tân từ chối lịch hẹn." : appointment.cancellationReason);
+  } else if (["cancelled", "rejected"].includes(previousStatus)) {
+    appointment.cancelledAt = undefined;
+    appointment.cancelledBy = undefined;
+    appointment.cancelledByRole = undefined;
+    appointment.cancellationReason = undefined;
+  }
+
+  await appointmentRepository.saveAppointment(appointment);
+
+  if (["cancelled", "rejected", "waitlisted", "no_show"].includes(data.status) && appointment.appointmentSlot) {
+    await appointmentRepository.updateAppointmentSlotStatus(appointment.appointmentSlot, "cancelled");
+  } else if (
+    ["scheduled", "confirmed", "checked_in", "in_treatment", "completed"].includes(data.status) &&
+    appointment.appointmentSlot
+  ) {
+    await appointmentRepository.updateAppointmentSlotStatus(appointment.appointmentSlot, "booked");
+  }
+
+  if (data.status === "in_treatment") {
+    await appointmentRepository.updateAppointmentRoomStatus(normalizeId(appointment.room), "in_use");
+  }
+  if (["completed", "no_show", "cancelled", "rejected"].includes(data.status)) {
+    await appointmentRepository.updateAppointmentRoomStatus(normalizeId(appointment.room), "available");
+  }
+  if (data.status === "completed") {
+    const receptionists = await appointmentRepository.findActiveReceptionists();
+    await Promise.all(receptionists.map((receptionist) =>
+      appointmentRepository.createPatientNotification({
+        user: receptionist._id,
+        title: "Lịch khám đã hoàn tất",
+        message: `Y tá đã hoàn tất lịch khám của ${appointment.patient?.fullName || "bệnh nhân"} và gửi dịch vụ đã thực hiện để tạo hóa đơn.`,
+        type: "invoice_ready",
+        isRead: false
+      })
+    ));
+  }
+  await notifyPatientOfReceptionDecision(appointment, data.status);
+  await appointmentRepository.populateAppointment(appointment);
+  return appointment;
+}
+
+export async function recordConfirmationCall(appointmentId, user, body) {
+  const data = appointmentNoteSchema.parse(body || {});
+  const appointment = await appointmentRepository.findAppointmentWithServiceName(appointmentId);
+  if (!appointment) throw createError("Không tìm thấy lịch hẹn.", 404);
+
+  assertAppointmentCanChange(appointment, user);
+  if (["completed", "waitlisted"].includes(appointment.status)) {
+    throw createError("Lịch hẹn này không còn cần gọi xác nhận.", 409);
+  }
+
+  appointment.confirmationCalledAt = new Date();
+  appointment.confirmationBy = user._id;
+  appointment.confirmationNote = data.note || "Lễ tân đã gọi xác nhận lịch hẹn.";
+  appointment.receptionist = user._id;
+  if (["pending", "scheduled"].includes(appointment.status)) {
+    appointment.status = "confirmed";
+  }
+
+  await appointmentRepository.saveAppointment(appointment);
+  await appointmentRepository.createPatientNotification({
+    user: appointment.patient,
+    title: "Lịch hẹn đã được xác nhận",
+    message: `Lễ tân đã gọi xác nhận lịch ${appointment.service?.name || "khám"} của bạn.`,
+    isRead: false
+  });
+  await appointmentRepository.populateAppointment(appointment);
+  return appointment;
+}
+
+export async function checkInAppointment(appointmentId, user, body) {
+  checkInAppointmentSchema.parse(body);
+  const appointment = await appointmentRepository.findAppointmentWithService(appointmentId);
+  if (!appointment) throw createError("Không tìm thấy lịch hẹn.", 404);
+
+  assertAppointmentCanChange(appointment, user);
+  appointment.status = "checked_in";
+  appointment.checkedInAt = new Date();
+  appointment.checkInTime = appointment.checkedInAt;
+
+  appointment.paymentStatus = "not_required";
+
+  await appointmentRepository.saveAppointment(appointment);
+  await appointmentRepository.createPatientNotification({
+    user: appointment.patient,
+    title: "Đã ghi nhận bệnh nhân đến",
+    message: "Lịch hẹn của bạn đã được ghi nhận đến tại quầy lễ tân.",
+    isRead: false
+  });
+  await appointmentRepository.populateAppointment(appointment);
+  return { appointment, invoice: null };
+}
+
+export async function markNoShow(appointmentId, user, body) {
+  const data = appointmentNoteSchema.parse(body || {});
+  const appointment = await appointmentRepository.findAppointmentById(appointmentId);
+  if (!appointment) throw createError("Không tìm thấy lịch hẹn.", 404);
+
+  assertAppointmentCanChange(appointment, user);
+  if (appointment.startAt > new Date()) {
+    throw createError("Chỉ có thể đánh dấu vắng mặt sau giờ hẹn.", 409);
+  }
+
+  appointment.status = "no_show";
+  appointment.receptionist = user._id;
+  appointment.receptionistNote = data.note || "Lễ tân đánh dấu bệnh nhân vắng mặt.";
+  if (appointment.appointmentSlot) {
+    await appointmentRepository.updateAppointmentSlotStatus(appointment.appointmentSlot, "cancelled");
+  }
+  await appointmentRepository.updateAppointmentRoomStatus(normalizeId(appointment.room), "available");
+  await appointmentRepository.saveAppointment(appointment);
+  await appointmentRepository.populateAppointment(appointment);
+  return appointment;
+}
+
+export async function createInvoiceForAppointment(appointmentId, body) {
+  const data = createAppointmentInvoiceSchema.parse(body || {});
+  const appointment = await appointmentRepository.findAppointmentWithService(appointmentId);
+  if (!appointment) throw createError("Không tìm thấy lịch hẹn.", 404);
+  if (appointment.status !== "completed") {
+    throw createError("Chỉ có thể tạo hóa đơn sau khi lịch khám hoàn tất.", 409);
+  }
+
+  const existingInvoice = await appointmentRepository.findInvoiceByAppointment(appointment._id);
+  if (existingInvoice) {
+    throw createError("Lịch khám này đã có hóa đơn.", 409);
+  }
+
+  const performedItems = [
+    ...(appointment.performedServices || []),
+    ...(appointment.extraCosts || [])
+  ].map((item) => ({
+    name: item.name || "Dịch vụ nha khoa",
+    amount: Number(item.amount || 0)
+  }));
+  const invoiceItems = data.items?.length
+    ? data.items
+    : performedItems.length
+      ? performedItems
+      : [{ name: appointment.service?.name || "Dịch vụ nha khoa", amount: Number(data.amount || 0) }];
+  const total = invoiceItems.reduce((sum, item) => sum + Number(item.amount || 0), 0) || Number(data.amount || 0);
+
+  if (total <= 0) {
+    throw createError("Số tiền hóa đơn phải lớn hơn 0.", 400);
+  }
+
+  const invoice = await appointmentRepository.createInvoice({
+    appointment: appointment._id,
+    patient: appointment.patient,
+    items: invoiceItems,
+    total,
+    totalAmount: total,
+    paidAmount: 0,
+    invoiceDate: new Date(),
+    status: "unpaid"
+  });
+
+  appointment.paymentStatus = "unpaid";
+  await appointmentRepository.saveAppointment(appointment);
+  await appointmentRepository.createPatientNotification({
+    user: normalizeId(appointment.patient),
+    title: "Bạn có hóa đơn mới",
+    message: `Lễ tân đã tạo hóa đơn ${total.toLocaleString("vi-VN")} VND cho lịch khám của bạn.`,
+    isRead: false
+  });
+
+  return invoice;
+}
+
+export async function updateInvoiceForAppointment(appointmentId, body) {
+  const data = createAppointmentInvoiceSchema.parse(body || {});
+  const appointment = await appointmentRepository.findAppointmentWithService(appointmentId);
+  if (!appointment) throw createError("Không tìm thấy lịch hẹn.", 404);
+
+  const invoice = await appointmentRepository.findInvoiceByAppointment(appointment._id);
+  if (!invoice) {
+    throw createError("Lịch khám này chưa có hóa đơn để cập nhật.", 404);
+  }
+
+  const invoiceItems = data.items?.length
+    ? data.items
+    : [{ name: appointment.service?.name || "Dịch vụ nha khoa", amount: Number(data.amount || invoice.total || 0) }];
+  const total = invoiceItems.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+  if (total <= 0) {
+    throw createError("Tổng tiền hóa đơn phải lớn hơn 0.", 400);
+  }
+
+  const paidAmount = Number(invoice.paidAmount || 0);
+  if (paidAmount > total) {
+    throw createError("Tổng tiền mới không được nhỏ hơn số tiền bệnh nhân đã thanh toán.", 400);
+  }
+
+  invoice.items = invoiceItems;
+  invoice.total = total;
+  invoice.totalAmount = total;
+  invoice.status = paidAmount >= total ? "paid" : paidAmount > 0 ? "partial" : "unpaid";
+  invoice.paidAt = invoice.status === "paid" ? (invoice.paidAt || new Date()) : undefined;
+  await appointmentRepository.saveInvoice(invoice);
+
+  appointment.paymentStatus = invoice.status;
+  await appointmentRepository.saveAppointment(appointment);
+  return appointmentRepository.findInvoiceByAppointment(appointment._id);
+}
+
+export async function processAppointmentPayment(appointmentId, body) {
+  const data = appointmentPaymentSchema.parse(body || {});
+  const appointment = await appointmentRepository.findAppointmentWithService(appointmentId);
+  if (!appointment) throw createError("Không tìm thấy lịch hẹn.", 404);
+
+  const invoice = await appointmentRepository.findInvoiceByAppointment(appointment._id);
+  if (!invoice) {
+    throw createError("Cần tạo hóa đơn trước khi ghi nhận thanh toán.", 409);
+  }
+  const total = Number(invoice.total || invoice.totalAmount || 0);
+  const paidAmount = Number(invoice.paidAmount || 0);
+  const remaining = Math.max(total - paidAmount, 0);
+  const amount = data.amount ?? remaining;
+
+  if (remaining <= 0) {
+    throw createError("Hóa đơn đã được thanh toán đủ.", 409);
+  }
+  if (amount > remaining) {
+    throw createError(`Số tiền thanh toán không được vượt quá ${remaining.toLocaleString("vi-VN")} VND.`, 400);
+  }
+
+  invoice.paidAmount = paidAmount + amount;
+  invoice.status = invoice.paidAmount >= total ? "paid" : "partial";
+  invoice.paidAt = invoice.status === "paid" ? new Date() : undefined;
+  await appointmentRepository.saveInvoice(invoice);
+
+  appointment.paymentStatus = invoice.status === "paid" ? "paid" : "partial";
+  await appointmentRepository.saveAppointment(appointment);
+
+  const payment = await appointmentRepository.createPayment({
+    invoice: invoice._id,
+    amount,
+    paymentStatus: "paid",
+    paymentMethod: data.paymentMethod
+  });
+
+  return { invoice, payment };
+}
+
+export async function getAppointmentInvoice(appointmentId, user) {
+  const appointment = await requireAccessibleAppointment(appointmentId, user);
+  return appointmentRepository.findInvoiceByAppointment(appointment._id);
+}
+
+export function getServicesForPayment() {
+  return appointmentRepository.findActivePaymentServices();
+}

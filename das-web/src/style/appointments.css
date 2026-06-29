@@ -1,0 +1,200 @@
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(248px, 1fr));
+  gap: 14px;
+}
+
+.slot-card {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-left: 4px solid var(--primary);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fcff 100%);
+  box-shadow: var(--shadow-soft);
+}
+
+.slot-time {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.slot-time strong {
+  color: var(--primary-dark);
+  font-size: 1.62rem;
+}
+
+.slot-time span {
+  color: var(--secondary);
+  font-weight: 850;
+}
+
+.simple-slot-card {
+  align-content: center;
+  min-height: 128px;
+}
+
+.simple-slot-time {
+  justify-content: center;
+}
+
+.simple-slot-time strong {
+  font-size: 2rem;
+}
+
+.dentist-detail {
+  flex-wrap: wrap;
+  gap: 6px;
+  color: #203744;
+  font-weight: 820;
+}
+
+.dentist-detail svg {
+  color: var(--info);
+}
+
+.dentist-detail small {
+  flex-basis: 100%;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.appointment-list,
+.mini-list,
+.room-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.appointment-card,
+.mini-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+}
+
+.appointment-card {
+  border-left: 4px solid var(--info);
+  background: linear-gradient(180deg, #ffffff 0%, #f9fcff 100%);
+  box-shadow: 0 1px 0 rgba(40, 54, 42, 0.02);
+  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.appointment-card.locked {
+  border-left-color: #88939b;
+  background: linear-gradient(180deg, #f5f7f8 0%, #eef3f5 100%);
+}
+
+.appointment-card.locked .row-actions {
+  opacity: 0.82;
+}
+
+.reception-appointment-card {
+  grid-template-columns: minmax(360px, 1fr) minmax(320px, 0.9fr);
+  align-items: stretch;
+}
+
+.reception-appointment-card.pending-intake {
+  border-left-color: var(--primary);
+  background: linear-gradient(180deg, #f8ffff 0%, #edfafa 100%);
+  box-shadow: 0 14px 32px rgba(8, 127, 140, 0.08);
+}
+
+.reception-appointment-card.needs-contact {
+  border-left-color: var(--warning);
+}
+
+.duplicate-contact-alert {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 7px 9px;
+  border: 1px solid #ffd89b;
+  border-radius: var(--radius);
+  background: #fff8e8;
+  color: #91610c;
+  font-size: 0.86rem;
+  font-weight: 850;
+}
+
+.duplicate-contact-alert svg {
+  flex: 0 0 auto;
+}
+
+.appointment-card-main,
+.appointment-card-actions,
+.appointment-slot-box {
+  min-width: 0;
+}
+
+.appointment-card-main,
+.appointment-card-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.patient-contact-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.patient-contact-row p {
+  margin-top: 3px;
+  font-weight: 780;
+}
+
+.appointment-slot-box {
+  display: grid;
+  gap: 5px;
+  padding: 11px 12px;
+  border: 1px solid #bfe6e9;
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.appointment-slot-box strong {
+  color: var(--primary-dark);
+  font-size: 0.88rem;
+}
+
+.appointment-slot-box span {
+  color: #203744;
+  font-size: 0.88rem;
+}
+
+.appointment-intake-actions,
+.appointment-status-tools,
+.appointment-reschedule-tools {
+  justify-content: flex-end;
+}
+
+.appointment-intake-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.appointment-card-actions select {
+  max-width: 240px;
+}
+
+.appointment-reschedule-tools select {
+  min-width: 260px;
+}
+
+.manual-schedule-tools input[type="date"],
+.manual-schedule-tools input[type="time"] {
+  min-width: 150px;
+}
+
+.manual-schedule-tools {
+  align-items: center;
+}
