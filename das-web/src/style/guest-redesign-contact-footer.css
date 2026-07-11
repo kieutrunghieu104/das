@@ -1,0 +1,68 @@
+.smile-contact {
+  background:
+    linear-gradient(180deg, #ffffff 0 36%, rgba(11, 99, 206, 0.96) 36% 100%);
+}
+
+.smile-consult-form {
+  max-width: 1040px;
+  border: 0;
+  border-radius: 8px;
+  padding: 38px;
+  background: linear-gradient(135deg, #0b63ce, #1e88e5);
+  box-shadow: 0 28px 62px rgba(7, 95, 145, 0.24);
+}
+
+.smile-consult-form label {
+  color: #ffffff;
+}
+
+.smile-segmented span {
+  border-color: rgba(255, 255, 255, 0.34);
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.smile-segmented input:checked + span {
+  border-color: #ffffff;
+  background: #ffffff;
+  color: var(--smile-orange-dark);
+}
+
+.smile-consult-form input,
+.smile-consult-form select,
+.smile-consult-form textarea {
+  border-color: rgba(255, 255, 255, 0.42);
+  background: #ffffff;
+  color: var(--smile-text);
+}
+
+.smile-consult-form small {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.smile-submit {
+  border-radius: 8px;
+  background: var(--smile-teal);
+}
+
+.smile-footer {
+  background: linear-gradient(135deg, #0b63ce, #1e88e5);
+  color: #ffffff;
+}
+
+.smile-footer-brand,
+.smile-footer-brand span,
+.smile-footer h3,
+.smile-footer p,
+.smile-footer a,
+.smile-footer-bottom {
+  color: #ffffff;
+}
+
+.smile-footer a:hover {
+  color: var(--smile-teal);
+}
+
+.smile-footer-bottom {
+  border-top-color: rgba(255, 255, 255, 0.22);
+}

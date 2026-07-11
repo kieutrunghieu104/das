@@ -1,0 +1,62 @@
+.smile-faq {
+  background: #ffffff;
+}
+
+.smile-faq-photo {
+  background:
+    linear-gradient(180deg, rgba(16, 29, 60, 0.06), rgba(16, 29, 60, 0.02)),
+    url("../assets/clinic-hero.png") center right / cover no-repeat;
+}
+
+.smile-faq-list article {
+  border-color: rgba(24, 33, 55, 0.1);
+}
+
+.smile-faq-list button strong,
+.smile-faq-list article.open button strong {
+  background: var(--smile-orange);
+  color: #ffffff;
+}
+
+.smile-section.smile-testimonials {
+  background:
+    radial-gradient(circle at top left, rgba(14, 165, 233, 0.38), transparent 34%),
+    linear-gradient(135deg, #173f82 0%, #1f4fa3 55%, #0e7490 100%);
+  color: #ffffff;
+}
+
+.smile-testimonials .smile-section-heading h2 {
+  color: #ffffff;
+  text-shadow: 0 2px 18px rgba(15, 23, 42, 0.22);
+}
+
+.smile-testimonials .smile-pill.compact,
+.smile-testimonials .smile-pill.compact.gold {
+  border-color: rgba(255, 255, 255, 0.42);
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.smile-testimonial-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.smile-testimonial-grid:has(article:only-child) {
+  grid-template-columns: minmax(280px, 374px);
+  justify-content: center;
+}
+
+.smile-testimonial-grid article {
+  border-color: rgba(255, 255, 255, 0.34);
+  background: #ffffff;
+  box-shadow: 0 22px 46px rgba(15, 23, 42, 0.22);
+}
+
+.smile-stars {
+  color: #f6b400;
+}
+
+.smile-testimonial-grid p {
+  color: #334155;
+}

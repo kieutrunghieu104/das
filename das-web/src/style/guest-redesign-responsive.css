@@ -1,0 +1,117 @@
+@media (max-width: 1240px) {
+  .smile-hero {
+    grid-template-columns: 1fr;
+    background: linear-gradient(135deg, #0b63ce, #1e88e5);
+  }
+
+  .smile-hero-visual {
+    min-height: 380px;
+  }
+
+  .smile-service-grid,
+  .smile-testimonial-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .smile-header {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  .smile-nav a::after {
+    bottom: -8px;
+  }
+
+  .smile-hero {
+    min-height: auto;
+    padding-bottom: 52px;
+  }
+
+  .smile-stats {
+    position: static;
+    grid-column: 1;
+    margin-top: 12px;
+  }
+
+  .smile-services {
+    padding-top: 92px;
+  }
+
+  .smile-about,
+  .smile-faq-layout,
+  .smile-dentist-grid,
+  .smile-footer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .smile-header {
+    min-height: auto;
+  }
+
+  .smile-brand {
+    font-size: 1.35rem;
+  }
+
+  .smile-header-actions {
+    width: auto;
+  }
+
+  .smile-header-actions .smile-primary-link {
+    flex: 0 0 auto;
+  }
+
+  .smile-hero {
+    padding-top: 34px;
+  }
+
+  .smile-hero-copy,
+  .smile-hero-copy h1,
+  .smile-hero-copy p,
+  .smile-hero-actions {
+    max-width: 100%;
+  }
+
+  .smile-hero-actions .hero-action,
+  .smile-secondary-link {
+    width: 100%;
+  }
+
+  .smile-hero-visual,
+  .smile-hero-image {
+    min-height: 280px;
+  }
+
+  .smile-dentist-carousel {
+    padding-inline: 0;
+  }
+
+  .smile-dentist-carousel .carousel-control-prev,
+  .smile-dentist-carousel .carousel-control-next {
+    display: none;
+  }
+
+  .smile-stats,
+  .smile-service-grid,
+  .smile-testimonial-grid,
+  .smile-consult-form {
+    grid-template-columns: 1fr;
+  }
+
+  .smile-stats span {
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    text-align: center;
+  }
+
+  .smile-stats span:last-child {
+    border-bottom: 0;
+  }
+
+  .smile-consult-form {
+    padding: 22px;
+  }
+}

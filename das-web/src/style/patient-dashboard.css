@@ -1,0 +1,633 @@
+.patient-dashboard-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 20px;
+  align-items: start;
+  min-height: calc(100vh - 120px);
+}
+
+.patient-dashboard-shell.collapsed {
+  grid-template-columns: minmax(0, 1fr) 64px;
+}
+
+.patient-sidebar-fab {
+  position: sticky;
+  top: 96px;
+  grid-column: 2;
+  align-self: start;
+  justify-self: stretch;
+  display: inline-grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: var(--radius);
+  background: var(--primary-dark);
+  color: #d8f8ed;
+  box-shadow: 0 16px 38px rgba(4, 28, 34, 0.2);
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.patient-sidebar-fab:hover {
+  border-color: #a8c7ff;
+  transform: translateY(-2px);
+  box-shadow: 0 20px 46px rgba(4, 28, 34, 0.28);
+}
+
+.patient-sidebar {
+  position: sticky;
+  top: 96px;
+  grid-column: 2;
+  align-self: start;
+  display: grid;
+  gap: 18px;
+  min-height: calc(100vh - 126px);
+  padding: 18px;
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, #0b3d91, #071f4f);
+  color: white;
+  box-shadow: var(--shadow);
+  animation: patient-sidebar-in 0.18s ease-out;
+}
+
+.patient-sidebar-tools {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 40px;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+}
+
+.patient-sidebar-tools strong {
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.patient-sidebar-head {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) 40px;
+  gap: 12px;
+  align-items: center;
+}
+
+.patient-avatar-wrap,
+.profile-avatar-preview {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.patient-avatar-wrap {
+  width: 58px;
+  height: 58px;
+  border: 2px solid rgba(255, 255, 255, 0.52);
+  color: white;
+}
+
+.patient-avatar-cluster {
+  position: relative;
+  width: 72px;
+  min-height: 58px;
+}
+
+.patient-avatar-notification {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  border: 2px solid rgba(255, 255, 255, 0.92);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--primary);
+  box-shadow: 0 8px 18px rgba(9, 49, 58, 0.18);
+}
+
+.patient-avatar-notification span {
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--secondary);
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 20px;
+}
+
+.patient-avatar-wrap img,
+.profile-avatar-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-mini-button {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid white;
+  border-radius: 999px;
+  background: var(--secondary);
+  color: white;
+}
+
+.patient-sidebar-name {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.patient-sidebar-name strong,
+.patient-sidebar-name span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.patient-sidebar-name span {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.patient-side-nav {
+  display: grid;
+  gap: 8px;
+}
+
+.patient-side-nav button {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  border: 0;
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.82);
+  font-weight: 830;
+  text-align: left;
+  transition: transform 0.16s ease, background 0.16s ease, color 0.16s ease;
+}
+
+.patient-side-nav button.active,
+.patient-side-nav button:hover {
+  background: white;
+  color: var(--primary-dark);
+  transform: translateX(2px);
+}
+
+.patient-side-nav em {
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--secondary);
+  color: white;
+  font-style: normal;
+  font-size: 0.78rem;
+}
+
+.patient-dashboard-content {
+  grid-column: 1;
+  grid-row: 1;
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.patient-public-home {
+  display: grid;
+  gap: 22px;
+}
+
+.patient-public-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.8fr);
+  gap: 28px;
+  align-items: center;
+  min-height: min(620px, calc(100vh - 130px));
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 46px;
+  background:
+    linear-gradient(90deg, rgba(244, 251, 247, 0.98), rgba(244, 251, 247, 0.74), rgba(244, 251, 247, 0.3)),
+    url("../assets/clinic-hero.png") center / cover no-repeat;
+  box-shadow: var(--shadow-soft);
+}
+
+.patient-public-copy {
+  display: grid;
+  gap: 22px;
+  max-width: 700px;
+}
+
+.patient-public-copy h1 {
+  margin: 0;
+  color: #14313a;
+  font-size: clamp(2.3rem, 4.6vw, 4.5rem);
+  line-height: 1.03;
+  overflow-wrap: anywhere;
+}
+
+.patient-public-copy p {
+  max-width: 640px;
+  margin: 0;
+  color: #4d6471;
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
+.patient-public-section {
+  display: grid;
+  gap: 18px;
+  padding: 24px 0;
+}
+
+.patient-public-grid,
+.patient-review-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.patient-info-card {
+  display: grid;
+  gap: 9px;
+  min-height: 150px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  background: #ffffff;
+  box-shadow: var(--shadow-soft);
+}
+
+.patient-info-card strong {
+  color: var(--primary-dark);
+  font-size: 1rem;
+}
+
+.patient-info-card p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.patient-info-card span {
+  color: var(--secondary);
+  font-weight: 900;
+}
+
+.patient-info-card small {
+  color: var(--muted);
+}
+
+.patient-about-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.patient-about-grid article {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+  background: #f8fcfa;
+}
+
+.patient-about-grid strong {
+  color: var(--primary-dark);
+}
+
+.patient-about-grid p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.patient-guest-hero {
+  min-height: min(620px, calc(100vh - 130px));
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.patient-guest-inner {
+  width: min(1160px, 100%);
+}
+
+.patient-home-panel {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius);
+  padding: 22px;
+  background: rgba(12, 45, 38, 0.94);
+  color: #f4f7f7;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.24);
+}
+
+.patient-home-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.patient-home-summary span,
+.patient-next-box {
+  display: grid;
+  gap: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--radius);
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.035);
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.patient-home-summary strong {
+  color: #f4f7f7;
+  font-size: 1.35rem;
+}
+
+.patient-next-box strong {
+  color: #f4f7f7;
+}
+
+.patient-home-panel .section-title h2,
+.patient-home-panel .section-title svg {
+  color: #f4f7f7;
+}
+
+.patient-home-panel .empty-state {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.025);
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.patient-home-panel .empty-state strong {
+  color: #f4f7f7;
+}
+
+.patient-home-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: end;
+  min-height: 260px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.76)),
+    url("../assets/clinic-hero.png") right center / cover no-repeat;
+  box-shadow: var(--shadow-soft);
+}
+
+.patient-home-hero h1 {
+  max-width: 760px;
+  margin: 10px 0;
+  color: #17313c;
+  font-size: clamp(2rem, 3vw, 3.5rem);
+  line-height: 1.05;
+}
+
+.patient-home-hero p {
+  max-width: 680px;
+  margin: 0;
+  color: #4b6271;
+}
+
+.patient-home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.room-status-panel {
+  margin-top: 16px;
+  box-shadow: none;
+}
+
+.booking-submit-final {
+  justify-self: end;
+  min-width: 180px;
+}
+
+.booking-page {
+  align-items: start;
+}
+
+.embedded-booking {
+  display: grid;
+  gap: 18px;
+}
+
+.patient-booking-panel {
+  max-width: 980px;
+  width: 100%;
+  margin-inline: auto;
+}
+
+.booking-form-heading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  color: var(--primary-dark);
+  text-align: center;
+}
+
+.booking-form-heading h2 {
+  margin: 0;
+  color: var(--secondary);
+  font-size: 1.45rem;
+  text-transform: uppercase;
+}
+
+.booking-form-heading p {
+  margin: 4px 0 0;
+  color: #3f5360;
+}
+
+.booking-form-modern {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.booking-time-field {
+  grid-column: 1 / -1;
+  min-width: 0;
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.booking-time-field legend {
+  margin-bottom: 8px;
+  color: #263f4c;
+  font-weight: 820;
+  font-size: 0.86rem;
+}
+
+.booking-time-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.booking-time-options label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  background: #ffffff;
+  color: var(--text);
+  font-weight: 820;
+}
+
+.booking-time-options input {
+  width: 16px;
+  min-height: 16px;
+  accent-color: var(--primary);
+}
+
+.booking-time-options label:has(input:checked) {
+  border-color: #97b9ff;
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+}
+
+.booking-summary-strip {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.booking-summary-strip span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 9px 12px;
+  background: #f8fcfa;
+  color: var(--primary-dark);
+  font-weight: 820;
+}
+
+.patient-appointment-card {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.patient-appointment-meta {
+  display: grid;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.patient-appointment-actions,
+.patient-reschedule-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.patient-appointment-actions {
+  margin-top: 12px;
+}
+
+.patient-reschedule-box {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 8px;
+  background: #f8fcfa;
+}
+
+.patient-reschedule-box input,
+.patient-reschedule-box select {
+  width: auto;
+  min-width: 140px;
+}
+
+.appointment-subpanel,
+.appointment-review-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+
+.appointment-review-form select,
+.appointment-review-form input {
+  width: auto;
+  min-width: 120px;
+}
+
+.invoice-review-section {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.invoice-review-section .appointment-review-form {
+  margin-top: 0;
+}
+
+.profile-avatar-preview {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: fit-content;
+  height: auto;
+  margin-bottom: 16px;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--primary);
+}
+
+.profile-avatar-preview img,
+.profile-avatar-preview > svg {
+  width: 86px;
+  height: 86px;
+  padding: 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--primary-soft);
+}
+
+.profile-avatar-preview img {
+  padding: 0;
+  object-fit: cover;
+}
+
+.profile-avatar-preview span {
+  color: var(--text);
+  font-weight: 850;
+}

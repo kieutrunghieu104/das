@@ -1,0 +1,289 @@
+.reception-schedule-panel {
+  overflow: hidden;
+}
+
+.reception-room-status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.reception-room-status-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 92px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #f8fbff;
+}
+
+.reception-room-status-card > svg {
+  color: var(--color-primary);
+}
+
+.reception-room-status-card > div {
+  display: grid;
+  gap: 3px;
+}
+
+.reception-room-status-card span:not(.status) {
+  color: var(--muted);
+  font-size: 0.84rem;
+}
+
+.invoice-payment-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #eef5ff;
+}
+
+.payment-amount-field {
+  display: grid;
+  gap: 5px;
+  min-width: 190px;
+}
+
+.payment-amount-field span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.payment-amount-field input {
+  min-height: 40px;
+}
+
+.paid-complete-note {
+  color: var(--success);
+  font-weight: 850;
+}
+
+.reception-schedule-table-wrapper {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.reception-schedule-grid {
+  display: grid;
+  min-width: 760px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.schedule-head,
+.schedule-time-cell,
+.schedule-cell {
+  min-width: 0;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.schedule-head {
+  display: grid;
+  gap: 3px;
+  min-height: 66px;
+  padding: 10px;
+  background: #f3fafb;
+  color: var(--text);
+}
+
+.schedule-head span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.schedule-time-cell {
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  gap: 5px;
+  justify-content: center;
+  padding: 12px 8px;
+  background: #f9fbfc;
+  color: var(--primary-dark);
+  font-weight: 900;
+  text-align: center;
+  line-height: 1.25;
+}
+
+.schedule-time-cell strong,
+.schedule-time-cell span {
+  display: block;
+  width: 100%;
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+
+.schedule-time-cell span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 780;
+}
+
+.schedule-cell {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 118px;
+  padding: 8px;
+  background: #ffffff;
+}
+
+.schedule-cell-card {
+  display: grid;
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid #cfe4e7;
+  border-left: 4px solid var(--info);
+  border-radius: var(--radius);
+  background: #f9fdff;
+  transition: transform 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+}
+
+.schedule-cell-card:hover {
+  border-color: #a7cdbc;
+  box-shadow: 0 12px 24px rgba(7, 40, 95, 0.09);
+  transform: translateY(-1px);
+}
+
+.schedule-cell-card.locked {
+  border-left-color: var(--danger);
+  background: #fff7f5;
+}
+
+.schedule-cell-card > div:first-child {
+  display: grid;
+  gap: 5px;
+}
+
+.schedule-cell-card span,
+.schedule-cell-card small {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.schedule-status-actions {
+  justify-content: flex-start;
+}
+
+.schedule-status-actions select {
+  width: min(100%, 150px);
+}
+
+.schedule-empty-cell {
+  display: grid;
+  place-items: center;
+  min-height: 80px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  color: var(--muted);
+  background: #f8fcfa;
+  font-size: 0.86rem;
+  font-weight: 760;
+}
+
+.reception-slot-board {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #ffffff;
+}
+
+.reception-slot-grid {
+  display: grid;
+  align-items: stretch;
+  min-width: 940px;
+}
+
+.reception-slot-grid + .reception-slot-grid {
+  border-top: 1px solid var(--line);
+}
+
+.reception-slot-grid-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f3f7ff;
+}
+
+.reception-slot-corner,
+.reception-dentist-head {
+  display: grid;
+  align-content: center;
+  min-height: 74px;
+  padding: 14px;
+  border-right: 1px solid var(--line);
+}
+
+.reception-slot-corner {
+  color: var(--primary-dark);
+  font-weight: 900;
+  text-align: center;
+}
+
+.reception-dentist-head {
+  gap: 3px;
+  text-align: center;
+}
+
+.reception-dentist-head strong {
+  color: var(--primary-dark);
+  font-size: 1rem;
+}
+
+.reception-dentist-head span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 760;
+}
+
+.reception-slot-label {
+  display: grid;
+  align-content: start;
+  gap: 4px;
+  padding: 20px 14px;
+  border-right: 1px solid var(--line);
+  background: #f3f7ff;
+  color: var(--primary-dark);
+  text-align: center;
+}
+
+.reception-slot-label strong {
+  font-size: 1.05rem;
+}
+
+.reception-slot-label span {
+  color: var(--muted);
+  font-weight: 760;
+}
+
+.reception-dentist-queue {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+  min-height: 150px;
+  padding: 10px;
+  border-right: 1px solid var(--line);
+}
+
+@media (max-width: 760px) {
+  .reception-slot-grid {
+    min-width: 860px;
+  }
+}

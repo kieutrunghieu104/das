@@ -1,0 +1,103 @@
+.smile-faq-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.68fr) minmax(0, 1fr);
+  gap: 40px;
+  align-items: start;
+}
+
+.smile-faq-photo {
+  min-height: 430px;
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.18)),
+    url("../assets/clinic-hero.png") center right / cover no-repeat;
+  box-shadow: 0 16px 40px rgba(35, 79, 81, 0.08);
+}
+
+.smile-faq-list {
+  display: grid;
+  gap: 16px;
+}
+
+.smile-faq-list article {
+  padding: 0;
+}
+
+.smile-faq-list button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 46px;
+  gap: 18px;
+  align-items: center;
+  width: 100%;
+  min-height: 84px;
+  border: 0;
+  padding: 22px 24px;
+  background: transparent;
+  text-align: left;
+  font-size: 1.25rem;
+}
+
+.smile-faq-list button strong {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: rgba(11, 61, 145, 0.1);
+  color: var(--smile-text);
+  font-family: var(--font-main);
+  font-size: 1.5rem;
+}
+
+.smile-faq-list article.open button strong {
+  background: var(--smile-teal);
+  color: white;
+}
+
+.smile-faq-list p {
+  margin: 0;
+  padding: 0 24px 24px;
+  font-size: 1rem;
+}
+
+.smile-testimonial-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.smile-testimonial-grid article {
+  display: grid;
+  gap: 20px;
+  min-height: 320px;
+  padding: 28px;
+}
+
+.smile-stars {
+  display: flex;
+  gap: 4px;
+  color: #d59b00;
+}
+
+.smile-testimonial-grid p {
+  margin: 0;
+  font-style: italic;
+}
+
+.smile-testimonial-grid article > div:last-child {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 2px 14px;
+  align-items: center;
+  margin-top: auto;
+  border-top: 1px solid var(--smile-line);
+  padding-top: 18px;
+}
+
+.smile-testimonial-grid article > div:last-child span {
+  grid-row: span 2;
+  width: 52px;
+  height: 52px;
+}
+
+.smile-testimonial-grid small {
+  color: var(--smile-muted);
+}

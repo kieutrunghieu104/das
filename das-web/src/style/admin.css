@@ -1,0 +1,50 @@
+.review-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.admin-review-card {
+  min-height: 0;
+}
+
+.locked-note {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 6px;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #fff4d8;
+  color: #91610c;
+  font-weight: 850;
+}
+
+.reset-account-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.reset-account-card {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(220px, 0.8fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fbfffd;
+}
+
+.reset-account-card > div {
+  display: grid;
+  gap: 4px;
+}
+
+.reset-account-card strong {
+  color: var(--text);
+}
+
+.reset-account-card span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}

@@ -1,0 +1,125 @@
+.smile-hero {
+  position: relative;
+  grid-template-columns: minmax(360px, 0.86fr) minmax(500px, 1.14fr);
+  min-height: 600px;
+  padding: 76px clamp(28px, 7vw, 118px) 86px;
+  overflow: visible;
+  background:
+    linear-gradient(104deg, rgba(11, 99, 206, 0.96) 0 48%, rgba(255, 255, 255, 0.96) 48% 100%),
+    url("../assets/clinic-hero.png") center right / cover no-repeat;
+}
+
+.smile-hero-copy {
+  gap: 18px;
+  max-width: 620px;
+}
+
+.smile-pill,
+.smile-pill.compact,
+.smile-pill.gold {
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  background: rgba(16, 29, 60, 0.16);
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.smile-section .smile-pill.compact,
+.smile-section .smile-pill.gold {
+  border-color: rgba(11, 99, 206, 0.18);
+  background: var(--smile-orange-soft);
+  color: var(--smile-orange-dark);
+}
+
+.smile-testimonials .smile-pill.compact {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+.smile-hero-copy h1 {
+  margin: 10px 0 0;
+  color: #ffffff;
+  font-size: clamp(2.5rem, 4.2vw, 4.7rem);
+  line-height: 1.04;
+}
+
+.smile-hero-copy p {
+  max-width: 560px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1rem;
+}
+
+.smile-hero-actions {
+  margin-top: 8px;
+}
+
+.smile-hero-actions .hero-action {
+  min-width: 250px;
+}
+
+.smile-hero-visual {
+  min-height: 430px;
+}
+
+.smile-hero-image {
+  position: relative;
+  height: 100%;
+  min-height: 430px;
+  overflow: hidden;
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+    url("../assets/clinic-hero.png") center right / cover no-repeat;
+  box-shadow: 0 28px 70px rgba(16, 29, 60, 0.2);
+}
+
+.smile-hero-image span {
+  position: absolute;
+  left: 24px;
+  bottom: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  border-radius: 8px;
+  padding: 9px 14px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--smile-text);
+  font-weight: 900;
+  box-shadow: 0 14px 30px rgba(16, 29, 60, 0.16);
+}
+
+.smile-stats {
+  position: absolute;
+  left: clamp(28px, 7vw, 118px);
+  right: clamp(28px, 7vw, 118px);
+  bottom: -42px;
+  z-index: 3;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #0b63ce, #1e88e5);
+  box-shadow: 0 22px 50px rgba(7, 95, 145, 0.24);
+}
+
+.smile-stats span {
+  min-height: 88px;
+  border: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 0;
+  padding: 18px 14px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 760;
+}
+
+.smile-stats span:last-child {
+  border-right: 0;
+}
+
+.smile-stats strong {
+  color: #ffffff;
+  font-size: 2.25rem;
+}

@@ -1,0 +1,91 @@
+/* Guest landing redesign based on the provided Stitch reference. */
+.smile-guest-page {
+  --smile-bg: #f7fbff;
+  --smile-bg-soft: #eef6ff;
+  --smile-card: #ffffff;
+  --smile-line: rgba(24, 33, 55, 0.12);
+  --smile-text: #182137;
+  --smile-muted: #647083;
+  --smile-teal: #101d3c;
+  --smile-teal-dark: #0a1430;
+  --smile-green: #e7f0ff;
+  --smile-gold: #0b63ce;
+  --smile-orange: #0b63ce;
+  --smile-orange-dark: #074ea2;
+  --smile-orange-soft: #e8f2ff;
+  color: var(--smile-text);
+  background: #ffffff;
+  font-family: var(--font-main);
+}
+
+.smile-header {
+  min-height: 70px;
+  padding: 0 clamp(28px, 7vw, 118px);
+  border-bottom: 1px solid rgba(24, 33, 55, 0.08);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 10px 30px rgba(24, 33, 55, 0.08);
+}
+
+.smile-guest-page .smile-brand {
+  color: #0b3d91;
+  font-size: 1.55rem;
+  font-weight: 900;
+}
+
+.smile-nav {
+  gap: clamp(22px, 3vw, 42px);
+}
+
+.smile-nav a {
+  position: relative;
+  color: #1f2937;
+  font-size: 0.96rem;
+  font-weight: 800;
+}
+
+.smile-nav a::after {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -24px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--smile-orange);
+  content: "";
+  opacity: 0;
+  transform: scaleX(0.3);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.smile-nav a:hover::after,
+.smile-nav a:focus-visible::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.smile-phone {
+  color: #1f2937;
+}
+
+.smile-guest-page .smile-primary-link {
+  min-height: 46px;
+  border-radius: 8px;
+  background: var(--smile-teal);
+  color: #ffffff;
+  box-shadow: 0 16px 34px rgba(16, 29, 60, 0.2);
+}
+
+.smile-guest-page .smile-primary-link:hover,
+.smile-submit:hover {
+  background: var(--smile-teal-dark);
+  color: #ffffff;
+}
+
+.smile-guest-page .smile-secondary-link {
+  min-height: 46px;
+  border-radius: 8px;
+  border-color: rgba(24, 33, 55, 0.14);
+  background: #ffffff;
+  color: var(--smile-text);
+  box-shadow: 0 12px 24px rgba(24, 33, 55, 0.08);
+}

@@ -1,0 +1,66 @@
+.smile-dentist-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 560px);
+  justify-content: center;
+  gap: 24px;
+}
+
+.smile-testimonial-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.smile-dentist-card,
+.smile-testimonial-grid article,
+.smile-faq-list article,
+.smile-consult-form {
+  border: 1px solid var(--smile-line);
+  border-radius: 8px;
+  background: var(--smile-card);
+  box-shadow: 0 16px 40px rgba(35, 79, 81, 0.08);
+}
+
+.smile-dentist-card {
+  display: grid;
+  gap: 12px;
+  min-height: 270px;
+  padding: 26px;
+}
+
+.smile-dentist-initial,
+.smile-testimonial-grid article > div:last-child span {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 999px;
+  background: var(--smile-teal);
+  color: white;
+  font-weight: 900;
+}
+
+.smile-dentist-card h3 {
+  font-size: 1.4rem;
+}
+
+.smile-dentist-card strong {
+  color: var(--smile-teal-dark);
+}
+
+.smile-dentist-photo {
+  width: 168px;
+  height: 168px;
+  justify-self: center;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 6px solid #ffffff;
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.14);
+}
+
+.smile-dentist-meta {
+  display: grid;
+  gap: 4px;
+  color: var(--smile-muted);
+  font-size: 0.95rem;
+}

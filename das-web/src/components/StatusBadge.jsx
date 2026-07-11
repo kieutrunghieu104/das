@@ -1,0 +1,41 @@
+const labels = {
+  pending: "Chờ xác nhận",
+  scheduled: "Chưa diễn ra",
+  confirmed: "Đã xác nhận",
+  waitlisted: "Hàng đợi",
+  rejected: "Đã từ chối",
+  called: "Đã gọi",
+  checked_in: "Có mặt",
+  in_treatment: "Đang khám",
+  completed: "Hoàn tất",
+  cancelled: "Đã hủy",
+  no_show: "Vắng mặt",
+  waiting: "Đang chờ",
+  contacted: "Đã liên hệ",
+  booked: "Đã đặt lịch",
+  expired: "Quá hạn",
+  new: "Mới",
+  closed: "Đóng",
+  active: "Hoạt động",
+  inactive: "Ngưng",
+  visible: "Đang hiện",
+  hidden: "Đã ẩn",
+  locked: "Khóa",
+  available: "Sẵn sàng",
+  in_use: "Đang dùng",
+  cleaning: "Vệ sinh",
+  maintenance: "Bảo trì",
+  unavailable: "Chưa sẵn sàng",
+  paid: "Đã trả",
+  unpaid: "Chưa trả",
+  partial: "Đang trả theo tháng",
+  pending_checkin: "Thanh toán khi đến",
+  not_required: "Không yêu cầu",
+  refunded: "Đã hoàn tiền",
+  off: "Nghỉ",
+  draft: "Nháp"
+};
+
+export default function StatusBadge({ value }) {
+  return <span className={`status status-${value}`}>{labels[value] || value || "-"}</span>;
+}
