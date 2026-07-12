@@ -1,4 +1,4 @@
-import { CalendarPlus } from "lucide-react";
+import { CalendarPlus, CheckCircle2, UserCheck, UserPlus } from "lucide-react";
 import { todayInput } from "../../utils/format.js";
 import { bookingSlotOptions, maxBookingDate } from "../../pages/BookingPage.jsx";
 
@@ -19,25 +19,36 @@ export default function BookAppointmentForPatientForm({
   setPatientSearch
 }) {
   return (
-    <section className="panel">
-      <div className="section-title">
+    <section className="panel receptionist-booking-panel">
+      <div className="section-title receptionist-booking-title">
         <CalendarPlus size={20} />
-        <h2>Đặt lịch hộ bệnh nhân</h2>
+        <div>
+          <h2>Đặt lịch hộ bệnh nhân</h2>
+          <p>Nhập thông tin bệnh nhân, chọn dịch vụ và slot để tạo lịch chờ xác nhận.</p>
+        </div>
       </div>
-      <form className="stack" onSubmit={onSubmit}>
-        <div className="segmented-control">
-          <label>
+      <form className="stack receptionist-booking-form" onSubmit={onSubmit}>
+        <div className="reception-booking-mode" role="radiogroup" aria-label="Chọn loại bệnh nhân">
+          <label className={`booking-mode-card ${accountMode === "existing" ? "active" : ""}`}>
             <input type="radio" name="accountMode" value="existing" checked={accountMode === "existing"} onChange={(event) => onAccountModeChange(event.target.value)} />
-            <span>Đã có tài khoản</span>
+            <span className="booking-mode-icon"><UserCheck size={20} /></span>
+            <span>
+              <strong>Đã có tài khoản</strong>
+              <small>Tìm bệnh nhân trong hệ thống</small>
+            </span>
           </label>
-          <label>
+          <label className={`booking-mode-card ${accountMode === "new" ? "active" : ""}`}>
             <input type="radio" name="accountMode" value="new" checked={accountMode === "new"} onChange={(event) => onAccountModeChange(event.target.value)} />
-            <span>Chưa có tài khoản</span>
+            <span className="booking-mode-icon"><UserPlus size={20} /></span>
+            <span>
+              <strong>Chưa có tài khoản</strong>
+              <small>Tạo hồ sơ nhanh khi đặt lịch</small>
+            </span>
           </label>
         </div>
 
         {accountMode === "existing" ? (
-          <>
+          <div className="form-grid reception-patient-grid">
             <label className="field">
               <span>Tìm tài khoản bệnh nhân</span>
               <input value={patientSearch} onChange={(event) => setPatientSearch(event.target.value)} placeholder="Tên hoặc số điện thoại" />
@@ -52,9 +63,9 @@ export default function BookAppointmentForPatientForm({
                 ))}
               </select>
             </label>
-          </>
+          </div>
         ) : (
-          <div className="form-grid">
+          <div className="form-grid reception-patient-grid">
             <label className="field">
               <span>Họ tên</span>
               <input value={newPatient.fullName} onChange={(event) => onNewPatientChange({ fullName: event.target.value })} required />
@@ -77,52 +88,59 @@ export default function BookAppointmentForPatientForm({
                 ))}
               </select>
             </label>
-            <label className="checkbox-field account-create-checkbox">
+            <label className="account-create-option">
               <input
                 type="checkbox"
                 checked={newPatient.createAccount}
                 onChange={(event) => onNewPatientChange({ createAccount: event.target.checked })}
               />
-              <span>Tạo tài khoản mới cho bệnh nhân từ thông tin trên</span>
+              <span className="account-create-box"><CheckCircle2 size={18} /></span>
+              <span>
+                <strong>Tạo tài khoản mới</strong>
+                <small>Tài khoản dùng số điện thoại của bệnh nhân, mật khẩu mặc định theo hệ thống.</small>
+              </span>
             </label>
           </div>
         )}
 
-        <label className="field">
-          <span>Dịch vụ</span>
-          <select value={booking.serviceId} onChange={(event) => onBookingChange({ serviceId: event.target.value })} required>
-            {services.map((service) => (
-              <option key={service._id} value={service._id}>
-                {service.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="field">
-          <span>Ngày</span>
-          <input
-            type="date"
-            value={date}
-            min={todayInput()}
-            max={maxBookingDate()}
-            onChange={(event) => onDateChange(event.target.value)}
-            required
-          />
-        </label>
-        <label className="field">
-          <span>Slot khám</span>
-          <select value={booking.time} onChange={(event) => onBookingChange({ time: event.target.value })} required>
-            {bookingSlotOptions.map((option) => (
-              <option value={option.value} key={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="field">
-          <span>Ghi chú</span>
-          <input value={booking.note} onChange={(event) => onBookingChange({ note: event.target.value })} maxLength={1000} />
-        </label>
+        <div className="form-grid reception-booking-details">
+          <label className="field">
+            <span>Dịch vụ</span>
+            <select value={booking.serviceId} onChange={(event) => onBookingChange({ serviceId: event.target.value })} required>
+              {services.map((service) => (
+                <option key={service._id} value={service._id}>
+                  {service.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="field">
+            <span>Ngày</span>
+            <input
+              type="date"
+              value={date}
+              min={todayInput()}
+              max={maxBookingDate()}
+              onChange={(event) => onDateChange(event.target.value)}
+              required
+            />
+          </label>
+          <label className="field">
+            <span>Slot khám</span>
+            <select value={booking.time} onChange={(event) => onBookingChange({ time: event.target.value })} required>
+              {bookingSlotOptions.map((option) => (
+                <option value={option.value} key={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="field reception-booking-note">
+            <span>Ghi chú</span>
+            <input value={booking.note} onChange={(event) => onBookingChange({ note: event.target.value })} maxLength={1000} />
+          </label>
+        </div>
+
         <button className="button primary booking-submit-final">Đặt lịch hộ</button>
       </form>
     </section>
