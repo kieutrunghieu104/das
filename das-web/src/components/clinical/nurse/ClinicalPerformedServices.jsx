@@ -18,6 +18,9 @@ export default function ClinicalPerformedServices({
 }) {
   const selectedServices = form.services || {};
   const extraCosts = form.extraCosts || [];
+  const isScheduled = selectedAppointment?.status === "scheduled";
+  const canEditCharges = Boolean(selectedAppointment) && !isScheduled;
+
   const total = useMemo(() => {
     const serviceTotal = Object.values(selectedServices).reduce((sum, item) => {
       return item.selected ? sum + Number(item.amount || 0) : sum;
@@ -55,6 +58,13 @@ export default function ClinicalPerformedServices({
           <EmptyState title="Chọn lịch khám" text="Dịch vụ đã thực hiện chỉ hiển thị sau khi y tá chọn một lịch khám cụ thể." />
         )}
 
+        {isScheduled && (
+          <div className="empty-state compact">
+            <strong>Chưa được chọn dịch vụ</strong>
+            <span>Lịch khám này chưa diễn ra. Y tá chỉ xác nhận dịch vụ sau khi bệnh nhân được chuyển sang đang khám.</span>
+          </div>
+        )}
+
         {selectedAppointment && services.length ? (
           <div className="mini-list performed-service-list">
             {services.map((service) => {
@@ -65,13 +75,14 @@ export default function ClinicalPerformedServices({
                   <label className="checkbox-line">
                     <input
                       checked={selected}
+                      disabled={!canEditCharges}
                       onChange={(event) => onToggleService(service, event.target.checked)}
                       type="checkbox"
                     />
                     <span>{service.name}</span>
                   </label>
                   <input
-                    disabled={!selected}
+                    disabled={!canEditCharges || !selected}
                     min="0"
                     step="1000"
                     type="number"
@@ -92,11 +103,16 @@ export default function ClinicalPerformedServices({
               <div className="form-grid" key={`extra-${index}`}>
                 <label className="field">
                   <span>Chi phí khác</span>
-                  <input value={item.name} onChange={(event) => onExtraCostChange(index, "name", event.target.value)} />
+                  <input
+                    disabled={!canEditCharges}
+                    value={item.name}
+                    onChange={(event) => onExtraCostChange(index, "name", event.target.value)}
+                  />
                 </label>
                 <label className="field">
                   <span>Số tiền</span>
                   <input
+                    disabled={!canEditCharges}
                     min="0"
                     step="1000"
                     type="number"
@@ -104,12 +120,12 @@ export default function ClinicalPerformedServices({
                     onChange={(event) => onExtraCostChange(index, "amount", event.target.value)}
                   />
                 </label>
-                <button className="button small danger" type="button" onClick={() => onRemoveExtraCost(index)}>
+                <button className="button small danger" disabled={!canEditCharges} type="button" onClick={() => onRemoveExtraCost(index)}>
                   Xóa
                 </button>
               </div>
             ))}
-            <button className="button small ghost" type="button" onClick={onAddExtraCost}>
+            <button className="button small ghost" disabled={!canEditCharges} type="button" onClick={onAddExtraCost}>
               Thêm chi phí khác
             </button>
           </div>
@@ -123,7 +139,9 @@ export default function ClinicalPerformedServices({
 
         {selectedAppointment && (
           <div className="row-actions clinical-treatment-actions">
-            <button className="button primary">Xác nhận hoàn tất</button>
+            <button className="button primary" disabled={!canEditCharges}>
+              Xác nhận hoàn tất
+            </button>
           </div>
         )}
       </form>

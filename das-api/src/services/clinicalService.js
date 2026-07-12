@@ -77,6 +77,38 @@ function buildVisitPayload(data, visitNumber, user) {
   };
 }
 
+function hasTreatmentValue(value) {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "string") return value.trim().length > 0;
+  if (typeof value === "number") return Number.isFinite(value) && value !== 0;
+  if (typeof value === "boolean") return value;
+  if (Array.isArray(value)) return value.some(hasTreatmentValue);
+  if (typeof value === "object") return Object.values(value).some(hasTreatmentValue);
+  return Boolean(value);
+}
+
+const treatmentContentFields = [
+  "vitalSigns",
+  "diagnosis",
+  "medicalHistory",
+  "treatmentResult",
+  "treatmentNote",
+  "treatmentPlan",
+  "prescription",
+  "aftercareInstructions",
+  "estimatedCost"
+];
+
+function hasTreatmentContent(record) {
+  if (!record) return false;
+  const hasLegacyContent = treatmentContentFields.some((field) => hasTreatmentValue(record[field]));
+  const visits = Array.isArray(record.visits) ? record.visits : [];
+  const hasVisitContent = visits.some((visit) =>
+    treatmentContentFields.some((field) => hasTreatmentValue(visit?.[field]))
+  );
+  return hasLegacyContent || hasVisitContent;
+}
+
 async function assertPatientAccess(user, patientId) {
   if (user.role === "admin") return;
 
@@ -142,6 +174,16 @@ export async function createTreatmentRecord(user, body) {
   const service = await clinicalRepository.findServiceById(data.serviceId);
   if (!service) throw createError("Không tìm thấy dịch vụ.", 404);
 
+  const treatmentDate = dateInputToDateText(data.treatmentDate);
+  const duplicateRecord = await clinicalRepository.findTreatmentRecordByPatientServiceDate(
+    patient._id,
+    service._id,
+    treatmentDate
+  );
+  if (duplicateRecord) {
+    throw createError("Bệnh nhân đã có hồ sơ điều trị cho dịch vụ này trong ngày đã chọn.", 409);
+  }
+
   const record = await clinicalRepository.createTreatmentRecord({
     patient: patient._id,
     nurse: user.role === "nurse" ? user._id : undefined,
@@ -154,9 +196,9 @@ export async function createTreatmentRecord(user, body) {
     initialInfo: {
       patientPhone: patient.phone,
       serviceName: service.name,
-      treatmentDate: data.treatmentDate
+      treatmentDate
     },
-    treatmentDate: dateInputToDateText(data.treatmentDate),
+    treatmentDate,
     visits: [],
     status: "active"
   });
@@ -289,6 +331,10 @@ export async function deleteTreatmentRecord(user, recordId) {
     throw createError("Y tá chỉ được xóa hồ sơ điều trị do mình phụ trách.", 403);
   }
 
+  if (hasTreatmentContent(existingRecord)) {
+    throw createError("Chỉ xóa được hồ sơ điều trị chưa có thông tin trong các lần điều trị.", 409);
+  }
+
   const deletedRecord = await clinicalRepository.deleteTreatmentRecord(recordId);
   if (!deletedRecord) throw createError("Không tìm thấy hồ sơ điều trị.", 404);
   return deletedRecord;
@@ -321,6 +367,10 @@ export async function updatePerformedServices(user, appointmentId, body) {
 
   if (!canEdit) {
     throw createError("Chỉ nhân sự được phân công mới được cập nhật dịch vụ đã thực hiện.", 403);
+  }
+
+  if (appointment.status === "scheduled") {
+    throw createError("Lịch khám chưa diễn ra nên chưa được chọn dịch vụ đã thực hiện.", 409);
   }
 
   const services = data.services.map((item) => ({

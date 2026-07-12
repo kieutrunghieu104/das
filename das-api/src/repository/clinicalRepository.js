@@ -131,6 +131,18 @@ export function findTreatmentRecordByAppointment(appointmentId) {
   return findOne(COLLECTIONS.treatmentRecords, { appointment: toObjectId(appointmentId) });
 }
 
+export function findTreatmentRecordByPatientServiceDate(patientId, serviceId, treatmentDate) {
+  return findOne(
+    COLLECTIONS.treatmentRecords,
+    {
+      patient: toObjectId(patientId),
+      "serviceSnapshot.service": toObjectId(serviceId),
+      treatmentDate
+    },
+    "_id"
+  );
+}
+
 export async function findTreatmentRecordById(recordId) {
   const record = await findById(COLLECTIONS.treatmentRecords, recordId);
   await populate(record, treatmentRecordPopulate);

@@ -13,7 +13,6 @@ export default function ClinicalWorkSchedule({
   isLockedAppointment,
   loading,
   onDateChange,
-  onSelectPerformedServices,
   onSelectTreatment,
   onSetRoomStatus,
   onUpdateStatus,
@@ -106,11 +105,6 @@ export default function ClinicalWorkSchedule({
                                 {user?.role !== "nurse" && (
                                   <button className="button small" type="button" onClick={() => onSelectTreatment(appointment)}>
                                     Xem hồ sơ điều trị
-                                  </button>
-                                )}
-                                {user?.role === "nurse" && (
-                                  <button className="button small secondary" type="button" onClick={() => onSelectPerformedServices(appointment)}>
-                                    Dịch vụ đã làm
                                   </button>
                                 )}
                               </>

@@ -1,13 +1,17 @@
-import { KeyRound, Search, UsersRound } from "lucide-react";
+import { PencilLine, Search, UsersRound } from "lucide-react";
 import { useMemo, useState } from "react";
 import EmptyState from "../EmptyState.jsx";
 import StatusBadge from "../StatusBadge.jsx";
 import { roleLabels } from "../../utils/roles.js";
 
 export default function AccountManagement({
+  editingUser,
   loading,
+  onCancelEditUser,
   onCreateUser,
-  onResetUserPassword,
+  onEditUser,
+  onEditingUserChange,
+  onSubmitEditUser,
   onUpdateUserStatus,
   onUserFormChange,
   userForm,
@@ -111,9 +115,9 @@ export default function AccountManagement({
                     <td><StatusBadge value={user.status} /></td>
                     <td>
                       <div className="row-actions account-actions">
-                        <button className="button small ghost" type="button" onClick={() => onResetUserPassword(user)} title="Đặt lại mật khẩu">
-                          <KeyRound size={15} />
-                          Đặt lại MK
+                        <button className="button small secondary" type="button" onClick={() => onEditUser(user)} title="Cập nhật tài khoản">
+                          <PencilLine size={15} />
+                          Cập nhật TK
                         </button>
                         <button
                           className="button small"
@@ -133,6 +137,63 @@ export default function AccountManagement({
           <EmptyState />
         )}
       </section>
+
+      {editingUser && (
+        <div className="modal-backdrop" role="dialog" aria-modal="true" onMouseDown={(event) => event.currentTarget === event.target && onCancelEditUser()}>
+          <form className="account-modal panel" onSubmit={onSubmitEditUser}>
+            <div className="section-title">
+              <UsersRound size={20} />
+              <h2>Cập nhật tài khoản</h2>
+            </div>
+            <div className="form-grid account-form-grid">
+              <label className="field">
+                <span>Họ tên</span>
+                <input value={editingUser.fullName || ""} onChange={(event) => onEditingUserChange({ fullName: event.target.value })} required />
+              </label>
+              <label className="field">
+                <span>Email</span>
+                <input type="email" value={editingUser.email || ""} onChange={(event) => onEditingUserChange({ email: event.target.value })} />
+              </label>
+              <label className="field">
+                <span>Số điện thoại</span>
+                <input value={editingUser.phone || ""} onChange={(event) => onEditingUserChange({ phone: event.target.value })} />
+              </label>
+              <label className="field">
+                <span>Địa chỉ</span>
+                <input value={editingUser.address || ""} onChange={(event) => onEditingUserChange({ address: event.target.value })} maxLength={255} />
+              </label>
+              <label className="field">
+                <span>Trạng thái</span>
+                <select value={editingUser.status || "active"} onChange={(event) => onEditingUserChange({ status: event.target.value })}>
+                  <option value="active">Hoạt động</option>
+                  <option value="inactive">Ngưng</option>
+                  <option value="locked">Khóa</option>
+                </select>
+              </label>
+              <label className="field">
+                <span>Số năm kinh nghiệm</span>
+                <input
+                  min="0"
+                  max="80"
+                  type="number"
+                  value={editingUser.yearsOfExperience ?? 0}
+                  onChange={(event) => onEditingUserChange({ yearsOfExperience: event.target.value })}
+                />
+              </label>
+              <label className="field wide">
+                <span>Ghi chú / mô tả</span>
+                <textarea value={editingUser.bio || ""} onChange={(event) => onEditingUserChange({ bio: event.target.value })} rows="3" />
+              </label>
+            </div>
+            <div className="row-actions">
+              <button className="button primary">Lưu cập nhật</button>
+              <button className="button ghost" type="button" onClick={onCancelEditUser}>
+                Hủy
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </>
   );
 }

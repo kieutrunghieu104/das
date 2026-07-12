@@ -26,10 +26,6 @@ export async function createUser(req, res) {
   res.status(201).json({ user });
 }
 
-export async function resetUserPassword(req, res) {
-  res.json(await adminService.resetUserPassword(req.params.id, req.body));
-}
-
 export async function updateUser(req, res) {
   const user = await adminService.updateUser(req.params.id, req.body);
   res.json({ user });

@@ -9,8 +9,12 @@ import {
 } from "../utils/validation.js";
 
 const priceStringSchema = z
-  .union([z.string().trim().min(1), z.coerce.number().min(0)])
-  .transform((value) => String(value));
+  .preprocess(
+    (value) => String(value ?? "").trim(),
+    z.string()
+      .min(1, "Giá tiền là bắt buộc.")
+      .regex(/^\d+(?:-\d+)*$/, "Giá tiền chỉ được nhập số và dấu gạch ngang.")
+  );
 
 export const createAdminUserSchema = z.object({
   fullName: nameSchema,
@@ -21,10 +25,6 @@ export const createAdminUserSchema = z.object({
   role: z.enum(["patient", "receptionist", "dentist", "nurse", "admin"]),
   bio: noteSchema,
   yearsOfExperience: z.coerce.number().int().min(0).max(80).default(0)
-});
-
-export const resetAdminUserPasswordSchema = z.object({
-  password: passwordSchema.optional()
 });
 
 export const updateAdminUserSchema = z.object({

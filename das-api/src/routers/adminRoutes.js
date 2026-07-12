@@ -10,7 +10,6 @@ import {
   getRevenueReport,
   getStats,
   getUsers,
-  resetUserPassword,
   updateClinicRoom,
   updateDentalService,
   updateReviewVisibility,
@@ -26,7 +25,6 @@ router.get("/stats", getStats);
 router.get("/dashboard", getDashboard);
 router.get("/users", getUsers);
 router.post("/users", createUser);
-router.post("/users/:id/reset-password", resetUserPassword);
 router.patch("/users/:id", updateUser);
 router.get("/reports/revenue", getRevenueReport);
 router.get("/reports/patient-statistics", getPatientStatistics);

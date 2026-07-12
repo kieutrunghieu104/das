@@ -322,11 +322,6 @@ export default function ClinicalDashboard() {
     }));
   }
 
-  function selectPerformedServicesAppointment(appointment) {
-    setPerformedServicesFromAppointment(appointment);
-    openFeature("performedServices");
-  }
-
   function setPerformedServicesFromAppointment(appointment) {
     const serviceState = {};
     (appointment.performedServices || []).forEach((item) => {
@@ -446,6 +441,12 @@ export default function ClinicalDashboard() {
       return;
     }
 
+    const appointment = appointments.find((item) => item._id === performedServicesForm.appointmentId);
+    if (appointment?.status === "scheduled") {
+      setError("Lịch khám chưa diễn ra nên chưa được chọn dịch vụ.");
+      return;
+    }
+
     const selectedServices = Object.entries(performedServicesForm.services)
       .filter(([, item]) => item.selected)
       .map(([serviceId, item]) => ({
@@ -467,8 +468,7 @@ export default function ClinicalDashboard() {
         services: selectedServices,
         extraCosts
       });
-      const appointment = appointments.find((item) => item._id === performedServicesForm.appointmentId);
-      if (appointment && ["checked_in", "in_treatment"].includes(appointment.status)) {
+      if (appointment?.status === "in_treatment") {
         await api.patch(`/appointments/${performedServicesForm.appointmentId}/status`, {
           status: "completed",
           note: "Y tá đã hoàn tất lịch khám và xác nhận dịch vụ đã thực hiện."
@@ -495,6 +495,14 @@ export default function ClinicalDashboard() {
   }
 
   async function updateClinicalAppointmentStatus(appointment, status) {
+    if (status === "completed") {
+      setPerformedServicesFromAppointment(appointment);
+      setError("");
+      setMessage("Xác nhận dịch vụ đã làm; có thể để trống rồi bấm xác nhận hoàn tất.");
+      openFeature("performedServices");
+      return;
+    }
+
     if (!window.confirm(status === "in_treatment" ? "Chuyển bệnh nhân sang trạng thái đang khám?" : "Xác nhận hoàn tất lịch khám?")) return;
 
     try {
@@ -528,7 +536,6 @@ export default function ClinicalDashboard() {
           onUpdateStatus={updateClinicalAppointmentStatus}
           onSetRoomStatus={setRoomStatus}
           onSelectTreatment={selectTreatmentAppointment}
-          onSelectPerformedServices={selectPerformedServicesAppointment}
           rooms={rooms}
           user={user}
         />

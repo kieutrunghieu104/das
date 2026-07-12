@@ -151,25 +151,34 @@ export default function ClinicalTreatmentForm({
 
           {displayedSearchResults.length ? (
             <div className="mini-list treatment-record-list">
-              {displayedSearchResults.map((record) => (
-                <div className={`mini-row ${selectedRecord?._id === record._id ? "active" : ""}`} key={record._id}>
-                  <div className="treatment-record-info">
-                    <strong>{record.serviceSnapshot?.name || record.appointment?.service?.name || "Hồ sơ điều trị"}</strong>
-                    <span>{patientLabel(record.patient)}</span>
-                    <small>Ngày điều trị: {formatDateOnly(record.treatmentDate || record.createdAt)}</small>
+              {displayedSearchResults.map((record) => {
+                const canDelete = canDeleteTreatmentRecord(record);
+                return (
+                  <div className={`mini-row ${selectedRecord?._id === record._id ? "active" : ""}`} key={record._id}>
+                    <div className="treatment-record-info">
+                      <strong>{record.serviceSnapshot?.name || record.appointment?.service?.name || "Hồ sơ điều trị"}</strong>
+                      <span>{patientLabel(record.patient)}</span>
+                      <small>Ngày điều trị: {formatDateOnly(record.treatmentDate || record.createdAt)}</small>
+                    </div>
+                    <div className="row-actions">
+                      <StatusBadge value={record.status || "active"} />
+                      <button className="button small secondary" type="button" onClick={() => onSelectRecord(record)}>
+                        Cập nhật
+                      </button>
+                      <button
+                        className="button small danger"
+                        disabled={!canDelete}
+                        type="button"
+                        onClick={() => canDelete && onDeleteRecord(record)}
+                        title={canDelete ? "Xóa hồ sơ điều trị" : "Chỉ xóa được hồ sơ chưa có thông tin điều trị"}
+                      >
+                        <Trash2 size={15} />
+                        Xóa
+                      </button>
+                    </div>
                   </div>
-                  <div className="row-actions">
-                    <StatusBadge value={record.status || "active"} />
-                    <button className="button small secondary" type="button" onClick={() => onSelectRecord(record)}>
-                      Cập nhật
-                    </button>
-                    <button className="button small danger" type="button" onClick={() => onDeleteRecord(record)} title="Xóa hồ sơ điều trị">
-                      <Trash2 size={15} />
-                      Xóa
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : searchedPatient ? (
             <div className="empty-state">
@@ -187,7 +196,6 @@ export default function ClinicalTreatmentForm({
               nextAllowedVisit={nextAllowedVisit}
               onChange={onChange}
               onSubmit={onSubmit}
-              treatmentVisits={treatmentVisits}
               visibleVisitCount={visibleVisitCount}
               chooseVisit={chooseVisit}
             />
@@ -453,16 +461,7 @@ function normalizeRecordVisits(record) {
       .sort((first, second) => first.visitNumber - second.visitNumber);
   }
 
-  const hasLegacyData = [
-    record.vitalSigns,
-    record.diagnosis,
-    record.medicalHistory,
-    record.treatmentResult,
-    record.treatmentNote,
-    record.treatmentPlan,
-    record.prescription,
-    record.aftercareInstructions
-  ].some(Boolean);
+  const hasLegacyData = treatmentContentFields.some((field) => hasTreatmentValue(record[field]));
   return hasLegacyData
     ? [{
         visitNumber: 1,
@@ -478,4 +477,35 @@ function normalizeRecordVisits(record) {
         visitDate: record.treatmentDate || record.updatedAt
       }]
     : [];
+}
+
+const treatmentContentFields = [
+  "vitalSigns",
+  "diagnosis",
+  "medicalHistory",
+  "treatmentResult",
+  "treatmentNote",
+  "treatmentPlan",
+  "prescription",
+  "aftercareInstructions",
+  "estimatedCost"
+];
+
+function hasTreatmentValue(value) {
+  if (value === null || value === undefined) return false;
+  if (typeof value === "string") return value.trim().length > 0;
+  if (typeof value === "number") return Number.isFinite(value) && value !== 0;
+  if (typeof value === "boolean") return value;
+  if (Array.isArray(value)) return value.some(hasTreatmentValue);
+  if (typeof value === "object") return Object.values(value).some(hasTreatmentValue);
+  return Boolean(value);
+}
+
+function canDeleteTreatmentRecord(record) {
+  if (!record) return false;
+  const hasLegacyContent = treatmentContentFields.some((field) => hasTreatmentValue(record[field]));
+  const hasVisitContent = (record.visits || []).some((visit) =>
+    treatmentContentFields.some((field) => hasTreatmentValue(visit?.[field]))
+  );
+  return !hasLegacyContent && !hasVisitContent;
 }

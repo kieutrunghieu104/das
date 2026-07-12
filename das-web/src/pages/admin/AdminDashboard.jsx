@@ -99,7 +99,7 @@ export default function AdminDashboard() {
     const validationError = firstError(
       validateName(serviceForm.name, "Tên dịch vụ"),
       validateNote(serviceForm.description),
-      String(serviceForm.price || "").trim() ? "" : "Giá tiền là bắt buộc."
+      validateServicePrice(serviceForm.price)
     );
     if (validationError) {
       setError(validationError);
@@ -111,7 +111,7 @@ export default function AdminDashboard() {
       setMessage("");
       await api.post("/admin/services", {
         ...serviceForm,
-        price: String(serviceForm.price)
+        price: normalizeServicePrice(serviceForm.price)
       });
       setServiceForm(defaultServiceForm);
       setMessage("Đã tạo dịch vụ.");
@@ -163,7 +163,7 @@ export default function AdminDashboard() {
     const validationError = firstError(
       validateName(editingService.name, "Tên dịch vụ"),
       validateNote(editingService.description),
-      String(editingService.price || "").trim() ? "" : "Giá tiền là bắt buộc."
+      validateServicePrice(editingService.price)
     );
     if (validationError) {
       setError(validationError);
@@ -175,7 +175,7 @@ export default function AdminDashboard() {
       await api.patch(`/admin/services/${editingService._id}`, {
         name: editingService.name,
         description: editingService.description,
-        price: String(editingService.price)
+        price: normalizeServicePrice(editingService.price)
       });
       setEditingService(null);
       setMessage("Đã cập nhật dịch vụ.");
@@ -205,21 +205,6 @@ export default function AdminDashboard() {
       setMessage("");
       await api.patch(`/admin/users/${id}`, { status });
       load();
-    } catch (err) {
-      setError(getErrorMessage(err));
-    }
-  }
-
-  async function resetUserPassword(user) {
-    const confirmed = window.confirm(`Đặt lại mật khẩu cho ${user.fullName}? Mật khẩu cũ sẽ không thể xem lại.`);
-    if (!confirmed) return;
-
-    try {
-      setError("");
-      setMessage("");
-      const res = await api.post(`/admin/users/${user._id}/reset-password`);
-      setUsers((current) => current.map((item) => (item._id === user._id ? res.data.user : item)));
-      setMessage(`Đã đặt lại mật khẩu cho ${user.fullName}. Mật khẩu tạm thời: ${res.data.temporaryPassword}`);
     } catch (err) {
       setError(getErrorMessage(err));
     }
@@ -410,7 +395,6 @@ export default function AdminDashboard() {
           onEditingUserChange={(next) => setEditingUser((current) => ({ ...current, ...next }))}
           onSubmitEditUser={updateUser}
           onCancelEditUser={() => setEditingUser(null)}
-          onResetUserPassword={resetUserPassword}
           onUpdateUserStatus={updateUserStatus}
           onUserFormChange={(next) => setUserForm((current) => ({ ...current, ...next }))}
           userForm={userForm}
@@ -475,4 +459,14 @@ function parseCommaList(value) {
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
+}
+
+function normalizeServicePrice(value) {
+  return String(value || "").trim();
+}
+
+function validateServicePrice(value) {
+  const price = normalizeServicePrice(value);
+  if (!price) return "Giá tiền là bắt buộc.";
+  return /^\d+(?:-\d+)*$/.test(price) ? "" : "Giá tiền chỉ được nhập số và dấu gạch ngang.";
 }

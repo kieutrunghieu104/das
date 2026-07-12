@@ -5,7 +5,6 @@ import {
   createAdminUserSchema,
   createClinicRoomSchema,
   createDentalServiceSchema,
-  resetAdminUserPasswordSchema,
   updateAdminUserSchema,
   updateClinicRoomSchema,
   updateDentalServiceSchema,
@@ -18,13 +17,8 @@ function throwHttpError(message, statusCode = 400) {
   throw err;
 }
 
-function generateTemporaryPassword() {
-  return "nhakhoa2026";
-}
-
 function buildLoginEmail(data) {
-  if (data.email) return data.email;
-  return undefined;
+  return data.email || undefined;
 }
 
 function startOfMonth(value) {
@@ -39,7 +33,6 @@ function parseDateRange(query) {
     : new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
   return { startDate, endDate };
 }
-
 
 async function createRoleProfile(user, data) {
   if (user.role === "patient") {
@@ -193,30 +186,11 @@ export async function createUser(body) {
   return object;
 }
 
-export async function resetUserPassword(userId, body) {
-  const data = resetAdminUserPasswordSchema.parse(body || {});
-  const user = await adminRepository.findUserById(userId);
-
-  if (!user) {
-    throwHttpError("Không tìm thấy tài khoản.", 404);
-  }
-
-  const temporaryPassword = data.password || generateTemporaryPassword();
-  const updatedUser = await adminRepository.saveUser({
-    ...user,
-    passwordHash: await hashPassword(temporaryPassword)
-  });
-  const object = { ...updatedUser };
-  delete object.passwordHash;
-  return { user: object, temporaryPassword };
-}
-
 export async function updateUser(userId, body) {
   const data = updateAdminUserSchema.parse(body);
   await validateUserContactUniqueness(data, userId);
 
   const existingUser = await adminRepository.findUserById(userId);
-
   if (!existingUser) {
     throwHttpError("Không tìm thấy tài khoản.", 404);
   }
@@ -294,5 +268,3 @@ export async function updateReviewVisibility(reviewId, body) {
   if (!review) throwHttpError("Không tìm thấy đánh giá.", 404);
   return review;
 }
-
-

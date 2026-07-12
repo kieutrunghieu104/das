@@ -1,6 +1,10 @@
 import { Settings2 } from "lucide-react";
 import EmptyState from "../EmptyState.jsx";
 
+function cleanPriceInput(value) {
+  return String(value || "").replace(/[^\d-]/g, "");
+}
+
 export default function DentalServiceManagement({
   editingService,
   loading,
@@ -33,9 +37,11 @@ export default function DentalServiceManagement({
           <label className="field">
             <span>Giá tiền</span>
             <input
+              inputMode="numeric"
+              pattern="[0-9-]+"
               placeholder="Ví dụ: 200000 hoặc 200000-500000"
               value={serviceForm.price}
-              onChange={(event) => onServiceFormChange({ price: event.target.value })}
+              onChange={(event) => onServiceFormChange({ price: cleanPriceInput(event.target.value) })}
               required
             />
           </label>
@@ -89,7 +95,13 @@ export default function DentalServiceManagement({
             </label>
             <label className="field">
               <span>Giá tiền</span>
-              <input value={editingService.price || ""} onChange={(event) => onEditingServiceChange({ price: event.target.value })} required />
+              <input
+                inputMode="numeric"
+                pattern="[0-9-]+"
+                value={editingService.price || ""}
+                onChange={(event) => onEditingServiceChange({ price: cleanPriceInput(event.target.value) })}
+                required
+              />
             </label>
             <div className="row-actions">
               <button className="button primary">Lưu cập nhật</button>
