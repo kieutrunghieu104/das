@@ -1,18 +1,14 @@
 import * as schedulingRepository from "../repository/schedulingRepository.js";
 import {
-  WORKING_SESSIONS,
-  APPOINTMENT_SLOT_MINUTES,
-  addMinutes,
+  APPOINTMENT_SLOTS,
   calculateArrivalAt,
   combineDateAndTime,
   endOfLocalDay,
   isWorkingDate,
-  minutesBetween,
   startOfLocalDay
 } from "../utils/time.js";
 
 const BLOCKING_STATUSES = ["pending", "scheduled", "confirmed", "checked_in", "in_treatment"];
-const BOOKING_DURATION_MINUTES = APPOINTMENT_SLOT_MINUTES;
 
 function httpError(message, statusCode = 400) {
   const err = new Error(message);
@@ -24,27 +20,34 @@ function sameId(a, b) {
   return a?.toString() === b?.toString();
 }
 
-function hasTimeConflict(appointments, startAt, endAt) {
-  return appointments.some((appointment) => startAt < appointment.endAt && endAt > appointment.startAt);
+function slotTimes(date, slot) {
+  return {
+    startAt: combineDateAndTime(date, slot.start),
+    endAt: combineDateAndTime(date, slot.end)
+  };
 }
 
-function slotBoundsFor(startAt) {
-  const local = new Date(startAt.getTime() + 7 * 60 * 60 * 1000);
-  const hour = local.getUTCHours();
-  const minute = local.getUTCMinutes();
-  const total = hour * 60 + minute;
-  const slots = [
-    [8 * 60, 10 * 60 + 30],
-    [10 * 60 + 30, 12 * 60],
-    [14 * 60, 16 * 60],
-    [16 * 60, 17 * 60 + 30]
-  ];
-  const slot = slots.find(([start, end]) => total >= start && total < end) || [total, total + BOOKING_DURATION_MINUTES];
-  const dayStartUtc = Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate(), 0, 0) - 7 * 60 * 60 * 1000;
-  return {
-    startAt: new Date(dayStartUtc + slot[0] * 60_000),
-    endAt: new Date(dayStartUtc + slot[1] * 60_000)
-  };
+function findSlotForDateTime(date, value, exactStart = false) {
+  const target = value instanceof Date ? value : new Date(value);
+  return APPOINTMENT_SLOTS
+    .map((slot) => ({ slot, ...slotTimes(date, slot) }))
+    .find(({ startAt, endAt }) =>
+      exactStart
+        ? startAt.getTime() === target.getTime()
+        : target >= startAt && target < endAt
+    );
+}
+
+function getRequestedSlot(date, startAt) {
+  const slot = findSlotForDateTime(date, startAt, true);
+  if (!slot) {
+    throw httpError("Slot khám không hợp lệ. Vui lòng chọn 08:00-10:30, 10:30-12:00, 14:00-16:00 hoặc 16:00-17:30.", 400);
+  }
+  return slot;
+}
+
+function hasTimeConflict(appointments, startAt, endAt) {
+  return appointments.some((appointment) => startAt < appointment.endAt && endAt > appointment.startAt);
 }
 
 async function getAppointmentsForDate(date, excludeAppointmentId) {
@@ -99,8 +102,8 @@ async function assertPatientHasNoTimeConflict(patientId, startAt, endAt, exclude
   }
 }
 
-async function assertPatientHasNoSameSlot(patientId, startAt, excludeAppointmentId) {
-  const slot = slotBoundsFor(startAt);
+async function assertPatientHasNoSameSlot(patientId, date, startAt, excludeAppointmentId) {
+  const slot = findSlotForDateTime(date, startAt) || getRequestedSlot(date, startAt);
   const query = {
     patient: patientId,
     status: { $in: BLOCKING_STATUSES },
@@ -175,26 +178,16 @@ export async function findAvailableSlots({ date, serviceId, excludeAppointmentId
     const roomAppointments = appointments.filter((item) => sameId(item.room, room._id));
     const dentistAppointments = appointments.filter((item) => sameId(item.dentist, room.assignedDentist._id));
 
-    for (const session of WORKING_SESSIONS) {
-      const sessionStart = combineDateAndTime(date, session.start);
-      const sessionEnd = combineDateAndTime(date, session.end);
+    for (const slotConfig of APPOINTMENT_SLOTS) {
+      const { startAt, endAt } = slotTimes(date, slotConfig);
+      const conflictingAppointments = uniqueAppointments([
+        ...roomAppointments.filter((appointment) => hasTimeConflict([appointment], startAt, endAt)),
+        ...dentistAppointments.filter((appointment) => hasTimeConflict([appointment], startAt, endAt))
+      ]);
+      const isBooked = conflictingAppointments.length > 0;
 
-      for (
-        let startAt = sessionStart;
-        minutesBetween(startAt, sessionEnd) >= BOOKING_DURATION_MINUTES;
-        startAt = addMinutes(startAt, APPOINTMENT_SLOT_MINUTES)
-      ) {
-        const endAt = addMinutes(startAt, BOOKING_DURATION_MINUTES);
-
-        const conflictingAppointments = uniqueAppointments([
-          ...roomAppointments.filter((appointment) => hasTimeConflict([appointment], startAt, endAt)),
-          ...dentistAppointments.filter((appointment) => hasTimeConflict([appointment], startAt, endAt))
-        ]);
-        const isBooked = conflictingAppointments.length > 0;
-
-        if (includeBooked || !isBooked) {
-          slots.push(buildSlot({ room, service, startAt, endAt, session, conflictingAppointments }));
-        }
+      if (includeBooked || !isBooked) {
+        slots.push(buildSlot({ room, service, startAt, endAt, session: slotConfig, conflictingAppointments }));
       }
     }
   }
@@ -255,6 +248,7 @@ export async function createAppointmentFromSlot({ requester, patientId, serviceI
   }
 
   const requestedStart = startAt ? new Date(startAt) : null;
+  const requestedSlot = requestedStart ? getRequestedSlot(date, requestedStart) : null;
   const requiresReceptionScheduling =
     ["receptionist", "admin"].includes(requester.role) &&
     channel === "offline" &&
@@ -266,8 +260,8 @@ export async function createAppointmentFromSlot({ requester, patientId, serviceI
       throw httpError("Phòng khám không làm việc trong ngày đã chọn.", 400);
     }
 
-    const requestedEnd = addMinutes(requestedStart, BOOKING_DURATION_MINUTES);
-    await assertPatientHasNoSameSlot(patient._id, requestedStart);
+    const requestedEnd = requestedSlot.endAt;
+    await assertPatientHasNoSameSlot(patient._id, date, requestedStart);
     await assertPatientHasNoTimeConflict(patient._id, requestedStart, requestedEnd);
 
     return schedulingRepository.createAppointment({
@@ -290,8 +284,8 @@ export async function createAppointmentFromSlot({ requester, patientId, serviceI
     if (!isWorkingDate(date)) {
       throw httpError("Phòng khám không làm việc trong ngày đã chọn.", 400);
     }
-    const requestedEnd = addMinutes(requestedStart, BOOKING_DURATION_MINUTES);
-    await assertPatientHasNoSameSlot(patient._id, requestedStart);
+    const requestedEnd = requestedSlot.endAt;
+    await assertPatientHasNoSameSlot(patient._id, date, requestedStart);
     await assertPatientHasNoTimeConflict(patient._id, requestedStart, requestedEnd);
 
     return schedulingRepository.createAppointment({
@@ -323,7 +317,7 @@ export async function createAppointmentFromSlot({ requester, patientId, serviceI
   }
 
   await assertPatientHasNoTimeConflict(patient._id, selected.startAt, selected.endAt, undefined, patientAppointments);
-  await assertPatientHasNoSameSlot(patient._id, selected.startAt);
+  await assertPatientHasNoSameSlot(patient._id, date, selected.startAt);
 
   const nurse = selected.nurse || await selectAvailableNurse(selected.startAt, selected.endAt, date);
   if (!canRequestBookedSlot) {
@@ -397,7 +391,7 @@ export async function rescheduleAppointmentFromSlot({ appointment, serviceId, da
   }
 
   await assertPatientHasNoTimeConflict(appointment.patient, selected.startAt, selected.endAt, appointment._id, patientAppointments);
-  await assertPatientHasNoSameSlot(appointment.patient, selected.startAt, appointment._id);
+  await assertPatientHasNoSameSlot(appointment.patient, date, selected.startAt, appointment._id);
   const nurse = selected.nurse || await selectAvailableNurse(selected.startAt, selected.endAt, date);
 
   appointment.service = selected.service._id;

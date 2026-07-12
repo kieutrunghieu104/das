@@ -50,8 +50,7 @@ export async function registerPatient(data) {
     email: data.email || undefined,
     phone: data.phone,
     passwordHash: await hashPassword(data.password),
-    roleRef: patientRole._id,
-    role: "patient"
+    roleRef: patientRole._id
   });
   await userRepository.createPatientProfile({
     user: user._id,

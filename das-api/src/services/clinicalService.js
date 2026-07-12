@@ -369,8 +369,8 @@ export async function updatePerformedServices(user, appointmentId, body) {
     throw createError("Chỉ nhân sự được phân công mới được cập nhật dịch vụ đã thực hiện.", 403);
   }
 
-  if (appointment.status === "scheduled") {
-    throw createError("Lịch khám chưa diễn ra nên chưa được chọn dịch vụ đã thực hiện.", 409);
+  if (appointment.status !== "in_treatment") {
+    throw createError("Chỉ lịch đang khám mới được xác nhận dịch vụ đã làm.", 409);
   }
 
   const services = data.services.map((item) => ({

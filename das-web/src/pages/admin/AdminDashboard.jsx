@@ -266,9 +266,7 @@ export default function AdminDashboard() {
       email: user.email || "",
       phone: user.phone || "",
       address: user.address || "",
-      status: user.status || "active",
-      bio: user.bio || "",
-      yearsOfExperience: user.yearsOfExperience || 0
+      role: user.role || "patient"
     });
   }
 
@@ -278,8 +276,7 @@ export default function AdminDashboard() {
     const validationError = firstError(
       validateName(editingUser.fullName),
       editingUser.email?.trim() ? validateEmail(editingUser.email) : "",
-      editingUser.phone?.trim() ? validatePhone(editingUser.phone) : "",
-      validateNote(editingUser.bio)
+      editingUser.phone?.trim() ? validatePhone(editingUser.phone) : ""
     );
     if (validationError) {
       setError(validationError);
@@ -294,9 +291,7 @@ export default function AdminDashboard() {
         email: editingUser.email,
         phone: editingUser.phone,
         address: editingUser.address,
-        status: editingUser.status,
-        bio: editingUser.bio,
-        yearsOfExperience: Number(editingUser.yearsOfExperience || 0)
+        role: editingUser.role
       });
       setEditingUser(null);
       setMessage("Đã cập nhật tài khoản.");

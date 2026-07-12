@@ -5,7 +5,6 @@ const clinicSettingSchema = new mongoose.Schema({
   clinicName: String,
   hotline: String,
   address: String,
-  branches: [mongoose.Schema.Types.Mixed],
   faqs: [mongoose.Schema.Types.Mixed]
 }, {
   timestamps: true,

@@ -2,7 +2,7 @@ import { CalendarClock } from "lucide-react";
 import { useMemo, useState } from "react";
 import EmptyState from "../EmptyState.jsx";
 import PatientAppointmentCard from "./PatientAppointmentCard.jsx";
-import { clinicDateInput, compareAppointmentsNewestFirst } from "../../utils/appointmentSlots.js";
+import { clinicDateInput, compareAppointmentsNewestFirst } from "../../utils/format.js";
 
 export default function PatientAppointmentList({
   appointments,

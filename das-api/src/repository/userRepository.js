@@ -5,28 +5,35 @@ import {
   findMany,
   findOne,
   insertDocuments,
+  populate,
   updateById,
   updateOneAndReturn
 } from "./mongoRepository.js";
 
-export function findUserByPhone(phone, projection) {
-  return findOne(COLLECTIONS.users, { phone }, projection);
+async function attachRole(user) {
+  await populate(user, { path: "roleRef", select: "roleName" });
+  if (user?.roleRef?.roleName) user.role = user.roleRef.roleName;
+  return user;
 }
 
-export function findUserByEmail(email, projection) {
-  return findOne(COLLECTIONS.users, { email }, projection);
+export async function findUserByPhone(phone, projection) {
+  return attachRole(await findOne(COLLECTIONS.users, { phone }, projection));
 }
 
-export function findActiveUserById(id) {
-  return findById(COLLECTIONS.users, id, "-passwordHash");
+export async function findUserByEmail(email, projection) {
+  return attachRole(await findOne(COLLECTIONS.users, { email }, projection));
 }
 
-export function findUserByIdWithPassword(id) {
-  return findById(COLLECTIONS.users, id);
+export async function findActiveUserById(id) {
+  return attachRole(await findById(COLLECTIONS.users, id, "-passwordHash"));
 }
 
-export function findUserByEmailWithResetFields(email) {
-  return findOne(COLLECTIONS.users, { email });
+export async function findUserByIdWithPassword(id) {
+  return attachRole(await findById(COLLECTIONS.users, id));
+}
+
+export async function findUserByEmailWithResetFields(email) {
+  return attachRole(await findOne(COLLECTIONS.users, { email }));
 }
 
 export function findDuplicatePhone(phone, excludedUserId) {
@@ -49,7 +56,6 @@ export function upsertRole(query, data) {
 
 export function createUser(data) {
   return insertDocuments(COLLECTIONS.users, {
-    role: "patient",
     status: "active",
     ...data
   });
@@ -78,6 +84,7 @@ export function updateUserById(id, data) {
 export function saveUser(user) {
   const update = { ...user };
   delete update._id;
+  delete update.role;
   return updateById(COLLECTIONS.users, user._id, update);
 }
 

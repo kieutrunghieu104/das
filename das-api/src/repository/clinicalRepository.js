@@ -80,7 +80,7 @@ export async function findPatientByPhone(phone) {
   const patient = await findOne(
     COLLECTIONS.users,
     { phone, status: "active" },
-    "fullName phone email role roleRef status"
+    "fullName phone email roleRef status"
   );
   return attachProfileToUser(patient);
 }

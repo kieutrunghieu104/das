@@ -101,14 +101,9 @@ async function getRoleIds(roleName) {
 
 export async function findActiveReceptionists() {
   const roleIds = await getRoleIds("receptionist");
-  const clauses = [{ role: "receptionist" }];
-  if (roleIds.length) {
-    clauses.push({ roleRef: { $in: roleIds } });
-    clauses.push({ role: { $in: roleIds } });
-  }
   return findMany(
     COLLECTIONS.users,
-    { status: "active", $or: clauses },
+    { status: "active", roleRef: { $in: roleIds } },
     { projection: "_id fullName", limit: 100 }
   );
 }

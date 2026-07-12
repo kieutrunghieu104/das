@@ -1,8 +1,6 @@
 import { useState } from "react";
 import StatusBadge from "../StatusBadge.jsx";
-import { formatDateTime, todayInput } from "../../utils/format.js";
-import { bookingSlotOptions } from "../../pages/BookingPage.jsx";
-import { clinicDateInput, formatSlotWithDate, getAppointmentSlot } from "../../utils/appointmentSlots.js";
+import { bookingSlotOptions, clinicDateInput, formatDateTime, formatSlotWithDate, getAppointmentSlot, todayInput } from "../../utils/format.js";
 import RescheduleAppointmentModal from "./RescheduleAppointmentModal.jsx";
 
 const cancelReasons = [

@@ -35,11 +35,11 @@ function parseDateRange(query) {
 }
 
 async function createRoleProfile(user, data) {
-  if (user.role === "patient") {
+  if (data.role === "patient") {
     await adminRepository.createPatientProfile({ user: user._id });
-  } else if (user.role === "receptionist") {
+  } else if (data.role === "receptionist") {
     await adminRepository.createReceptionistProfile({ user: user._id, address: data.address || "" });
-  } else if (user.role === "dentist") {
+  } else if (data.role === "dentist") {
     await adminRepository.createDentistProfile({
       user: user._id,
       qualification: "Bác sĩ Răng Hàm Mặt",
@@ -48,9 +48,9 @@ async function createRoleProfile(user, data) {
       address: data.address || "",
       avatarUrl: data.avatarUrl || undefined
     });
-  } else if (user.role === "nurse") {
+  } else if (data.role === "nurse") {
     await adminRepository.createNurseProfile({ user: user._id, qualification: "Y tá đã đăng ký", address: data.address || "" });
-  } else if (user.role === "admin") {
+  } else if (data.role === "admin") {
     await adminRepository.createAdminProfile({ user: user._id, position: "Quản trị hệ thống", address: data.address || "" });
   }
 }
@@ -120,14 +120,17 @@ export async function getDashboard() {
   return { stats, users: await profileRepository.attachProfilesToUsers(users), services, rooms, reviews };
 }
 
-export function getUsers(query) {
+export async function getUsers(query) {
   const filter = {};
-  if (query.role) filter.role = query.role;
+  if (query.role) {
+    const role = await adminRepository.ensureRole({ roleName: query.role });
+    filter.roleRef = role._id;
+  }
   if (query.q) {
     const text = String(query.q).trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     filter.fullName = new RegExp(text, "i");
   }
-  return adminRepository.findUsers(filter).then((users) => profileRepository.attachProfilesToUsers(users));
+  return profileRepository.attachProfilesToUsers(await adminRepository.findUsers(filter));
 }
 
 export async function getRevenueReport(query) {
@@ -175,7 +178,6 @@ export async function createUser(body) {
     fullName: data.fullName,
     email: buildLoginEmail(data),
     phone: data.phone,
-    role: data.role,
     roleRef: role._id,
     passwordHash: await hashPassword(data.password)
   });
@@ -196,11 +198,15 @@ export async function updateUser(userId, body) {
   }
 
   const userUpdate = profileRepository.pickUserFields(data);
+  if (data.role) {
+    const role = await adminRepository.ensureRole({ roleName: data.role });
+    userUpdate.roleRef = role._id;
+  }
   const user = Object.keys(userUpdate).length
     ? await adminRepository.updateUser(userId, userUpdate)
     : existingUser;
 
-  await profileRepository.upsertProfileForUser(user, data);
+  await profileRepository.upsertProfileForUser({ ...user, role: data.role || existingUser.role }, data);
 
   const object = await profileRepository.attachProfileToUser(user);
   delete object.passwordHash;

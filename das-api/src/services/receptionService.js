@@ -3,8 +3,7 @@ import { hashPassword } from "../utils/password.js";
 import { endOfLocalDay, startOfLocalDay } from "../utils/time.js";
 import {
   createReceptionPatientSchema,
-  resetPatientPasswordSchema,
-  updateConsultationSchema
+  resetPatientPasswordSchema
 } from "../validations/receptionValidation.js";
 
 function createError(message, statusCode) {
@@ -17,8 +16,9 @@ function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-function buildPatientFilter(searchText) {
-  const filter = { role: "patient", status: "active" };
+async function buildPatientFilter(searchText) {
+  const role = await receptionRepository.ensurePatientRole({ roleName: "patient" });
+  const filter = { roleRef: role._id, status: "active" };
   if (!searchText) return filter;
 
   const q = escapeRegex(String(searchText).trim().slice(0, 80));
@@ -42,19 +42,20 @@ function buildAppointmentQuery(dateText) {
 }
 
 export async function getDashboard(query) {
+  const patientFilter = await buildPatientFilter(query.q);
   const [appointments, patients, services, consultations, rooms] = await Promise.all([
     receptionRepository.findReceptionAppointments(buildAppointmentQuery(query.date && query.scopeByDate === "true" ? query.date : "")),
-    receptionRepository.findReceptionPatients(buildPatientFilter(query.q), 40, true),
+    receptionRepository.findReceptionPatients(patientFilter, 40),
     receptionRepository.findActiveServices(),
-    receptionRepository.findConsultationRequests({}, 60, true),
-    receptionRepository.findReceptionRooms(true)
+    receptionRepository.findConsultationRequests({}, 60),
+    receptionRepository.findReceptionRooms()
   ]);
 
   return { appointments, patients, services, consultations, rooms };
 }
 
-export function getPatients(query) {
-  return receptionRepository.findReceptionPatients(buildPatientFilter(query.q), 50);
+export async function getPatients(query) {
+  return receptionRepository.findReceptionPatients(await buildPatientFilter(query.q), 50);
 }
 
 export async function resetPatientPassword(patientId, body) {
@@ -78,7 +79,7 @@ export async function createPatient(body) {
   const duplicate = await receptionRepository.findUserByPhone(data.phone);
 
   if (duplicate) {
-    if (data.createAccount && duplicate.status !== "active" && duplicate.role === "patient") {
+    if (duplicate.status !== "active" && duplicate.role === "patient") {
       const reactivated = await receptionRepository.updatePatientUser(duplicate._id, {
         fullName: data.fullName,
         email: data.email || undefined,
@@ -91,12 +92,6 @@ export async function createPatient(body) {
       });
 
       const object = { ...reactivated };
-      delete object.passwordHash;
-      return { statusCode: 200, patient: object };
-    }
-
-    if (!data.createAccount && duplicate.role === "patient" && duplicate.status !== "active") {
-      const object = { ...duplicate };
       delete object.passwordHash;
       return { statusCode: 200, patient: object };
     }
@@ -118,8 +113,7 @@ export async function createPatient(body) {
     email: data.email || undefined,
     phone: data.phone,
     roleRef: role._id,
-    role: "patient",
-    status: data.createAccount ? "active" : "inactive",
+    status: "active",
     passwordHash: await hashPassword(data.password)
   });
 
@@ -134,27 +128,8 @@ export async function createPatient(body) {
   return { statusCode: 201, patient: object };
 }
 
-export function getConsultations(query) {
-  const filter = {};
-  if (query.status) filter.status = query.status;
-  return receptionRepository.findConsultationRequests(filter, 100);
-}
-
-export async function updateConsultation(requestId, body, handledByUserId) {
-  const data = updateConsultationSchema.parse(body);
-  const request = await receptionRepository.updateConsultationRequest(requestId, {
-    status: data.status,
-    message: data.message,
-    preferredDate: data.preferredDate ? new Date(data.preferredDate) : undefined,
-    preferredTime: data.preferredTime,
-    handledBy: handledByUserId
-  });
-
-  if (!request) {
-    throw createError("Không tìm thấy yêu cầu tư vấn.", 404);
-  }
-
-  return request;
+export function getConsultations() {
+  return receptionRepository.findConsultationRequests({}, 100);
 }
 
 export async function deleteConsultation(requestId) {

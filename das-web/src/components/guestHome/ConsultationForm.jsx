@@ -3,17 +3,19 @@ import { useState } from "react";
 import { api, getErrorMessage } from "../../utils/api.js";
 import { firstError, validateName, validatePhone } from "../../utils/validation.js";
 
-const salutationOptions = ["Anh", "Chị", "Khác"];
+const salutationOptions = [
+  { label: "Anh", gender: "male" },
+  { label: "Chị", gender: "female" },
+  { label: "Khác", gender: "other" }
+];
 
-export default function ConsultationForm({ branchName, onError, onMessage, services }) {
+export default function ConsultationForm({ onError, onMessage, services }) {
   const [form, setForm] = useState({
-    salutation: "Anh",
+    gender: "male",
     fullName: "",
     phone: "",
     service: ""
   });
-
-  const selectedService = services.find((service) => service._id === form.service);
 
   function updateForm(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -34,17 +36,12 @@ export default function ConsultationForm({ branchName, onError, onMessage, servi
       await api.post("/consultations", {
         fullName: form.fullName,
         phone: form.phone,
-        service: form.service || undefined,
-        message: [
-          `Danh xưng: ${form.salutation}`,
-          `Dịch vụ quan tâm: ${selectedService?.name || "Chưa chọn"}`,
-          `Chi nhánh: ${branchName}`,
-          "Khách muốn nhận tư vấn đặt lịch."
-        ].join(". ")
+        gender: form.gender,
+        service: form.service || undefined
       });
 
       setForm({
-        salutation: "Anh",
+        gender: "male",
         fullName: "",
         phone: "",
         service: ""
@@ -69,15 +66,15 @@ export default function ConsultationForm({ branchName, onError, onMessage, servi
       <form className="smile-consult-form" onSubmit={submitConsultation}>
         <div className="smile-segmented" role="radiogroup" aria-label="Danh xưng">
           {salutationOptions.map((option) => (
-            <label key={option}>
+            <label key={option.gender}>
               <input
                 type="radio"
-                name="salutation"
-                value={option}
-                checked={form.salutation === option}
-                onChange={(event) => updateForm("salutation", event.target.value)}
+                name="gender"
+                value={option.gender}
+                checked={form.gender === option.gender}
+                onChange={(event) => updateForm("gender", event.target.value)}
               />
-              <span>{option}</span>
+              <span>{option.label}</span>
             </label>
           ))}
         </div>

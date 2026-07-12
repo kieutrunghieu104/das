@@ -54,10 +54,7 @@ export function createConsultation(body) {
   return publicRepository.createConsultationRequest({
     fullName: data.fullName,
     phone: data.phone,
-    email: data.email || undefined,
-    service: data.service || undefined,
-    preferredDate: data.preferredDate ? new Date(data.preferredDate) : undefined,
-    preferredTime: data.preferredTime,
-    message: data.message
+    gender: data.gender,
+    service: data.service || undefined
   });
 }

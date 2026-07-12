@@ -1,5 +1,5 @@
-import { todayInput } from "../../utils/format.js";
-import { bookingSlotOptions, maxBookingDate } from "../../pages/BookingPage.jsx";
+import { bookingSlotOptions, todayInput } from "../../utils/format.js";
+import { maxBookingDate } from "../../pages/BookingPage.jsx";
 
 export default function RescheduleAppointmentModal({
   dentistOptions,

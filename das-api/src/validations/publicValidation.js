@@ -2,12 +2,8 @@ import { z } from "zod";
 import {
   futureDateInputSchema,
   nameSchema,
-  noteSchema,
   objectIdSchema,
-  optionalEmailSchema,
-  optionalFutureDateInputSchema,
   optionalObjectIdSchema,
-  optionalTimeSchema,
   phoneSchema
 } from "../utils/validation.js";
 
@@ -23,9 +19,6 @@ export const availabilityQuerySchema = z.object({
 export const consultationSchema = z.object({
   fullName: nameSchema,
   phone: phoneSchema,
-  email: optionalEmailSchema,
   service: optionalObjectIdSchema,
-  preferredDate: optionalFutureDateInputSchema,
-  preferredTime: optionalTimeSchema,
-  message: noteSchema
+  gender: z.enum(["male", "female", "other", "unknown"]).default("unknown")
 });

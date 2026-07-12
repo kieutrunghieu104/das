@@ -84,7 +84,7 @@ export const COLLECTION_INDEXES = Object.freeze({
   [COLLECTIONS.users]: [
     { key: { email: 1 }, options: { unique: true, sparse: true } },
     { key: { phone: 1 }, options: { unique: true } },
-    { key: { role: 1, status: 1 } }
+    { key: { roleRef: 1, status: 1 } }
   ],
   [COLLECTIONS.roles]: [{ key: { roleName: 1 }, options: { unique: true } }],
   [COLLECTIONS.clinicSettings]: [{ key: { key: 1 }, options: { unique: true } }],
@@ -142,7 +142,6 @@ export const RELATION_COLLECTIONS = Object.freeze({
   confirmationBy: COLLECTIONS.users,
   createdBy: COLLECTIONS.users,
   dentist: COLLECTIONS.users,
-  handledBy: COLLECTIONS.users,
   invoice: COLLECTIONS.invoices,
   nurse: COLLECTIONS.users,
   patient: COLLECTIONS.users,

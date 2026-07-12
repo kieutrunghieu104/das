@@ -6,7 +6,7 @@ import {
 import { COLLECTIONS } from "../models/index.js";
 import { insertDocuments } from "../repository/mongoRepository.js";
 import { hashPassword } from "./password.js";
-import { addMinutes, combineDateAndTime, isWorkingDate, toDateInputValue } from "./time.js";
+import { APPOINTMENT_SLOTS, combineDateAndTime, isWorkingDate, toDateInputValue } from "./time.js";
 
 function nextWorkingDates(count, offsetDays = 1) {
   const dates = [];
@@ -55,13 +55,6 @@ async function createClinicSettings() {
     clinicName: "SmileCare",
     hotline: "1900 8888",
     address: "150 Hai Bà Trưng, Quận 1, TP. Hồ Chí Minh",
-    branches: [
-      {
-        id: "smilecare-q1",
-        province: "TP. Hồ Chí Minh",
-        branch: "SmileCare Quận 1 - 150 Hai Bà Trưng"
-      }
-    ],
     faqs: [
       {
         question: "Tôi có thể thay đổi lịch hẹn sau khi đặt không?",
@@ -111,7 +104,6 @@ async function seedUsers(roles, passwordHash) {
     fullName: "Quản trị SmileCare",
     email: "admin@das.local",
     phone: "0900000000",
-    role: "admin",
     roleRef: roles.admin._id,
     status: "active",
     passwordHash
@@ -129,7 +121,6 @@ async function seedUsers(roles, passwordHash) {
       fullName: `Lễ tân ${index + 1}`,
       email: `receptionist${index + 1}@das.local`,
       phone: `090100000${index + 1}`,
-      role: "receptionist",
       roleRef: roles.receptionist._id,
       status: "active",
       passwordHash
@@ -149,7 +140,6 @@ async function seedUsers(roles, passwordHash) {
       fullName: dentist.fullName,
       email: dentist.email,
       phone: dentist.phone,
-      role: "dentist",
       roleRef: roles.dentist._id,
       status: "active",
       passwordHash
@@ -173,7 +163,6 @@ async function seedUsers(roles, passwordHash) {
       fullName: `Y tá ${index + 1}`,
       email: `nurse${index + 1}@das.local`,
       phone: `090300000${index + 1}`,
-      role: "nurse",
       roleRef: roles.nurse._id,
       status: "active",
       passwordHash
@@ -201,7 +190,6 @@ async function seedUsers(roles, passwordHash) {
       fullName: patient.fullName,
       email: `patient${index + 1}@das.local`,
       phone: patient.phone,
-      role: "patient",
       roleRef: roles.patient._id,
       status: "active",
       passwordHash
@@ -336,8 +324,12 @@ async function createSampleAppointment({
   channel = "online",
   dentistPreference = "selected"
 }) {
-  const startAt = combineDateAndTime(date, time);
-  const endAt = addMinutes(startAt, 30);
+  const selectedSlot =
+    APPOINTMENT_SLOTS.find((slot) => slot.start === time) ||
+    APPOINTMENT_SLOTS.find((slot) => time >= slot.start && time < slot.end) ||
+    APPOINTMENT_SLOTS[0];
+  const startAt = combineDateAndTime(date, selectedSlot.start);
+  const endAt = combineDateAndTime(date, selectedSlot.end);
 
   return insertDocuments(COLLECTIONS.appointments, {
     patient: patient._id,
@@ -627,31 +619,20 @@ async function seedOperationalData(users, clinic) {
     {
       fullName: "Đỗ Minh Khang",
       phone: "0988000001",
-      email: "khang@example.com",
       service: services[2]._id,
-      preferredDate: combineDateAndTime(workingDates[1], "14:00"),
-      preferredTime: "14:00",
-      message: "Muốn tư vấn đau răng trước khi đặt lịch.",
-      status: "new"
+      gender: "male"
     },
     {
       fullName: "Võ Ngọc Lan",
       phone: "0988000002",
       service: services[1]._id,
-      preferredDate: combineDateAndTime(workingDates[2], "10:00"),
-      preferredTime: "10:00",
-      message: "Cần tư vấn răng khôn.",
-      status: "contacted",
-      handledBy: receptionists[0]._id
+      gender: "female"
     },
     {
       fullName: "Bùi Thanh Mai",
       phone: "0988000003",
       service: services[4]._id,
-      preferredDate: combineDateAndTime(workingDates[3], "16:00"),
-      preferredTime: "16:00",
-      message: "Quan tâm dịch vụ tẩy trắng răng.",
-      status: "new"
+      gender: "female"
     }
   ]);
 

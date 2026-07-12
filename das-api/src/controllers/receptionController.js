@@ -23,11 +23,6 @@ export async function getConsultations(req, res) {
   res.json({ requests });
 }
 
-export async function updateConsultation(req, res) {
-  const request = await receptionService.updateConsultation(req.params.id, req.body, req.user._id);
-  res.json({ request });
-}
-
 export async function deleteConsultation(req, res) {
   const request = await receptionService.deleteConsultation(req.params.id);
   res.json({ request });

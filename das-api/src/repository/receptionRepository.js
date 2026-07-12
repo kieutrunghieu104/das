@@ -25,9 +25,14 @@ const appointmentPopulate = [
 ];
 
 const consultationPopulate = [
-  { path: "service", select: "name" },
-  { path: "handledBy", select: "fullName" }
+  { path: "service", select: "name" }
 ];
+
+async function attachRole(user) {
+  await populate(user, { path: "roleRef", select: "roleName" });
+  if (user?.roleRef?.roleName) user.role = user.roleRef.roleName;
+  return user;
+}
 
 export async function findReceptionAppointments(query) {
   const appointments = await findMany(
@@ -92,27 +97,28 @@ export async function findReceptionRooms() {
 export async function findConsultationRequests(query = {}, limit = 100) {
   const requests = await findMany(
     COLLECTIONS.consultationRequests,
-    normalizeIdFields(query, ["service", "handledBy"]),
+    normalizeIdFields(query, ["service"]),
     { sort: { createdAt: -1 }, limit }
   );
   await populate(requests, consultationPopulate);
   return requests;
 }
 
-export function findActivePatientById(patientId) {
-  return findOne(COLLECTIONS.users, {
+export async function findActivePatientById(patientId) {
+  const patient = await findOne(COLLECTIONS.users, {
     _id: toObjectId(patientId),
-    role: "patient",
     status: "active"
   });
+  await attachRole(patient);
+  return patient?.role === "patient" ? patient : null;
 }
 
-export function findUserByPhone(phone) {
-  return findOne(COLLECTIONS.users, { phone });
+export async function findUserByPhone(phone) {
+  return attachRole(await findOne(COLLECTIONS.users, { phone }));
 }
 
-export function findUserByEmail(email) {
-  return findOne(COLLECTIONS.users, { email });
+export async function findUserByEmail(email) {
+  return attachRole(await findOne(COLLECTIONS.users, { email }));
 }
 
 export function ensurePatientRole(data) {
@@ -149,12 +155,6 @@ export function createPatientProfile(data) {
     gender: "unknown",
     ...data
   });
-}
-
-export async function updateConsultationRequest(requestId, data) {
-  const request = await updateById(COLLECTIONS.consultationRequests, requestId, data);
-  await populate(request, consultationPopulate);
-  return request;
 }
 
 export function deleteConsultationRequest(requestId) {

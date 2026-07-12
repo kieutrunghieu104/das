@@ -1,5 +1,5 @@
 import { CalendarSearch } from "lucide-react";
-import { bookingSlotOptions } from "../../pages/BookingPage.jsx";
+import { bookingSlotOptions } from "../../utils/format.js";
 
 export default function AppointmentBookingForm({
   bootstrapLoading,

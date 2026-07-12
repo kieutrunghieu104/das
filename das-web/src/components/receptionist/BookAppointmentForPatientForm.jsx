@@ -1,6 +1,6 @@
-import { CalendarPlus, CheckCircle2, UserCheck, UserPlus } from "lucide-react";
-import { todayInput } from "../../utils/format.js";
-import { bookingSlotOptions, maxBookingDate } from "../../pages/BookingPage.jsx";
+import { CalendarPlus, UserCheck, UserPlus } from "lucide-react";
+import { bookingSlotOptions, todayInput } from "../../utils/format.js";
+import { maxBookingDate } from "../../pages/BookingPage.jsx";
 
 export default function BookAppointmentForPatientForm({
   accountMode,
@@ -87,18 +87,6 @@ export default function BookAppointmentForPatientForm({
                   </option>
                 ))}
               </select>
-            </label>
-            <label className="account-create-option">
-              <input
-                type="checkbox"
-                checked={newPatient.createAccount}
-                onChange={(event) => onNewPatientChange({ createAccount: event.target.checked })}
-              />
-              <span className="account-create-box"><CheckCircle2 size={18} /></span>
-              <span>
-                <strong>Tạo tài khoản mới</strong>
-                <small>Tài khoản dùng số điện thoại của bệnh nhân, mật khẩu mặc định theo hệ thống.</small>
-              </span>
             </label>
           </div>
         )}

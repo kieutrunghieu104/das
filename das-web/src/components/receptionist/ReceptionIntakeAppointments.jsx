@@ -1,8 +1,7 @@
 import { ClipboardList } from "lucide-react";
 import EmptyState from "../EmptyState.jsx";
 import StatusBadge from "../StatusBadge.jsx";
-import { formatSlotWithDate } from "../../utils/appointmentSlots.js";
-import { todayInput } from "../../utils/format.js";
+import { bookingSlotOptions, formatSlotWithDate, getAppointmentSlot, todayInput } from "../../utils/format.js";
 import { maxBookingDate } from "../../pages/BookingPage.jsx";
 import ReceptionAppointmentFilters from "./ReceptionAppointmentFilters.jsx";
 
@@ -41,7 +40,7 @@ export default function ReceptionIntakeAppointments({
           {appointments.map((appointment) => {
             const manualForm = manualSchedules[appointment._id] || {
               date: appointment.startAt ? new Date(appointment.startAt).toISOString().slice(0, 10) : todayInput(),
-              time: appointment.startAt ? new Date(appointment.startAt).toTimeString().slice(0, 5) : "08:00",
+              time: appointment.startAt ? getAppointmentSlot(appointment.startAt).value : bookingSlotOptions[0].value,
               roomId: appointment.room?._id || rooms[0]?._id || ""
             };
             return (
@@ -71,7 +70,13 @@ export default function ReceptionIntakeAppointments({
                       value={manualForm.date}
                       onChange={(event) => updateManualSchedule(appointment, { date: event.target.value })}
                     />
-                    <input type="time" value={manualForm.time} onChange={(event) => updateManualSchedule(appointment, { time: event.target.value })} />
+                    <select value={manualForm.time} onChange={(event) => updateManualSchedule(appointment, { time: event.target.value })}>
+                      {bookingSlotOptions.map((slot) => (
+                        <option value={slot.value} key={slot.value}>
+                          {slot.label}
+                        </option>
+                      ))}
+                    </select>
                     <select
                       aria-label="Bác sĩ"
                       value={manualForm.roomId}

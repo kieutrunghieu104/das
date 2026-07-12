@@ -18,6 +18,12 @@ function aggregate(collectionName, pipeline) {
   return getCollection(collectionName).aggregate(pipeline).toArray();
 }
 
+async function attachRole(user) {
+  await populate(user, { path: "roleRef", select: "roleName" });
+  if (user?.roleRef?.roleName) user.role = user.roleRef.roleName;
+  return user;
+}
+
 export function aggregateAppointmentStats() {
   return aggregate(COLLECTIONS.appointments, [
     { $group: { _id: "$status", count: { $sum: 1 } } }
@@ -35,10 +41,11 @@ export function countPatients() {
   return getCollection(COLLECTIONS.patients).countDocuments({});
 }
 
-export function countNewPatients(startDate, endDate) {
+export async function countNewPatients(startDate, endDate) {
+  const role = await ensureRole({ roleName: "patient" });
   const createdAt = { $gte: startDate };
   if (endDate) createdAt.$lte = endDate;
-  return getCollection(COLLECTIONS.users).countDocuments({ role: "patient", createdAt });
+  return getCollection(COLLECTIONS.users).countDocuments({ roleRef: role._id, createdAt });
 }
 
 export function aggregateReturningPatients(match = {}) {
@@ -85,7 +92,7 @@ export function aggregateReviewStats() {
 export function findDashboardUsers() {
   return findMany(COLLECTIONS.users, {}, {
     projection: "-passwordHash",
-    sort: { role: 1, fullName: 1 },
+    sort: { roleRef: 1, fullName: 1 },
     limit: 160
   });
 }
@@ -93,7 +100,7 @@ export function findDashboardUsers() {
 export function findUsers(query = {}, limit = 200) {
   return findMany(COLLECTIONS.users, query, {
     projection: "-passwordHash",
-    sort: { role: 1, fullName: 1 },
+    sort: { roleRef: 1, fullName: 1 },
     limit
   });
 }
@@ -194,8 +201,8 @@ export function findDuplicateEmail(email, excludedUserId) {
   });
 }
 
-export function findUserById(userId) {
-  return findById(COLLECTIONS.users, userId);
+export async function findUserById(userId) {
+  return attachRole(await findById(COLLECTIONS.users, userId));
 }
 
 export async function updateUser(userId, data) {
@@ -207,6 +214,7 @@ export async function updateUser(userId, data) {
 export function saveUser(user) {
   const update = { ...user };
   delete update._id;
+  delete update.role;
   return updateById(COLLECTIONS.users, user._id, update);
 }
 

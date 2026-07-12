@@ -55,7 +55,6 @@ function getReviewCards(reviews) {
 
 export default function PublicHome() {
   const { services, dentists, rooms, reviews, clinic } = usePublicBootstrap();
-  const clinicBranches = clinic.branches || [];
   const faqs = clinic.faqs || [];
   const hotline = clinic.hotline || clinic.receptionist?.phone || "";
   const hotlineHref = hotline ? `tel:${hotline.replace(/\s/g, "")}` : "#consultation";
@@ -133,7 +132,7 @@ export default function PublicHome() {
 
         <DentalService services={serviceCards} />
 
-        <ClinicInformation clinicBranches={clinicBranches} dentistCount={dentistCards.length} roomCount={roomCount} />
+        <ClinicInformation address={clinic.address} dentistCount={dentistCards.length} roomCount={roomCount} />
 
         <DentistProfile dentistSlides={dentistSlides} />
 
@@ -165,7 +164,6 @@ export default function PublicHome() {
         <ReviewList reviews={reviewCards} />
 
         <ConsultationForm
-          branchName={clinicBranches[0]?.branch || clinic.address || "SmileCare"}
           onError={setError}
           onMessage={setMessage}
           services={services}

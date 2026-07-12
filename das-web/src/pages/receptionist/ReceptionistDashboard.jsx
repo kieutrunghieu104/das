@@ -8,8 +8,7 @@ import ReceptionCheckInAppointments from "../../components/receptionist/Receptio
 import ReceptionClinicalQueue from "../../components/receptionist/ReceptionClinicalQueue.jsx";
 import ReceptionIntakeAppointments from "../../components/receptionist/ReceptionIntakeAppointments.jsx";
 import { api, getErrorMessage } from "../../utils/api.js";
-import { bookingSlotOptions, clinicDateInput, compareQueueWithinSlot, getAppointmentSlot } from "../../utils/appointmentSlots.js";
-import { todayInput } from "../../utils/format.js";
+import { bookingSlotOptions, clinicDateInput, compareQueueWithinSlot, getAppointmentSlot, todayInput } from "../../utils/format.js";
 import { firstError, requireValue, validateDate, validateName, validateNote, validatePhone } from "../../utils/validation.js";
 import { maxBookingDate, toClinicIso } from "../BookingPage.jsx";
 
@@ -37,7 +36,7 @@ export default function ReceptionistDashboard() {
   const [appointmentSearch, setAppointmentSearch] = useState("");
   const [patientSearch, setPatientSearch] = useState("");
   const [accountMode, setAccountMode] = useState("existing");
-  const [newPatient, setNewPatient] = useState({ fullName: "", email: "", phone: "", gender: "unknown", createAccount: false });
+  const [newPatient, setNewPatient] = useState({ fullName: "", email: "", phone: "", gender: "unknown", createAccount: true });
   const [booking, setBooking] = useState({ patientId: "", serviceId: "", time: "08:00", note: "" });
   const [resetPasswords, setResetPasswords] = useState({});
   const [manualSchedules, setManualSchedules] = useState({});
@@ -140,7 +139,7 @@ export default function ReceptionistDashboard() {
       if (accountMode === "new") {
         const res = await api.post("/reception/patients", newPatient);
         patientId = res.data.patient._id;
-        setNewPatient({ fullName: "", email: "", phone: "", gender: "unknown", createAccount: false });
+        setNewPatient({ fullName: "", email: "", phone: "", gender: "unknown", createAccount: true });
       }
 
       await api.post("/appointments", {
@@ -311,18 +310,6 @@ export default function ReceptionistDashboard() {
         delete next[appointment._id];
         return next;
       });
-      load();
-    } catch (err) {
-      setError(getErrorMessage(err));
-    }
-  }
-
-  async function updateConsultation(id, status) {
-    if (!window.confirm("Xác nhận cập nhật yêu cầu tư vấn?")) return;
-
-    try {
-      await api.patch(`/reception/consultations/${id}`, { status });
-      setMessage("Đã cập nhật yêu cầu tư vấn.");
       load();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -507,7 +494,6 @@ export default function ReceptionistDashboard() {
           consultations={consultations}
           loading={loading}
           onDeleteConsultation={deleteConsultation}
-          onUpdateConsultation={updateConsultation}
         />
       )}
     </div>
@@ -535,13 +521,10 @@ function isLockedScheduleAppointment(appointment) {
 
 function defaultManualSchedule(appointment, rooms) {
   const startAt = appointment.startAt ? new Date(appointment.startAt) : new Date();
-  const date = Number.isNaN(startAt.getTime()) ? todayInput() : startAt.toISOString().slice(0, 10);
-  const hours = Number.isNaN(startAt.getTime()) ? "08" : String(startAt.getHours()).padStart(2, "0");
-  const minutes = Number.isNaN(startAt.getTime()) ? "00" : String(startAt.getMinutes()).padStart(2, "0");
+  const date = Number.isNaN(startAt.getTime()) ? todayInput() : clinicDateInput(startAt);
   return {
     date,
-    time: `${hours}:${minutes}`,
+    time: Number.isNaN(startAt.getTime()) ? bookingSlotOptions[0].value : getAppointmentSlot(startAt).value,
     roomId: appointment.room?._id || rooms[0]?._id || ""
   };
 }
-

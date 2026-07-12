@@ -3,17 +3,11 @@ import mongoose from "mongoose";
 const consultationRequestSchema = new mongoose.Schema({
   fullName: String,
   phone: String,
-  email: String,
-  service: { type: mongoose.Schema.Types.ObjectId, ref: "dentalservices" },
-  message: String,
-  status: String,
-  preferredDate: Date,
-  preferredTime: String,
-  handledBy: { type: mongoose.Schema.Types.ObjectId, ref: "users" }
+  gender: String,
+  service: { type: mongoose.Schema.Types.ObjectId, ref: "dentalservices" }
 }, {
-  timestamps: true,
+  timestamps: { createdAt: true, updatedAt: false },
   collection: "consultationrequests",
-  strict: false,
   versionKey: false
 });
 

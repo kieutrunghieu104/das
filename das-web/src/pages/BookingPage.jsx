@@ -5,12 +5,9 @@ import AppointmentBookingForm from "../components/patient/AppointmentBookingForm
 import { useAuth } from "../redux/AuthContext.jsx";
 import { usePublicBootstrap } from "../utils/usePublicBootstrap.js";
 import { api, getErrorMessage } from "../utils/api.js";
-import { bookingSlotOptions } from "../utils/appointmentSlots.js";
-import { todayInput } from "../utils/format.js";
+import { bookingSlotOptions, todayInput } from "../utils/format.js";
 import { canUsePatientBooking } from "../utils/roles.js";
 import { firstError, requireValue, validateDate, validateNote } from "../utils/validation.js";
-
-export { bookingSlotOptions };
 
 export function toClinicIso(date, time) {
   return new Date(`${date}T${time}:00+07:00`).toISOString();

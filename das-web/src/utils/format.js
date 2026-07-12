@@ -1,6 +1,7 @@
 const CLINIC_TIME_ZONE = "Asia/Ho_Chi_Minh";
 
 function clinicDateTimeParts(value) {
+  if (!value) return null;
   const parts = new Intl.DateTimeFormat("vi-VN", {
     timeZone: CLINIC_TIME_ZONE,
     year: "numeric",
@@ -25,6 +26,7 @@ export function formatDateTime(value) {
   const dateOnly = dateOnlyText(value);
   if (dateOnly) return dateOnly;
   const parts = clinicDateTimeParts(value);
+  if (!parts) return "-";
   return `${parts.day}/${parts.month}/${parts.year} ${parts.hour}:${parts.minute}`;
 }
 
@@ -33,13 +35,82 @@ export function formatDateOnly(value) {
   const dateOnly = dateOnlyText(value);
   if (dateOnly) return dateOnly;
   const parts = clinicDateTimeParts(value);
+  if (!parts) return "-";
   return `${parts.day}/${parts.month}/${parts.year}`;
 }
 
 export function formatTime(value) {
   if (!value) return "-";
   const parts = clinicDateTimeParts(value);
+  if (!parts) return "-";
   return `${parts.hour}:${parts.minute}`;
+}
+
+export function clinicDateInput(value) {
+  const parts = clinicDateTimeParts(value);
+  return parts ? `${parts.year}-${parts.month}-${parts.day}` : "";
+}
+
+function timeTextFromMinutes(minutes) {
+  const hour = String(Math.floor(minutes / 60)).padStart(2, "0");
+  const minute = String(minutes % 60).padStart(2, "0");
+  return `${hour}:${minute}`;
+}
+
+export const bookingSlotOptions = [
+  { value: "08:00", slotId: "slot-0800", slotName: "Slot 1", startMinutes: 8 * 60, endMinutes: 10 * 60 + 30 },
+  { value: "10:30", slotId: "slot-1030", slotName: "Slot 2", startMinutes: 10 * 60 + 30, endMinutes: 12 * 60 },
+  { value: "14:00", slotId: "slot-1400", slotName: "Slot 3", startMinutes: 14 * 60, endMinutes: 16 * 60 },
+  { value: "16:00", slotId: "slot-1600", slotName: "Slot 4", startMinutes: 16 * 60, endMinutes: 17 * 60 + 30 }
+].map((slot) => {
+  const startText = timeTextFromMinutes(slot.startMinutes);
+  const endText = timeTextFromMinutes(slot.endMinutes);
+  return {
+    ...slot,
+    timeLabel: `${startText} - ${endText}`,
+    label: `${slot.slotName} (${startText} - ${endText})`
+  };
+});
+
+export function getAppointmentSlot(value) {
+  const time = formatTime(value);
+  const [hour, minute] = time.split(":").map(Number);
+  const minutes = hour * 60 + minute;
+  return bookingSlotOptions.find((slot) => slot.value === time) ||
+    bookingSlotOptions.find((slot) => minutes >= slot.startMinutes && minutes < slot.endMinutes) || {
+    value: time,
+    slotId: `slot-${time.replace(":", "")}`,
+    slotName: time,
+    timeLabel: time,
+    label: time
+  };
+}
+
+export function formatSlotWithDate(value) {
+  const slot = getAppointmentSlot(value);
+  return `${formatDateOnly(value)} - ${slot.label}`;
+}
+
+export function compareAppointmentsNewestFirst(a, b) {
+  const aTime = new Date(a.createdAt || a.updatedAt || a.startAt || 0).getTime();
+  const bTime = new Date(b.createdAt || b.updatedAt || b.startAt || 0).getTime();
+  return bTime - aTime;
+}
+
+export function compareQueueWithinSlot(a, b) {
+  const aChecked = Boolean(a.checkedInAt || a.checkInTime);
+  const bChecked = Boolean(b.checkedInAt || b.checkInTime);
+  if (aChecked !== bChecked) return aChecked ? -1 : 1;
+
+  if (aChecked && bChecked) {
+    const aCheckInTime = new Date(a.checkInTime || a.checkedInAt).getTime();
+    const bCheckInTime = new Date(b.checkInTime || b.checkedInAt).getTime();
+    return aCheckInTime - bCheckInTime;
+  }
+
+  const aCreatedTime = new Date(a.createdAt || a.updatedAt || a.startAt || 0).getTime();
+  const bCreatedTime = new Date(b.createdAt || b.updatedAt || b.startAt || 0).getTime();
+  return bCreatedTime - aCreatedTime;
 }
 
 export function formatMoney(value) {

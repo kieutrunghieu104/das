@@ -18,8 +18,8 @@ export default function ClinicalPerformedServices({
 }) {
   const selectedServices = form.services || {};
   const extraCosts = form.extraCosts || [];
-  const isScheduled = selectedAppointment?.status === "scheduled";
-  const canEditCharges = Boolean(selectedAppointment) && !isScheduled;
+  const canEditCharges = selectedAppointment?.status === "in_treatment";
+  const isLockedForCharges = Boolean(selectedAppointment) && !canEditCharges;
 
   const total = useMemo(() => {
     const serviceTotal = Object.values(selectedServices).reduce((sum, item) => {
@@ -58,10 +58,10 @@ export default function ClinicalPerformedServices({
           <EmptyState title="Chọn lịch khám" text="Dịch vụ đã thực hiện chỉ hiển thị sau khi y tá chọn một lịch khám cụ thể." />
         )}
 
-        {isScheduled && (
+        {isLockedForCharges && (
           <div className="empty-state compact">
             <strong>Chưa được chọn dịch vụ</strong>
-            <span>Lịch khám này chưa diễn ra. Y tá chỉ xác nhận dịch vụ sau khi bệnh nhân được chuyển sang đang khám.</span>
+            <span>Y tá chỉ xác nhận dịch vụ khi lịch khám đang ở trạng thái Đang khám.</span>
           </div>
         )}
 

@@ -6,9 +6,8 @@ import ClinicalWorkSchedule from "../../components/clinical/ClinicalWorkSchedule
 import ClinicalPerformedServices from "../../components/clinical/nurse/ClinicalPerformedServices.jsx";
 import Feedback from "../../components/Feedback.jsx";
 import { useAuth } from "../../redux/AuthContext.jsx";
-import { bookingSlotOptions, compareQueueWithinSlot, getAppointmentSlot } from "../../utils/appointmentSlots.js";
 import { api, getErrorMessage } from "../../utils/api.js";
-import { todayInput } from "../../utils/format.js";
+import { bookingSlotOptions, compareQueueWithinSlot, getAppointmentSlot, todayInput } from "../../utils/format.js";
 
 function getClinicalFeatures(role) {
   return [
@@ -100,7 +99,7 @@ export default function ClinicalDashboard() {
       }));
       setPerformedServicesForm((current) => ({
         ...current,
-        appointmentId: nextAppointments.some((appointment) => appointment._id === current.appointmentId)
+        appointmentId: nextAppointments.some((appointment) => appointment._id === current.appointmentId && appointment.status === "in_treatment")
           ? current.appointmentId
           : ""
       }));
@@ -136,7 +135,8 @@ export default function ClinicalDashboard() {
   const selectedTreatmentRecords = useMemo(() => getPatientTreatmentRecords(records, selectedAppointment), [records, selectedAppointment]);
   const selectedTreatmentRecord = selectedSearchTreatmentRecord || selectedTreatmentRecords[0] || null;
   const selectedTreatmentVisits = useMemo(() => normalizeTreatmentVisits(selectedTreatmentRecord), [selectedTreatmentRecord]);
-  const selectedPerformedAppointment = appointments.find((appointment) => appointment._id === performedServicesForm.appointmentId);
+  const performedServiceAppointments = useMemo(() => appointments.filter((appointment) => appointment.status === "in_treatment"), [appointments]);
+  const selectedPerformedAppointment = performedServiceAppointments.find((appointment) => appointment._id === performedServicesForm.appointmentId);
 
   function updateRecord(field, value) {
     if (field === "recordId") {
@@ -147,7 +147,7 @@ export default function ClinicalDashboard() {
       }
     }
     if (field === "appointmentId") {
-      const appointment = appointments.find((item) => item._id === value);
+      const appointment = performedServiceAppointments.find((item) => item._id === value);
       if (appointment) {
         selectTreatmentAppointment(appointment);
         return;
@@ -442,8 +442,8 @@ export default function ClinicalDashboard() {
     }
 
     const appointment = appointments.find((item) => item._id === performedServicesForm.appointmentId);
-    if (appointment?.status === "scheduled") {
-      setError("Lịch khám chưa diễn ra nên chưa được chọn dịch vụ.");
+    if (appointment?.status !== "in_treatment") {
+      setError("Chỉ lịch đang khám mới được xác nhận dịch vụ đã làm.");
       return;
     }
 
@@ -543,7 +543,7 @@ export default function ClinicalDashboard() {
 
       {activeFeature === "treatment" && (
         <ClinicalTreatmentForm
-          appointments={appointments}
+          appointments={performedServiceAppointments}
           createForm={treatmentCreateForm}
           form={recordForm}
           onCreateChange={updateTreatmentCreateForm}

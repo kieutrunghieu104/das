@@ -20,9 +20,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import Feedback from "../components/Feedback.jsx";
 import { useAuth } from "../redux/AuthContext.jsx";
-import { clinicDateInput } from "../utils/appointmentSlots.js";
 import { api, getErrorMessage } from "../utils/api.js";
-import { todayInput } from "../utils/format.js";
+import { clinicDateInput, todayInput } from "../utils/format.js";
 import { canUsePublicLookup, isClinicalRole } from "../utils/roles.js";
 import { firstError, validateEmail, validateName, validatePassword, validatePhone } from "../utils/validation.js";
 import ChangeUserPassword from "./user/ChangeUserPassword.jsx";
@@ -287,7 +286,7 @@ export default function AppLayout() {
               ["scheduled", "confirmed", "checked_in", "in_treatment"].includes(item.status) &&
               clinicDateInput(item.startAt) === today
           ).length,
-          consultations: consultations.filter((item) => clinicDateInput(item.createdAt || item.preferredDate) === today).length
+          consultations: consultations.filter((item) => clinicDateInput(item.createdAt) === today).length
         });
         return;
       }

@@ -11,7 +11,6 @@ const publicDentistProjection = {
   fullName: 1,
   email: 1,
   phone: 1,
-  role: 1,
   roleRef: 1,
   status: 1,
   createdAt: 1
@@ -22,13 +21,8 @@ async function getRoleIds(roleName) {
   return roles.map((role) => role._id);
 }
 
-function roleUserFilter(roleName, roleIds) {
-  const clauses = [{ role: roleName }];
-  if (roleIds.length) {
-    clauses.push({ roleRef: { $in: roleIds } });
-    clauses.push({ role: { $in: roleIds } });
-  }
-  return { $or: clauses };
+function roleUserFilter(roleIds) {
+  return roleIds.length ? { roleRef: { $in: roleIds } } : { roleRef: null };
 }
 
 async function findActiveUsersByRole(roleName, options = {}) {
@@ -36,7 +30,7 @@ async function findActiveUsersByRole(roleName, options = {}) {
   const cursor = getCollection(COLLECTIONS.users)
     .find({
       status: "active",
-      ...roleUserFilter(roleName, roleIds)
+      ...roleUserFilter(roleIds)
     })
     .project(options.projection || {})
     .sort(options.sort || {});
@@ -133,7 +127,7 @@ export async function findActiveDentistById(id) {
     {
       _id: toObjectId(id),
       status: "active",
-      ...roleUserFilter("dentist", roleIds)
+      ...roleUserFilter(roleIds)
     },
     { projection: publicDentistProjection }
   );
@@ -191,8 +185,5 @@ export async function getPublicBootstrapData() {
 }
 
 export function createConsultationRequest(data) {
-  return insertDocuments(COLLECTIONS.consultationRequests, {
-    status: "new",
-    ...data
-  });
+  return insertDocuments(COLLECTIONS.consultationRequests, data);
 }

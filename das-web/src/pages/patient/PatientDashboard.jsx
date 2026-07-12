@@ -5,10 +5,9 @@ import PatientAppointmentList from "../../components/patient/PatientAppointmentL
 import PatientInvoiceList from "../../components/patient/PatientInvoiceList.jsx";
 import PatientTreatmentRecords from "../../components/patient/PatientTreatmentRecords.jsx";
 import { api, getErrorMessage } from "../../utils/api.js";
-import { clinicDateInput, getAppointmentSlot } from "../../utils/appointmentSlots.js";
-import { formatPriceText, todayInput } from "../../utils/format.js";
+import { bookingSlotOptions, clinicDateInput, formatPriceText, getAppointmentSlot, todayInput } from "../../utils/format.js";
 import { usePublicBootstrap } from "../../utils/usePublicBootstrap.js";
-import BookingPage, { bookingSlotOptions, maxBookingDate, toClinicIso } from "../BookingPage.jsx";
+import BookingPage, { maxBookingDate, toClinicIso } from "../BookingPage.jsx";
 
 const lockedPatientStatuses = new Set(["cancelled", "rejected", "completed", "no_show"]);
 const patientFeatures = new Set(["home", "booking", "appointments", "history", "invoices", "records"]);

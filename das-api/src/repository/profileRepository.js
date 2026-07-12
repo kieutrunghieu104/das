@@ -1,6 +1,6 @@
 import { toObjectId } from "../config/mongodb.js";
 import { COLLECTIONS } from "../models/index.js";
-import { findMany, findOne, updateOneAndReturn } from "./mongoRepository.js";
+import { findMany, findOne, populate, updateOneAndReturn } from "./mongoRepository.js";
 
 const PROFILE_COLLECTION_BY_ROLE = Object.freeze({
   admin: COLLECTIONS.adminProfiles,
@@ -16,6 +16,19 @@ function compact(data) {
 
 export function getProfileCollection(role) {
   return PROFILE_COLLECTION_BY_ROLE[role] || null;
+}
+
+export function roleNameFromUser(user) {
+  if (!user) return "";
+  if (user.roleRef?.roleName) return user.roleRef.roleName;
+  return typeof user.role === "string" ? user.role : "";
+}
+
+export function normalizeUserRole(user) {
+  if (!user) return user;
+  const role = roleNameFromUser(user);
+  if (role) user.role = role;
+  return user;
 }
 
 export function pickUserFields(data = {}) {
@@ -82,6 +95,7 @@ export function mergeProfileFields(user, profile = null) {
   if (!user) return user;
 
   const merged = { ...user };
+  normalizeUserRole(merged);
   if (profile) {
     merged.profile = profile;
   }
@@ -136,12 +150,17 @@ export async function findProfileByUser(user) {
 
 export async function attachProfileToUser(user) {
   if (!user) return user;
+  await populate(user, { path: "roleRef", select: "roleName" });
+  normalizeUserRole(user);
   const profile = await findProfileByUser(user);
   return mergeProfileFields(user, profile);
 }
 
 export async function attachProfilesToUsers(users = []) {
   if (!users.length) return [];
+
+  await populate(users, { path: "roleRef", select: "roleName" });
+  users.forEach(normalizeUserRole);
 
   const profileMaps = new Map();
   const usersByRole = new Map();

@@ -44,16 +44,25 @@ export async function findActiveRoomsWithDentists() {
   return rooms;
 }
 
-export function findActiveNurses() {
+async function getRoleIds(roleName) {
+  const roles = await findMany(COLLECTIONS.roles, { roleName }, { projection: "_id" });
+  return roles.map((role) => role._id);
+}
+
+export async function findActiveNurses() {
+  const roleIds = await getRoleIds("nurse");
   return findMany(
     COLLECTIONS.users,
-    { role: "nurse", status: "active" },
+    { roleRef: { $in: roleIds }, status: "active" },
     { sort: { fullName: 1 } }
   );
 }
 
-export function findPatientById(patientId) {
-  return findById(COLLECTIONS.users, patientId);
+export async function findPatientById(patientId) {
+  const patient = await findById(COLLECTIONS.users, patientId);
+  await populate(patient, { path: "roleRef", select: "roleName" });
+  if (patient?.roleRef?.roleName) patient.role = patient.roleRef.roleName;
+  return patient;
 }
 
 export function createAppointment(data) {

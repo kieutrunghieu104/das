@@ -1,6 +1,6 @@
 import { CalendarDays, CheckCircle2, Clock, MapPin, UsersRound } from "lucide-react";
 
-export default function ClinicInformation({ clinicBranches, dentistCount, roomCount }) {
+export default function ClinicInformation({ address, dentistCount, roomCount }) {
   return (
     <section className="smile-section smile-about" id="about">
       <div className="smile-about-copy">
@@ -22,15 +22,13 @@ export default function ClinicInformation({ clinicBranches, dentistCount, roomCo
       </div>
 
       <div className="smile-clinic-panel">
-        {clinicBranches.map((clinic) => (
-          <article key={clinic.id}>
-            <MapPin size={20} />
-            <div>
-              <strong>{clinic.branch}</strong>
-              <span>{clinic.province}</span>
-            </div>
-          </article>
-        ))}
+        <article>
+          <MapPin size={20} />
+          <div>
+            <strong>SmileCare</strong>
+            <span>{address || "Địa chỉ phòng khám đang được cập nhật."}</span>
+          </div>
+        </article>
         <article>
           <CalendarDays size={20} />
           <div>

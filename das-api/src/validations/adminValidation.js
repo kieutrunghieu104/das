@@ -32,6 +32,7 @@ export const updateAdminUserSchema = z.object({
   email: optionalEmailSchema,
   phone: optionalPhoneSchema,
   address: z.string().trim().max(255).optional().or(z.literal("")),
+  role: z.enum(["patient", "receptionist", "dentist", "nurse", "admin"]).optional(),
   status: z.enum(["active", "inactive", "locked"]).optional(),
   bio: noteSchema,
   yearsOfExperience: z.coerce.number().int().min(0).max(80).optional()

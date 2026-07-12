@@ -163,26 +163,14 @@ export default function AccountManagement({
                 <input value={editingUser.address || ""} onChange={(event) => onEditingUserChange({ address: event.target.value })} maxLength={255} />
               </label>
               <label className="field">
-                <span>Trạng thái</span>
-                <select value={editingUser.status || "active"} onChange={(event) => onEditingUserChange({ status: event.target.value })}>
-                  <option value="active">Hoạt động</option>
-                  <option value="inactive">Ngưng</option>
-                  <option value="locked">Khóa</option>
+                <span>Vai trò</span>
+                <select value={editingUser.role || "patient"} onChange={(event) => onEditingUserChange({ role: event.target.value })}>
+                  <option value="patient">Bệnh nhân</option>
+                  <option value="receptionist">Lễ tân</option>
+                  <option value="dentist">Bác sĩ</option>
+                  <option value="nurse">Y tá</option>
+                  <option value="admin">Quản trị viên</option>
                 </select>
-              </label>
-              <label className="field">
-                <span>Số năm kinh nghiệm</span>
-                <input
-                  min="0"
-                  max="80"
-                  type="number"
-                  value={editingUser.yearsOfExperience ?? 0}
-                  onChange={(event) => onEditingUserChange({ yearsOfExperience: event.target.value })}
-                />
-              </label>
-              <label className="field wide">
-                <span>Ghi chú / mô tả</span>
-                <textarea value={editingUser.bio || ""} onChange={(event) => onEditingUserChange({ bio: event.target.value })} rows="3" />
               </label>
             </div>
             <div className="row-actions">

@@ -5,7 +5,6 @@ const userSchema = new mongoose.Schema({
   email: { type: String, trim: true, lowercase: true, sparse: true },
   phone: String,
   passwordHash: String,
-  role: String,
   roleRef: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "roles"
