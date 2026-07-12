@@ -56,19 +56,20 @@ async function createRoleProfile(user, data) {
   if (user.role === "patient") {
     await adminRepository.createPatientProfile({ user: user._id });
   } else if (user.role === "receptionist") {
-    await adminRepository.createReceptionistProfile({ user: user._id });
+    await adminRepository.createReceptionistProfile({ user: user._id, address: data.address || "" });
   } else if (user.role === "dentist") {
     await adminRepository.createDentistProfile({
       user: user._id,
       qualification: "Bác sĩ Răng Hàm Mặt",
       experienceYears: data.yearsOfExperience || 0,
       description: data.bio,
+      address: data.address || "",
       avatarUrl: data.avatarUrl || undefined
     });
   } else if (user.role === "nurse") {
-    await adminRepository.createNurseProfile({ user: user._id, qualification: "Y tá đã đăng ký" });
+    await adminRepository.createNurseProfile({ user: user._id, qualification: "Y tá đã đăng ký", address: data.address || "" });
   } else if (user.role === "admin") {
-    await adminRepository.createAdminProfile({ user: user._id, position: "Quản trị hệ thống" });
+    await adminRepository.createAdminProfile({ user: user._id, position: "Quản trị hệ thống", address: data.address || "" });
   }
 }
 

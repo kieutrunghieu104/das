@@ -29,6 +29,7 @@ const defaultUserForm = {
   fullName: "",
   email: "",
   phone: "",
+  address: "",
   role: "patient"
 };
 
@@ -279,6 +280,7 @@ export default function AdminDashboard() {
       fullName: user.fullName || "",
       email: user.email || "",
       phone: user.phone || "",
+      address: user.address || "",
       status: user.status || "active",
       bio: user.bio || "",
       yearsOfExperience: user.yearsOfExperience || 0
@@ -306,6 +308,7 @@ export default function AdminDashboard() {
         fullName: editingUser.fullName,
         email: editingUser.email,
         phone: editingUser.phone,
+        address: editingUser.address,
         status: editingUser.status,
         bio: editingUser.bio,
         yearsOfExperience: Number(editingUser.yearsOfExperience || 0)

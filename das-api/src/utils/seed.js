@@ -129,7 +129,8 @@ async function seedUsers(roles, passwordHash) {
   await insertDocuments(COLLECTIONS.adminProfiles, {
     user: admin._id,
     position: "Quản trị hệ thống phòng khám",
-    permissionLevel: "super_admin"
+    permissionLevel: "super_admin",
+    address: "150 Hai Bà Trưng, Quận 1, TP. Hồ Chí Minh"
   });
 
   const receptionists = await insertDocuments(
@@ -146,7 +147,10 @@ async function seedUsers(roles, passwordHash) {
   );
   await insertDocuments(
     COLLECTIONS.receptionists,
-    receptionists.map((user) => ({ user: user._id }))
+    receptionists.map((user, index) => ({
+      user: user._id,
+      address: `Quầy lễ tân ${index + 1}, SmileCare Quận 1`
+    }))
   );
 
   const dentists = await insertDocuments(
@@ -168,6 +172,7 @@ async function seedUsers(roles, passwordHash) {
       qualification: "Bác sĩ Răng Hàm Mặt",
       experienceYears: dentistProfiles[index].yearsOfExperience,
       description: dentistProfiles[index].bio,
+      address: "SmileCare Quận 1",
       avatarUrl: dentistProfiles[index].avatarUrl
     }))
   );
@@ -188,7 +193,8 @@ async function seedUsers(roles, passwordHash) {
     COLLECTIONS.nurses,
     nurses.map((user) => ({
       user: user._id,
-      qualification: "Y tá đã đăng ký"
+      qualification: "Y tá đã đăng ký",
+      address: "SmileCare Quận 1"
     }))
   );
 

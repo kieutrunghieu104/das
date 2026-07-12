@@ -43,6 +43,7 @@ export function pickProfileFields(role, data = {}) {
       qualification: data.qualification,
       experienceYears: data.experienceYears ?? data.yearsOfExperience,
       description: data.description ?? data.bio,
+      address: data.address,
       avatarUrl: data.avatarUrl || undefined
     });
   }
@@ -50,6 +51,7 @@ export function pickProfileFields(role, data = {}) {
   if (role === "nurse") {
     return compact({
       qualification: data.qualification,
+      address: data.address,
       avatarUrl: data.avatarUrl || undefined,
       bio: data.bio
     });
@@ -57,6 +59,7 @@ export function pickProfileFields(role, data = {}) {
 
   if (role === "receptionist") {
     return compact({
+      address: data.address,
       avatarUrl: data.avatarUrl || undefined,
       bio: data.bio
     });
@@ -66,6 +69,7 @@ export function pickProfileFields(role, data = {}) {
     return compact({
       position: data.position,
       permissionLevel: data.permissionLevel,
+      address: data.address,
       avatarUrl: data.avatarUrl || undefined,
       bio: data.bio
     });
@@ -96,16 +100,19 @@ export function mergeProfileFields(user, profile = null) {
     merged.experienceYears = merged.yearsOfExperience;
     merged.bio = profile?.description || "";
     merged.description = profile?.description || "";
+    merged.address = profile?.address || "";
     merged.avatarUrl = profile?.avatarUrl || "";
   }
 
   if (merged.role === "nurse") {
     merged.qualification = profile?.qualification || "";
+    merged.address = profile?.address || "";
     merged.avatarUrl = profile?.avatarUrl || "";
     merged.bio = profile?.bio || "";
   }
 
   if (merged.role === "receptionist") {
+    merged.address = profile?.address || "";
     merged.avatarUrl = profile?.avatarUrl || "";
     merged.bio = profile?.bio || "";
   }
@@ -113,6 +120,7 @@ export function mergeProfileFields(user, profile = null) {
   if (merged.role === "admin") {
     merged.position = profile?.position || "";
     merged.permissionLevel = profile?.permissionLevel || "";
+    merged.address = profile?.address || "";
     merged.avatarUrl = profile?.avatarUrl || "";
     merged.bio = profile?.bio || "";
   }

@@ -44,6 +44,10 @@ export default function AccountManagement({
             <input value={userForm.phone} onChange={(event) => onUserFormChange({ phone: event.target.value })} />
           </label>
           <label className="field">
+            <span>Địa chỉ</span>
+            <input value={userForm.address || ""} onChange={(event) => onUserFormChange({ address: event.target.value })} maxLength={255} />
+          </label>
+          <label className="field">
             <span>Vai trò</span>
             <select value={userForm.role} onChange={(event) => onUserFormChange({ role: event.target.value })}>
               <option value="patient">Bệnh nhân</option>

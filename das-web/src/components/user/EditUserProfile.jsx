@@ -29,8 +29,8 @@ export default function EditUserProfile({ form, onCancel, onChange, onSubmit, us
           <span>Email</span>
           <input type="email" value={form.email || ""} onChange={(event) => onChange({ ...form, email: event.target.value })} />
         </label>
-        {isPatient && (
-          <div className="form-grid account-form-grid">
+        <div className="form-grid account-form-grid">
+          {isPatient && (
             <label className="field">
               <span>Giới tính</span>
               <select value={form.gender} onChange={(event) => onChange({ ...form, gender: event.target.value })}>
@@ -41,12 +41,12 @@ export default function EditUserProfile({ form, onCancel, onChange, onSubmit, us
                 ))}
               </select>
             </label>
-            <label className="field">
-              <span>Địa chỉ</span>
-              <input value={form.address} onChange={(event) => onChange({ ...form, address: event.target.value })} maxLength={255} />
-            </label>
-          </div>
-        )}
+          )}
+          <label className="field">
+            <span>Địa chỉ</span>
+            <input value={form.address} onChange={(event) => onChange({ ...form, address: event.target.value })} maxLength={255} />
+          </label>
+        </div>
         <label className="field">
           <span>Ghi chú hồ sơ</span>
           <textarea value={form.bio} onChange={(event) => onChange({ ...form, bio: event.target.value })} rows="3" maxLength={1000} />

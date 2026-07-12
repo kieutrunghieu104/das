@@ -16,6 +16,7 @@ export const createAdminUserSchema = z.object({
   fullName: nameSchema,
   email: optionalEmailSchema,
   phone: optionalPhoneSchema,
+  address: z.string().trim().max(255).optional().or(z.literal("")),
   password: passwordSchema.default("nhakhoa2026"),
   role: z.enum(["patient", "receptionist", "dentist", "nurse", "admin"]),
   bio: noteSchema,
@@ -30,6 +31,7 @@ export const updateAdminUserSchema = z.object({
   fullName: nameSchema.optional(),
   email: optionalEmailSchema,
   phone: optionalPhoneSchema,
+  address: z.string().trim().max(255).optional().or(z.literal("")),
   status: z.enum(["active", "inactive", "locked"]).optional(),
   bio: noteSchema,
   yearsOfExperience: z.coerce.number().int().min(0).max(80).optional()

@@ -88,6 +88,11 @@
   grid-column: 1 / -1;
 }
 
+.patient-record-meta-card {
+  justify-content: flex-start;
+  gap: 24px;
+}
+
 .clinical-followup-panel .form-grid .button {
   align-self: end;
 }

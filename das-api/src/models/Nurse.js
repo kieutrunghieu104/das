@@ -6,6 +6,7 @@ const nurseSchema = new mongoose.Schema({
     ref: "users"
   },
   qualification: String,
+  address: String,
   avatarUrl: String,
   bio: String
 }, {

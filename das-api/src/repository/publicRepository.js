@@ -75,6 +75,7 @@ function normalizeDentist(user, profile) {
     avatarUrl: profile?.avatarUrl || "",
     yearsOfExperience: Number(profile?.experienceYears || 0),
     qualification: profile?.qualification || "Bác sĩ Răng Hàm Mặt",
+    address: profile?.address || "",
     bio: profile?.description || "",
     description: profile?.description || "",
     createdAt: user.createdAt
