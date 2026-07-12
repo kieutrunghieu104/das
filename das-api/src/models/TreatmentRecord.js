@@ -7,7 +7,7 @@ const treatmentRecordSchema = new mongoose.Schema({
   nurse: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
   serviceSnapshot: mongoose.Schema.Types.Mixed,
   initialInfo: mongoose.Schema.Types.Mixed,
-  treatmentDate: Date,
+  treatmentDate: String,
   visits: [mongoose.Schema.Types.Mixed],
   status: String
 }, {

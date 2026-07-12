@@ -37,7 +37,7 @@ export default function PatientTreatmentRecords({ loading, records }) {
             <select value={selectedRecord?._id || ""} onChange={(event) => chooseRecord(event.target.value)}>
               {records.map((record) => (
                 <option key={record._id} value={record._id}>
-                  {recordServiceName(record)} - {formatDateOnly(record.createdAt || record.treatmentDate)}
+                  {recordServiceName(record)} - {formatDateOnly(record.treatmentDate || record.createdAt)}
                 </option>
               ))}
             </select>
@@ -58,7 +58,6 @@ export default function PatientTreatmentRecords({ loading, records }) {
               </div>
               <div className="readonly-record-grid">
                 <div className="clinical-selected-card patient-record-meta-card wide">
-                  <span>Ngày tạo: {formatDateOnly(selectedRecord.createdAt || selectedRecord.treatmentDate)}</span>
                   <span>Ngày cập nhật: {formatDateOnly(visibleVisit?.updatedAt || selectedRecord.updatedAt)}</span>
                 </div>
                 <ReadOnlyField label="Huyết áp" value={visibleVisit?.vitalSigns?.bloodPressure} />

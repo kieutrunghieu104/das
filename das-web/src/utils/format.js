@@ -14,14 +14,24 @@ function clinicDateTimeParts(value) {
   return Object.fromEntries(parts.filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
 }
 
+function dateOnlyText(value) {
+  if (typeof value !== "string") return "";
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return match ? `${match[3]}/${match[2]}/${match[1]}` : "";
+}
+
 export function formatDateTime(value) {
   if (!value) return "-";
+  const dateOnly = dateOnlyText(value);
+  if (dateOnly) return dateOnly;
   const parts = clinicDateTimeParts(value);
   return `${parts.day}/${parts.month}/${parts.year} ${parts.hour}:${parts.minute}`;
 }
 
 export function formatDateOnly(value) {
   if (!value) return "-";
+  const dateOnly = dateOnlyText(value);
+  if (dateOnly) return dateOnly;
   const parts = clinicDateTimeParts(value);
   return `${parts.day}/${parts.month}/${parts.year}`;
 }

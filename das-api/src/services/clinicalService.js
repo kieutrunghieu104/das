@@ -20,12 +20,12 @@ function sameId(left, right) {
   return leftId?.toString() === rightId?.toString();
 }
 
-function dateInputToDate(value) {
-  if (!value) return new Date();
+function dateInputToDateText(value) {
+  if (!value) return new Date().toISOString().slice(0, 10);
   const dateText = String(value).slice(0, 10);
-  return /^\d{4}-\d{2}-\d{2}$/.test(dateText)
-    ? new Date(`${dateText}T00:00:00.000Z`)
-    : new Date(value);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateText)) return dateText;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? new Date().toISOString().slice(0, 10) : date.toISOString().slice(0, 10);
 }
 
 function buildScheduleQuery(user, date) {
@@ -62,7 +62,7 @@ function normalizeVisits(record) {
 function buildVisitPayload(data, visitNumber, user) {
   return {
     visitNumber,
-    visitDate: dateInputToDate(data.visitDate),
+    visitDate: dateInputToDateText(data.visitDate),
     vitalSigns: data.vitalSigns || {},
     diagnosis: data.diagnosis || "",
     medicalHistory: data.medicalHistory || "",
@@ -156,7 +156,7 @@ export async function createTreatmentRecord(user, body) {
       serviceName: service.name,
       treatmentDate: data.treatmentDate
     },
-    treatmentDate: dateInputToDate(data.treatmentDate),
+    treatmentDate: dateInputToDateText(data.treatmentDate),
     visits: [],
     status: "active"
   });
@@ -229,7 +229,7 @@ export async function upsertAppointmentTreatmentRecord(user, appointmentId, body
     patient: appointment.patient,
     dentist: appointment.dentist,
     nurse: user.role === "nurse" ? user._id : appointment.nurse,
-    treatmentDate: data.visitDate ? dateInputToDate(data.visitDate) : existingRecord?.treatmentDate || appointment.startAt || new Date(),
+    treatmentDate: data.visitDate ? dateInputToDateText(data.visitDate) : existingRecord?.treatmentDate || dateInputToDateText(appointment.startAt),
     visits,
     status: "active"
   };
@@ -270,7 +270,7 @@ export async function updateTreatmentRecord(user, recordId, body) {
   const updateFields = {
     nurse: user.role === "nurse" ? user._id : existingRecord.nurse?._id || existingRecord.nurse,
     visits,
-    treatmentDate: data.visitDate ? dateInputToDate(data.visitDate) : existingRecord.treatmentDate,
+    treatmentDate: data.visitDate ? dateInputToDateText(data.visitDate) : existingRecord.treatmentDate,
     status: "active"
   };
 

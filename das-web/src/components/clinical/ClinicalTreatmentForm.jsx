@@ -156,7 +156,7 @@ export default function ClinicalTreatmentForm({
                   <div className="treatment-record-info">
                     <strong>{record.serviceSnapshot?.name || record.appointment?.service?.name || "Hồ sơ điều trị"}</strong>
                     <span>{patientLabel(record.patient)}</span>
-                    <small>Ngày tạo: {formatDateOnly(record.createdAt || record.treatmentDate)}</small>
+                    <small>Ngày điều trị: {formatDateOnly(record.treatmentDate || record.createdAt)}</small>
                   </div>
                   <div className="row-actions">
                     <StatusBadge value={record.status || "active"} />

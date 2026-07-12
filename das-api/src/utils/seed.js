@@ -540,10 +540,10 @@ async function seedOperationalData(users, clinic) {
     patient: patients[0]._id,
     dentist: rooms[0].assignedDentist,
     nurse: rooms[0].assignedNurse,
-    treatmentDate: completedOne.startAt,
+    treatmentDate: toDateInputValue(completedOne.startAt),
     visits: [{
       visitNumber: 1,
-      visitDate: completedOne.startAt,
+      visitDate: toDateInputValue(completedOne.startAt),
       diagnosis: "Vôi răng mức độ trung bình.",
       treatmentResult: "Đã làm sạch vôi răng và đánh bóng.",
       treatmentNote: "Hướng dẫn dùng chỉ nha khoa hằng ngày.",
@@ -556,10 +556,10 @@ async function seedOperationalData(users, clinic) {
     patient: patients[1]._id,
     dentist: rooms[1].assignedDentist,
     nurse: rooms[1].assignedNurse,
-    treatmentDate: completedTwo.startAt,
+    treatmentDate: toDateInputValue(completedTwo.startAt),
     visits: [{
       visitNumber: 1,
-      visitDate: completedTwo.startAt,
+      visitDate: toDateInputValue(completedTwo.startAt),
       diagnosis: "Sâu răng hàm dưới.",
       treatmentResult: "Đã làm sạch và trám phục hồi.",
       treatmentNote: "Theo dõi ê buốt trong 48 giờ.",
@@ -572,10 +572,10 @@ async function seedOperationalData(users, clinic) {
     patient: patients[2]._id,
     dentist: rooms[2].assignedDentist,
     nurse: rooms[2].assignedNurse,
-    treatmentDate: inTreatment.startAt,
+    treatmentDate: toDateInputValue(inTreatment.startAt),
     visits: [{
       visitNumber: 1,
-      visitDate: inTreatment.startAt,
+      visitDate: toDateInputValue(inTreatment.startAt),
       vitalSigns: {
         bloodPressure: "118/76",
         heartRate: "78",
