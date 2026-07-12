@@ -20,6 +20,12 @@ export function formatDateTime(value) {
   return `${parts.day}/${parts.month}/${parts.year} ${parts.hour}:${parts.minute}`;
 }
 
+export function formatDateOnly(value) {
+  if (!value) return "-";
+  const parts = clinicDateTimeParts(value);
+  return `${parts.day}/${parts.month}/${parts.year}`;
+}
+
 export function formatTime(value) {
   if (!value) return "-";
   const parts = clinicDateTimeParts(value);
@@ -32,6 +38,32 @@ export function formatMoney(value) {
     currency: "VND",
     maximumFractionDigits: 0
   }).format(value || 0);
+}
+
+function formatPricePart(value) {
+  const text = String(value ?? "").trim();
+  const digits = text.replace(/[^\d]/g, "");
+  return digits ? formatMoney(Number(digits)) : text;
+}
+
+export function formatPriceText(value) {
+  const text = String(value ?? "").trim();
+  if (!text) return "";
+
+  const rangeParts = text
+    .replace(/[–—~]/g, "-")
+    .split(/\s*(?:-|đến|tới|to)\s*/i)
+    .filter(Boolean);
+  if (rangeParts.length > 1) {
+    return rangeParts.map(formatPricePart).join(" - ");
+  }
+
+  if (/^\d+(?:\s+\d+)+$/.test(text)) {
+    return text.split(/\s+/).map(formatPricePart).join(" - ");
+  }
+
+  const plainMoneyText = /^[\d\s.,]+(?:đ|vnd)?$/i.test(text);
+  return plainMoneyText ? formatPricePart(text) : text;
 }
 
 export function todayInput() {

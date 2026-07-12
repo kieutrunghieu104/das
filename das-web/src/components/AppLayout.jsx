@@ -447,6 +447,7 @@ export default function AppLayout() {
           onCancel={() => setProfileOpen(false)}
           onChange={setProfileForm}
           onSubmit={saveProfile}
+          userRole={user?.role}
         />
       )}
 

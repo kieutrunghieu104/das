@@ -6,19 +6,12 @@ import PatientInvoiceList from "../../components/patient/PatientInvoiceList.jsx"
 import PatientTreatmentRecords from "../../components/patient/PatientTreatmentRecords.jsx";
 import { api, getErrorMessage } from "../../utils/api.js";
 import { clinicDateInput, getAppointmentSlot } from "../../utils/appointmentSlots.js";
-import { formatMoney, todayInput } from "../../utils/format.js";
+import { formatPriceText, todayInput } from "../../utils/format.js";
 import { usePublicBootstrap } from "../../utils/usePublicBootstrap.js";
 import BookingPage, { bookingSlotOptions, maxBookingDate, toClinicIso } from "../BookingPage.jsx";
 
 const lockedPatientStatuses = new Set(["cancelled", "rejected", "completed", "no_show"]);
 const patientFeatures = new Set(["home", "booking", "appointments", "history", "invoices", "records"]);
-
-function formatServicePrice(price) {
-  const text = String(price ?? "").trim();
-  if (!text) return "";
-  const numericPrice = Number(text);
-  return Number.isFinite(numericPrice) ? formatMoney(numericPrice) : text;
-}
 
 export default function PatientDashboard() {
   const location = useLocation();
@@ -331,7 +324,7 @@ function PatientServices({ services }) {
             <span className="patient-service-badge">{String(index + 1).padStart(2, "0")}</span>
             <div>
               <h3>{service.name}</h3>
-              <strong>{formatServicePrice(service.price)}</strong>
+              <strong>{formatPriceText(service.price)}</strong>
               <p>{service.description || "Thông tin dịch vụ đang được cập nhật."}</p>
             </div>
           </article>

@@ -98,6 +98,26 @@
   gap: 12px;
 }
 
+.treatment-record-list .mini-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.treatment-record-info {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.treatment-record-info strong {
+  color: #10243c;
+}
+
+.treatment-record-info span,
+.treatment-record-info small {
+  color: var(--muted);
+  font-weight: 760;
+}
+
 .readonly-record-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }

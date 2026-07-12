@@ -31,7 +31,7 @@ export function pickProfileFields(role, data = {}) {
   if (role === "patient") {
     return compact({
       gender: data.gender,
-      address: data.address || undefined,
+      address: data.address,
       medicalNote: data.medicalNote,
       avatarUrl: data.avatarUrl || undefined,
       bio: data.bio
@@ -84,37 +84,37 @@ export function mergeProfileFields(user, profile = null) {
 
   if (merged.role === "patient") {
     merged.gender = profile?.gender || user.gender || "unknown";
-    merged.address = profile?.address || user.address || "";
+    merged.address = profile?.address || "";
     merged.medicalNote = profile?.medicalNote || "";
-    merged.avatarUrl = profile?.avatarUrl || user.avatarUrl || "";
-    merged.bio = profile?.bio || user.bio || "";
+    merged.avatarUrl = profile?.avatarUrl || "";
+    merged.bio = profile?.bio || "";
   }
 
   if (merged.role === "dentist") {
     merged.qualification = profile?.qualification || "Bác sĩ Răng Hàm Mặt";
-    merged.yearsOfExperience = Number(profile?.experienceYears ?? user.yearsOfExperience ?? 0);
+    merged.yearsOfExperience = Number(profile?.experienceYears ?? 0);
     merged.experienceYears = merged.yearsOfExperience;
-    merged.bio = profile?.description || user.bio || "";
-    merged.description = profile?.description || user.bio || "";
-    merged.avatarUrl = profile?.avatarUrl || user.avatarUrl || "";
+    merged.bio = profile?.description || "";
+    merged.description = profile?.description || "";
+    merged.avatarUrl = profile?.avatarUrl || "";
   }
 
   if (merged.role === "nurse") {
     merged.qualification = profile?.qualification || "";
-    merged.avatarUrl = profile?.avatarUrl || user.avatarUrl || "";
-    merged.bio = profile?.bio || user.bio || "";
+    merged.avatarUrl = profile?.avatarUrl || "";
+    merged.bio = profile?.bio || "";
   }
 
   if (merged.role === "receptionist") {
-    merged.avatarUrl = profile?.avatarUrl || user.avatarUrl || "";
-    merged.bio = profile?.bio || user.bio || "";
+    merged.avatarUrl = profile?.avatarUrl || "";
+    merged.bio = profile?.bio || "";
   }
 
   if (merged.role === "admin") {
     merged.position = profile?.position || "";
     merged.permissionLevel = profile?.permissionLevel || "";
-    merged.avatarUrl = profile?.avatarUrl || user.avatarUrl || "";
-    merged.bio = profile?.bio || user.bio || "";
+    merged.avatarUrl = profile?.avatarUrl || "";
+    merged.bio = profile?.bio || "";
   }
 
   return merged;

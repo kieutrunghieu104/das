@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ClipboardPenLine, Plus, Search, Trash2 } from "lucide-react";
 import StatusBadge from "../StatusBadge.jsx";
-import { formatDateTime, todayInput } from "../../utils/format.js";
+import { formatDateOnly, formatDateTime, todayInput } from "../../utils/format.js";
 
 export default function ClinicalTreatmentForm({
   appointments,
@@ -153,21 +153,20 @@ export default function ClinicalTreatmentForm({
             <div className="mini-list treatment-record-list">
               {displayedSearchResults.map((record) => (
                 <div className={`mini-row ${selectedRecord?._id === record._id ? "active" : ""}`} key={record._id}>
-                  <div>
+                  <div className="treatment-record-info">
                     <strong>{record.serviceSnapshot?.name || record.appointment?.service?.name || "Hồ sơ điều trị"}</strong>
-                    <span>{patientLabel(record.patient)} - {formatDateTime(record.treatmentDate || record.createdAt)}</span>
+                    <span>{patientLabel(record.patient)}</span>
+                    <small>Ngày tạo: {formatDateOnly(record.createdAt || record.treatmentDate)}</small>
                   </div>
                   <div className="row-actions">
                     <StatusBadge value={record.status || "active"} />
                     <button className="button small secondary" type="button" onClick={() => onSelectRecord(record)}>
                       Cập nhật
                     </button>
-                    {selectedRecord?._id === record._id && (
-                      <button className="button small danger" type="button" onClick={() => onDeleteRecord(record)} title="Xóa hồ sơ điều trị">
-                        <Trash2 size={15} />
-                        Xóa
-                      </button>
-                    )}
+                    <button className="button small danger" type="button" onClick={() => onDeleteRecord(record)} title="Xóa hồ sơ điều trị">
+                      <Trash2 size={15} />
+                      Xóa
+                    </button>
                   </div>
                 </div>
               ))}

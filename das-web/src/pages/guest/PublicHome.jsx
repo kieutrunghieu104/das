@@ -13,7 +13,7 @@ import ConsultationForm from "../../components/guestHome/ConsultationForm.jsx";
 import DentalService from "../../components/guestHome/DentalService.jsx";
 import DentistProfile from "../../components/guestHome/DentistProfile.jsx";
 import ReviewList from "../../components/guestHome/ReviewList.jsx";
-import { formatMoney } from "../../utils/format.js";
+import { formatPriceText } from "../../utils/format.js";
 import { usePublicBootstrap } from "../../utils/usePublicBootstrap.js";
 
 const serviceToneCycle = ["implant", "cosmetic", "ortho", "general"];
@@ -29,19 +29,12 @@ function newestFirst(items) {
   return [...items].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 }
 
-function formatServicePrice(price) {
-  const text = String(price ?? "").trim();
-  if (!text) return "";
-  const numericPrice = Number(text);
-  return Number.isFinite(numericPrice) ? formatMoney(numericPrice) : text;
-}
-
 function getServiceCards(services) {
   return newestFirst(services).map((service, index) => ({
     _id: service._id,
     name: service.name,
     price: service.price,
-    priceText: formatServicePrice(service.price),
+    priceText: formatPriceText(service.price),
     description: stripServiceDurationText(service.description) || "Thông tin dịch vụ đang được cập nhật.",
     accent: serviceToneCycle[index % serviceToneCycle.length]
   }));

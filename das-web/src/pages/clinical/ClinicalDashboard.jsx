@@ -176,8 +176,9 @@ export default function ClinicalDashboard() {
     navigate(`/dashboard?tab=${featureId}`, { replace: true });
   }
 
-  async function searchTreatmentRecords(phone = treatmentSearchPhone) {
+  async function searchTreatmentRecords(phone = treatmentSearchPhone, options = {}) {
     const normalizedPhone = phone.trim();
+    const keepSelection = Boolean(options.keepSelection);
     if (!normalizedPhone) {
       setError("Nhập số điện thoại bệnh nhân để tìm hồ sơ điều trị.");
       return;
@@ -198,7 +199,8 @@ export default function ClinicalDashboard() {
       }));
       setRecordForm((current) => ({
         ...current,
-        recordId: nextRecords.some((record) => record._id === current.recordId) ? current.recordId : ""
+        appointmentId: "",
+        recordId: keepSelection && nextRecords.some((record) => record._id === current.recordId) ? current.recordId : ""
       }));
       if (!res.data.patient) {
         setMessage("");
@@ -426,7 +428,7 @@ export default function ClinicalDashboard() {
         setTreatmentSearchResults((current) =>
           current.map((record) => (record._id === updatedRecord._id ? updatedRecord : record))
         );
-        if (treatmentSearchPhone) await searchTreatmentRecords(treatmentSearchPhone);
+        if (treatmentSearchPhone) await searchTreatmentRecords(treatmentSearchPhone, { keepSelection: true });
       } else {
         await api.put(`/clinical/appointments/${recordForm.appointmentId}/treatment-record`, payload);
       }

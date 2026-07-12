@@ -242,6 +242,11 @@ async function seedClinic(dentists, nurses) {
       price: "500000"
     },
     {
+      name: "Niềng răng",
+      description: "Chỉnh nha bằng mắc cài kim loại hoặc sứ.",
+      price: "30000000-90000000"
+    },
+    {
       name: "Cạo vôi răng",
       description: "Làm sạch mảng bám, vôi răng và hướng dẫn vệ sinh răng miệng.",
       price: "500000"
