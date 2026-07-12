@@ -59,7 +59,7 @@ export default function PatientTreatmentRecords({ loading, records }) {
               <div className="readonly-record-grid">
                 <div className="clinical-selected-card patient-record-meta-card wide">
                   <span>Ngày tạo: {formatDateOnly(selectedRecord.createdAt || selectedRecord.treatmentDate)}</span>
-                  <span>Ngày cập nhật: {formatDateTime(visibleVisit?.updatedAt || selectedRecord.updatedAt)}</span>
+                  <span>Ngày cập nhật: {formatDateOnly(visibleVisit?.updatedAt || selectedRecord.updatedAt)}</span>
                 </div>
                 <ReadOnlyField label="Huyết áp" value={visibleVisit?.vitalSigns?.bloodPressure} />
                 <ReadOnlyField label="Nhịp tim" value={visibleVisit?.vitalSigns?.heartRate} />

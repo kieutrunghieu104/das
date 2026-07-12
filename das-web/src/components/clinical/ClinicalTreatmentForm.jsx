@@ -278,7 +278,7 @@ function TreatmentEditor({
         </div>
         <div className="clinical-selected-card wide">
           <strong>Lần {form.visitNumber}</strong>
-          <span>{activeVisit?.updatedAt ? `Cập nhật: ${formatDateTime(activeVisit.updatedAt)}` : "Chưa cập nhật"}</span>
+          <span>{activeVisit?.updatedAt ? `Cập nhật: ${formatDateOnly(activeVisit.updatedAt)}` : "Chưa cập nhật"}</span>
         </div>
         <label className="field">
           <span>Ngày điều trị</span>
@@ -404,9 +404,9 @@ function DentistRecordBrowser({
           <div className="readonly-record-grid">
             <div className="clinical-selected-card wide">
               <strong>{patientLabel(activeRecord.patient)}</strong>
-              <span>Cập nhật: {formatDateTime(activeDentistVisit?.updatedAt || activeRecord.updatedAt)}</span>
+              <span>Cập nhật: {formatDateOnly(activeDentistVisit?.updatedAt || activeRecord.updatedAt)}</span>
             </div>
-            <ReadOnlyField label="Ngày điều trị" value={formatDateTime(activeDentistVisit?.visitDate || activeRecord.treatmentDate)} />
+            <ReadOnlyField label="Ngày điều trị" value={formatDateOnly(activeDentistVisit?.visitDate || activeRecord.treatmentDate)} />
             <ReadOnlyField label="Huyết áp" value={activeDentistVisit?.vitalSigns?.bloodPressure} />
             <ReadOnlyField label="Nhịp tim" value={activeDentistVisit?.vitalSigns?.heartRate} />
             <ReadOnlyField label="SpO2" value={activeDentistVisit?.vitalSigns?.spo2} />
