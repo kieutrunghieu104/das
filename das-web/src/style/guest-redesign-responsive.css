@@ -29,12 +29,6 @@
     padding-bottom: 52px;
   }
 
-  .smile-stats {
-    position: static;
-    grid-column: 1;
-    margin-top: 12px;
-  }
-
   .smile-services {
     padding-top: 92px;
   }
@@ -94,21 +88,10 @@
     display: none;
   }
 
-  .smile-stats,
   .smile-service-grid,
   .smile-testimonial-grid,
   .smile-consult-form {
     grid-template-columns: 1fr;
-  }
-
-  .smile-stats span {
-    border-right: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    text-align: center;
-  }
-
-  .smile-stats span:last-child {
-    border-bottom: 0;
   }
 
   .smile-consult-form {

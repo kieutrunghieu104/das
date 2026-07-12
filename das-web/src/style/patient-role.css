@@ -56,49 +56,7 @@
   min-height: calc(100vh - 76px);
 }
 
-.role-patient .patient-dashboard-shell.collapsed {
-  grid-template-columns: minmax(0, 1fr);
-}
-
 .role-patient .patient-dashboard-content {
   width: 100%;
   gap: 0;
-}
-
-.role-patient .patient-sidebar {
-  top: 104px;
-  min-height: calc(100vh - 128px);
-  border: 1px solid var(--line);
-  background: linear-gradient(180deg, #ffffff 0%, #f3f7ff 100%);
-  color: var(--text);
-  box-shadow: 0 24px 60px rgba(7, 40, 95, 0.14);
-}
-
-.role-patient .patient-sidebar-fab {
-  top: 104px;
-  border-color: var(--line);
-  background: #ffffff;
-  color: var(--primary-dark);
-}
-
-.role-patient .patient-sidebar-tools strong {
-  color: var(--primary-dark);
-}
-
-.role-patient .patient-side-nav {
-  gap: 16px;
-  padding-top: 44px;
-}
-
-.role-patient .patient-side-nav button {
-  min-height: 64px;
-  padding: 14px 16px;
-  color: #52697d;
-  font-size: 1rem;
-}
-
-.role-patient .patient-side-nav button.active,
-.role-patient .patient-side-nav button:hover {
-  background: var(--primary);
-  color: #ffffff;
 }

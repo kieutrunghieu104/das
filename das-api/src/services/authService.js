@@ -1,5 +1,4 @@
 import { env } from "../config/environment.js";
-import { getInheritanceChain } from "../config/roleHierarchy.js";
 import { comparePassword, hashPassword } from "../utils/password.js";
 import { sendPasswordResetOtp } from "../utils/mailer.js";
 import { signToken } from "../utils/tokens.js";
@@ -27,13 +26,7 @@ function generateVerificationCode() {
 async function ensurePatientRole() {
   return userRepository.upsertRole(
     { roleName: "patient" },
-    {
-      roleName: "patient",
-      parentRoleName: "user",
-      isAbstract: false,
-      inheritanceChain: getInheritanceChain("patient"),
-      description: "Bệnh nhân đặt lịch trực tuyến, xem lịch sử khám, hủy hoặc dời lịch và đánh giá dịch vụ."
-    }
+    { roleName: "patient" }
   );
 }
 

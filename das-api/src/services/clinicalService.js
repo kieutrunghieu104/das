@@ -20,9 +20,12 @@ function sameId(left, right) {
   return leftId?.toString() === rightId?.toString();
 }
 
-function clinicDateInputToDate(value) {
+function dateInputToDate(value) {
   if (!value) return new Date();
-  return new Date(`${value}T00:00:00+07:00`);
+  const dateText = String(value).slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(dateText)
+    ? new Date(`${dateText}T00:00:00.000Z`)
+    : new Date(value);
 }
 
 function buildScheduleQuery(user, date) {
@@ -59,7 +62,7 @@ function normalizeVisits(record) {
 function buildVisitPayload(data, visitNumber, user) {
   return {
     visitNumber,
-    visitDate: clinicDateInputToDate(data.visitDate),
+    visitDate: dateInputToDate(data.visitDate),
     vitalSigns: data.vitalSigns || {},
     diagnosis: data.diagnosis || "",
     medicalHistory: data.medicalHistory || "",
@@ -153,7 +156,7 @@ export async function createTreatmentRecord(user, body) {
       serviceName: service.name,
       treatmentDate: data.treatmentDate
     },
-    treatmentDate: clinicDateInputToDate(data.treatmentDate),
+    treatmentDate: dateInputToDate(data.treatmentDate),
     visits: [],
     status: "active"
   });
@@ -226,7 +229,7 @@ export async function upsertAppointmentTreatmentRecord(user, appointmentId, body
     patient: appointment.patient,
     dentist: appointment.dentist,
     nurse: user.role === "nurse" ? user._id : appointment.nurse,
-    treatmentDate: new Date(),
+    treatmentDate: data.visitDate ? dateInputToDate(data.visitDate) : existingRecord?.treatmentDate || appointment.startAt || new Date(),
     visits,
     status: "active"
   };
@@ -267,7 +270,7 @@ export async function updateTreatmentRecord(user, recordId, body) {
   const updateFields = {
     nurse: user.role === "nurse" ? user._id : existingRecord.nurse?._id || existingRecord.nurse,
     visits,
-    treatmentDate: data.visitDate ? clinicDateInputToDate(data.visitDate) : existingRecord.treatmentDate,
+    treatmentDate: data.visitDate ? dateInputToDate(data.visitDate) : existingRecord.treatmentDate,
     status: "active"
   };
 

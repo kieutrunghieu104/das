@@ -1,14 +1,9 @@
-import { getRoleHierarchyList } from "../config/roleHierarchy.js";
 import * as publicRepository from "../repository/publicRepository.js";
 import { findAvailableSlots } from "./schedulingService.js";
 import { availabilityQuerySchema, consultationSchema } from "../validations/publicValidation.js";
 
 export function getHealth() {
   return { status: "ok", service: "DAS API" };
-}
-
-export function getRoleHierarchy() {
-  return { roles: getRoleHierarchyList() };
 }
 
 export function getServices() {

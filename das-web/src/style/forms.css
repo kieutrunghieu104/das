@@ -256,18 +256,6 @@ textarea {
   max-width: 560px;
 }
 
-.demo-panel {
-  align-self: start;
-  background: var(--surface-2);
-}
-
-.demo-list {
-  display: grid;
-  gap: 8px;
-  margin: 12px 0;
-  padding-left: 18px;
-}
-
 .forgot-password-contact {
   display: grid;
   gap: 14px;

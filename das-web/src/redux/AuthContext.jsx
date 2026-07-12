@@ -14,7 +14,6 @@ export function AuthProvider({ children }) {
     const token = localStorage.getItem("das_token");
     if (!token) return;
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true);
     api
       .get("/auth/me")
@@ -73,7 +72,6 @@ export function AuthProvider({ children }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   return useContext(AuthContext);
 }

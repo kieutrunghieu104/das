@@ -626,10 +626,13 @@ function normalizeTreatmentVisits(record) {
 
 function dateInputFromValue(value) {
   if (!value) return todayInput();
+  if (typeof value === "string") {
+    const dateText = value.slice(0, 10);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateText)) return dateText;
+  }
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return todayInput();
-  const local = new Date(date.getTime() + 7 * 60 * 60 * 1000);
-  return local.toISOString().slice(0, 10);
+  return date.toISOString().slice(0, 10);
 }
 
 function recordValuesFromVisit(visit, visitNumber, record = null) {

@@ -1,7 +1,5 @@
 @media (max-width: 1180px) {
-  .patient-dark-service-grid,
-  .patient-dark-about,
-  .patient-dark-review-grid {
+  .patient-dark-service-grid {
     grid-template-columns: 1fr;
   }
 
@@ -15,14 +13,12 @@
     padding-inline: 12px;
   }
 
-  .role-patient .patient-dashboard-shell,
-  .role-patient .patient-dashboard-shell.collapsed {
+  .role-patient .patient-dashboard-shell {
     grid-template-columns: 1fr;
   }
 
   .patient-dark-hero,
-  .patient-dark-section,
-  .patient-dark-footer {
+  .patient-dark-section {
     padding-inline: 18px;
   }
 
@@ -34,14 +30,6 @@
     font-size: 2.25rem;
   }
 
-  .patient-dark-footer {
-    grid-template-columns: 1fr;
-  }
-
-  .patient-dark-footer nav {
-    justify-content: flex-start;
-  }
-
   .reception-checkin-card {
     grid-template-columns: 1fr;
   }
@@ -51,167 +39,37 @@
   }
 }
 
-@keyframes patient-sidebar-in {
-  from {
-    opacity: 0;
-    transform: translateX(-8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
 @media (max-width: 1180px) {
-  .portal-nav,
   .app-topnav {
     grid-template-columns: 1fr;
     justify-items: stretch;
   }
 
-  .portal-nav-links,
   .top-nav-list {
     justify-content: flex-start;
   }
 
-  .portal-actions,
   .top-user-box {
     justify-content: flex-start;
     flex-wrap: wrap;
   }
-
-  .portal-hero-band {
-    grid-template-columns: 1fr;
-    min-height: auto;
-  }
-
-  .portal-copy {
-    max-width: none;
-  }
-
-  .actor-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .portal-stat-grid,
-  .service-grid,
-  .erd-grid,
-  .clinic-info-grid,
-  .dentist-profile-grid,
-  .clinic-feature-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .patient-public-hero,
-  .patient-public-grid,
-  .patient-review-grid,
-  .patient-about-grid {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 760px) {
-  .app-topnav,
-  .portal-nav {
+  .app-topnav {
     gap: 12px;
     padding: 12px 14px;
   }
 
-  .portal-nav-links {
-    overflow-x: auto;
-    padding-bottom: 2px;
-    scrollbar-width: none;
-  }
-
-  .portal-nav-links::-webkit-scrollbar {
-    display: none;
-  }
-
-  .portal-actions .button,
   .top-user-box .button {
     flex: 1 1 auto;
     min-width: 138px;
   }
 
-  .portal-actions {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: 100%;
-  }
-
-  .portal-actions .button {
-    width: 100%;
-    min-width: 0;
-    padding-right: 10px;
-    padding-left: 10px;
-  }
-
-  .portal-actions .button.primary {
-    grid-column: 1 / -1;
-  }
-
-  .portal-main {
-    padding: 18px 14px 48px;
-  }
-
-  .portal-hero-band {
-    padding: 18px;
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.9)),
-      url("../assets/clinic-hero.png") center / cover no-repeat;
-  }
-
-  .portal-copy h1 {
-    font-size: 2.2rem;
-  }
-
-  .portal-copy > p:not(.eyebrow) {
-    font-size: 1rem;
-  }
-
-  .portal-form-panel {
-    padding: 16px;
-  }
-
-  .portal-form-grid,
-  .portal-stat-grid,
-  .actor-grid,
-  .service-grid,
-  .split-section,
-  .erd-grid,
-  .clinic-info-grid,
-  .dentist-profile-grid,
-  .clinic-feature-row {
+  .patient-dashboard-shell {
     grid-template-columns: 1fr;
   }
 
-  .portal-form-grid .wide {
-    grid-column: auto;
-  }
-
-  .portal-section {
-    padding-top: 42px;
-  }
-
-  .patient-dashboard-shell,
-  .patient-dashboard-shell.collapsed {
-    grid-template-columns: 1fr;
-  }
-
-  .patient-sidebar {
-    position: static;
-    grid-column: auto;
-    min-height: auto;
-  }
-
-  .patient-sidebar-fab {
-    position: static;
-    grid-column: auto;
-    justify-self: start;
-  }
-
-  .patient-home-hero,
   .patient-appointment-card,
   .booking-form-modern,
   .reset-account-card {
@@ -223,19 +81,6 @@
     grid-row: auto;
   }
 
-  .patient-public-hero {
-    min-height: auto;
-    padding: 24px;
-  }
-
-  .patient-public-copy h1 {
-    font-size: 2.35rem;
-  }
-
-  .patient-home-summary {
-    grid-template-columns: 1fr;
-  }
-
   .booking-submit-final {
     justify-self: stretch;
   }
@@ -243,15 +88,5 @@
   .patient-reschedule-box input,
   .patient-reschedule-box select {
     width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .portal-actions {
-    grid-template-columns: 1fr;
-  }
-
-  .portal-actions .button.primary {
-    grid-column: auto;
   }
 }

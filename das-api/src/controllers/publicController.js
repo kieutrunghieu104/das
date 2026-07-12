@@ -4,10 +4,6 @@ export function getHealth(_req, res) {
   res.json(publicService.getHealth());
 }
 
-export function getRoleHierarchy(_req, res) {
-  res.json(publicService.getRoleHierarchy());
-}
-
 export async function getServices(_req, res) {
   const services = await publicService.getServices();
   res.json({ services });

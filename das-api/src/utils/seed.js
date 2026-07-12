@@ -1,10 +1,8 @@
-﻿import {
+import {
   closeMongoDB,
   connectMongoDB,
-  getCollection,
-  getDatabase
+  getCollection
 } from "../config/mongodb.js";
-import { getInheritanceChain, ROLE_HIERARCHY } from "../config/roleHierarchy.js";
 import { COLLECTIONS } from "../models/index.js";
 import { insertDocuments } from "../repository/mongoRepository.js";
 import { hashPassword } from "./password.js";
@@ -42,20 +40,12 @@ async function clearDatabase() {
       getCollection(collectionName).deleteMany({})
     )
   );
-  await getDatabase().collection("appointmentslots").drop().catch((error) => {
-    if (error.codeName !== "NamespaceNotFound") throw error;
-  });
 }
 
+const ROLE_NAMES = ["admin", "receptionist", "dentist", "nurse", "patient"];
+
 async function createRoles() {
-  const roleDocuments = Object.entries(ROLE_HIERARCHY).map(([roleName, config]) => ({
-    roleName,
-    parentRoleName: config.parent,
-    isAbstract: config.abstract,
-    inheritanceChain: getInheritanceChain(roleName),
-    description: config.description
-  }));
-  const createdRoles = await insertDocuments(COLLECTIONS.roles, roleDocuments);
+  const createdRoles = await insertDocuments(COLLECTIONS.roles, ROLE_NAMES.map((roleName) => ({ roleName })));
   return Object.fromEntries(createdRoles.map((role) => [role.roleName, role]));
 }
 
@@ -371,9 +361,16 @@ async function createSampleAppointment({
   });
 }
 
+function priceToNumber(value) {
+  const normalized = String(value ?? "0").replace(/[^\d-]/g, "");
+  const firstValue = normalized.split("-").find(Boolean);
+  return Number(firstValue || 0);
+}
+
 async function seedInvoice(appointment, patient, service, paidAmount) {
-  const total = Number(service.price || 0);
-  const status = paidAmount >= total ? "paid" : paidAmount > 0 ? "partial" : "unpaid";
+  const total = priceToNumber(service.price);
+  const normalizedPaidAmount = Math.min(priceToNumber(paidAmount), total);
+  const status = normalizedPaidAmount >= total ? "paid" : normalizedPaidAmount > 0 ? "partial" : "unpaid";
   const paymentPlan = status === "partial" ? "monthly" : "one_time";
   const installmentMonths = paymentPlan === "monthly" ? 3 : 1;
   const installmentAmount = Math.ceil(total / installmentMonths);
@@ -382,7 +379,7 @@ async function seedInvoice(appointment, patient, service, paidAmount) {
     patient: patient._id,
     items: [{ name: service.name, amount: total }],
     total,
-    paidAmount,
+    paidAmount: normalizedPaidAmount,
     paymentPlan,
     installmentMonths,
     installmentAmount,
@@ -391,12 +388,12 @@ async function seedInvoice(appointment, patient, service, paidAmount) {
     status
   });
 
-  if (paidAmount > 0) {
+  if (normalizedPaidAmount > 0) {
     await insertDocuments(COLLECTIONS.payments, {
       invoice: invoice._id,
       paymentMethod: "cash",
       installmentNumber: 1,
-      amount: paidAmount,
+      amount: normalizedPaidAmount,
       paymentDate: appointment.endAt
     });
   }
@@ -719,7 +716,9 @@ async function run() {
   await closeMongoDB();
 }
 
-run().catch(async (error) => {
-  await closeMongoDB();
-  throw error;
-});
+if (process.argv[1]?.endsWith("seed.js")) {
+  run().catch(async (error) => {
+    await closeMongoDB();
+    throw error;
+  });
+}

@@ -22,8 +22,7 @@
   backdrop-filter: blur(16px);
 }
 
-.top-brand,
-.portal-brand {
+.top-brand {
   display: inline-flex;
   align-items: center;
   gap: 10px;

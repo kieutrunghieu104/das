@@ -88,38 +88,3 @@
   font-weight: 900;
   box-shadow: 0 14px 30px rgba(16, 29, 60, 0.16);
 }
-
-.smile-stats {
-  position: absolute;
-  left: clamp(28px, 7vw, 118px);
-  right: clamp(28px, 7vw, 118px);
-  bottom: -42px;
-  z-index: 3;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0;
-  margin: 0;
-  overflow: hidden;
-  border-radius: 8px;
-  background: linear-gradient(90deg, #0b63ce, #1e88e5);
-  box-shadow: 0 22px 50px rgba(7, 95, 145, 0.24);
-}
-
-.smile-stats span {
-  min-height: 88px;
-  border: 0;
-  border-right: 1px solid rgba(255, 255, 255, 0.24);
-  border-radius: 0;
-  padding: 18px 14px;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 760;
-}
-
-.smile-stats span:last-child {
-  border-right: 0;
-}
-
-.smile-stats strong {
-  color: #ffffff;
-  font-size: 2.25rem;
-}

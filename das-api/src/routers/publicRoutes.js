@@ -8,7 +8,6 @@ import {
   getDentists,
   getHealth,
   getReviews,
-  getRoleHierarchy,
   getRooms,
   getServices
 } from "../controllers/publicController.js";
@@ -16,7 +15,6 @@ import {
 const router = Router();
 
 router.get("/health", getHealth);
-router.get("/role-hierarchy", getRoleHierarchy);
 router.get("/services", getServices);
 router.get("/bootstrap", getBootstrap);
 router.get("/reviews", getReviews);

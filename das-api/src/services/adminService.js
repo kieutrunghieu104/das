@@ -1,4 +1,3 @@
-﻿import { getInheritanceChain, ROLE_HIERARCHY } from "../config/roleHierarchy.js";
 import * as adminRepository from "../repository/adminRepository.js";
 import * as profileRepository from "../repository/profileRepository.js";
 import { hashPassword } from "../utils/password.js";
@@ -41,16 +40,6 @@ function parseDateRange(query) {
   return { startDate, endDate };
 }
 
-function formatRoleName(role) {
-  const labels = {
-    dentist: "bác sĩ",
-    nurse: "y tá",
-    receptionist: "lễ tân",
-    admin: "quản trị viên",
-    patient: "bệnh nhân"
-  };
-  return labels[role] || "nhân sự";
-}
 
 async function createRoleProfile(user, data) {
   if (user.role === "patient") {
@@ -187,13 +176,7 @@ export async function createUser(body) {
   const data = createAdminUserSchema.parse(body);
   await validateUserContactUniqueness(data);
 
-  const role = await adminRepository.ensureRole({
-    roleName: data.role,
-    parentRoleName: ROLE_HIERARCHY[data.role]?.parent || null,
-    isAbstract: false,
-    inheritanceChain: getInheritanceChain(data.role),
-    description: ROLE_HIERARCHY[data.role]?.description || `Vai trò ${formatRoleName(data.role)}`
-  });
+  const role = await adminRepository.ensureRole({ roleName: data.role });
 
   const user = await adminRepository.createUser({
     fullName: data.fullName,

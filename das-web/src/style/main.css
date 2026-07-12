@@ -1,6 +1,5 @@
 @import "./base.css";
 @import "./layout.css";
-@import "./guest-legacy.css";
 @import "./forms.css";
 @import "./appointments.css";
 @import "./reception.css";
@@ -9,7 +8,6 @@
 @import "./shared-ui.css";
 @import "./responsive.css";
 @import "./app-navigation.css";
-@import "./portal.css";
 @import "./patient-dashboard.css";
 @import "./patient-role.css";
 @import "./patient-home.css";

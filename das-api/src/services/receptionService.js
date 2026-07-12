@@ -1,4 +1,3 @@
-import { getInheritanceChain } from "../config/roleHierarchy.js";
 import * as receptionRepository from "../repository/receptionRepository.js";
 import { hashPassword } from "../utils/password.js";
 import { endOfLocalDay, startOfLocalDay } from "../utils/time.js";
@@ -112,13 +111,7 @@ export async function createPatient(body) {
     }
   }
 
-  const role = await receptionRepository.ensurePatientRole({
-    roleName: "patient",
-    parentRoleName: "user",
-    isAbstract: false,
-    inheritanceChain: getInheritanceChain("patient"),
-    description: "Bệnh nhân đặt lịch online, xem lịch sử khám, hủy/dời lịch và đánh giá dịch vụ."
-  });
+  const role = await receptionRepository.ensurePatientRole({ roleName: "patient" });
 
   const patient = await receptionRepository.createPatientUser({
     fullName: data.fullName,
