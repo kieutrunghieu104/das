@@ -16,6 +16,7 @@ const appointmentSchema = new mongoose.Schema({
   dentistPreference: String,
   startAt: Date,
   arrivalAt: Date,
+  patientRequestedAt: Date,
   status: String,
   paymentStatus: String,
   patientNote: String,

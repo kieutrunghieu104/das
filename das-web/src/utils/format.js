@@ -83,7 +83,8 @@ export const bookingSlotOptions = [
   };
 });
 
-export function normalizeAppointmentSlots(slots = []) {
+export function normalizeAppointmentSlots(slots = [], options = {}) {
+  const { fallback = true } = options;
   const normalized = slots
     .filter(Boolean)
     .map((slot, index) => {
@@ -105,7 +106,7 @@ export function normalizeAppointmentSlots(slots = []) {
     })
     .sort((first, second) => (first.order ?? first.startMinutes) - (second.order ?? second.startMinutes));
 
-  return normalized.length ? normalized : bookingSlotOptions;
+  return normalized.length ? normalized : fallback ? bookingSlotOptions : [];
 }
 
 export function getAppointmentSlot(value, slotOptions = bookingSlotOptions) {

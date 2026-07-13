@@ -27,3 +27,8 @@ export async function deleteConsultation(req, res) {
   const request = await receptionService.deleteConsultation(req.params.id);
   res.json({ request });
 }
+
+export async function updateAppointmentSlot(req, res) {
+  const slot = await receptionService.updateAppointmentSlot(req.params.id, req.body);
+  res.json({ slot });
+}

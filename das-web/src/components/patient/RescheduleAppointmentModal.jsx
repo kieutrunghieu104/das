@@ -27,13 +27,17 @@ export default function RescheduleAppointmentModal({
         ))}
       </select>
       <select value={form.time} onChange={(event) => onChange({ time: event.target.value })}>
-        {slotOptions.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
+        {slotOptions.length ? (
+          slotOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))
+        ) : (
+          <option value="">Chưa có slot đang mở</option>
+        )}
       </select>
-      <button className="button small primary" type="button" onClick={onSubmit}>
+      <button className="button small primary" type="button" onClick={onSubmit} disabled={!slotOptions.length}>
         Xác nhận đổi
       </button>
       <button className="button small ghost" type="button" onClick={onCancel}>

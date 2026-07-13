@@ -70,18 +70,22 @@ export default function AppointmentBookingForm({
         <fieldset className="booking-time-field">
           <legend>Slot khám</legend>
           <div className="booking-time-options">
-            {slotOptions.map((option) => (
-              <label key={option.value}>
-                <input
-                  type="radio"
-                  name={`booking-time${embedded ? "-embedded" : ""}`}
-                  value={option.value}
-                  checked={time === option.value}
-                  onChange={(event) => onChange({ time: event.target.value })}
-                />
-                <span>{option.label}</span>
-              </label>
-            ))}
+            {slotOptions.length ? (
+              slotOptions.map((option) => (
+                <label key={option.value}>
+                  <input
+                    type="radio"
+                    name={`booking-time${embedded ? "-embedded" : ""}`}
+                    value={option.value}
+                    checked={time === option.value}
+                    onChange={(event) => onChange({ time: event.target.value })}
+                  />
+                  <span>{option.label}</span>
+                </label>
+              ))
+            ) : (
+              <span className="muted">Chưa có slot đang mở</span>
+            )}
           </div>
         </fieldset>
 
@@ -95,7 +99,7 @@ export default function AppointmentBookingForm({
           />
         </label>
 
-        <button className="button primary booking-submit-final" disabled={submitting || bootstrapLoading}>
+        <button className="button primary booking-submit-final" disabled={submitting || bootstrapLoading || !slotOptions.length}>
           {submitting ? "Đang gửi..." : "Đặt lịch"}
         </button>
       </form>

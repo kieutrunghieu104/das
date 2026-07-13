@@ -5,7 +5,7 @@ import PatientAppointmentList from "../../components/patient/PatientAppointmentL
 import PatientInvoiceList from "../../components/patient/PatientInvoiceList.jsx";
 import PatientTreatmentRecords from "../../components/patient/PatientTreatmentRecords.jsx";
 import { api, getErrorMessage } from "../../utils/api.js";
-import { bookingSlotOptions, clinicDateInput, formatPriceText, getAppointmentSlot, normalizeAppointmentSlots, todayInput } from "../../utils/format.js";
+import { clinicDateInput, formatPriceText, getAppointmentSlot, normalizeAppointmentSlots, todayInput } from "../../utils/format.js";
 import { usePublicBootstrap } from "../../utils/usePublicBootstrap.js";
 import BookingPage, { maxBookingDate, toClinicIso } from "../BookingPage.jsx";
 
@@ -27,7 +27,7 @@ export default function PatientDashboard() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const { services, dentists, rooms, slots } = usePublicBootstrap();
-  const slotOptions = useMemo(() => normalizeAppointmentSlots(slots), [slots]);
+  const slotOptions = useMemo(() => normalizeAppointmentSlots(slots, { fallback: false }), [slots]);
 
   const dentistOptions = useMemo(() => {
     const roomDentists = rooms.map((room) => room.assignedDentist).filter(Boolean);
@@ -137,7 +137,7 @@ export default function PatientDashboard() {
       ...current,
       [appointment._id]: {
         date: clinicDateInput(appointment.startAt) || todayInput(),
-        time: getAppointmentSlot(appointment.startAt, slotOptions)?.value || slotOptions[0]?.value || bookingSlotOptions[0].value,
+        time: slotOptions.length ? getAppointmentSlot(appointment.startAt, slotOptions)?.value || slotOptions[0]?.value || "" : "",
         dentistId: appointment.dentist?._id || dentistOptions[0]?._id || "",
         ...(current[appointment._id] || {}),
         ...values

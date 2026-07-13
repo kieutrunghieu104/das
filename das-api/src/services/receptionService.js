@@ -49,7 +49,7 @@ export async function getDashboard(query) {
     receptionRepository.findActiveServices(),
     receptionRepository.findConsultationRequests({}, 60),
     receptionRepository.findReceptionRooms(),
-    receptionRepository.findActiveAppointmentSlots()
+    receptionRepository.findAppointmentSlots()
   ]);
 
   return { appointments, patients, services, consultations, rooms, slots };
@@ -143,4 +143,14 @@ export async function deleteConsultation(requestId) {
     throw createError("Không tìm thấy yêu cầu tư vấn.", 404);
   }
   return request;
+}
+
+export async function updateAppointmentSlot(slotId, body) {
+  const slot = await receptionRepository.updateAppointmentSlot(slotId, {
+    isActive: Boolean(body?.isActive)
+  });
+  if (!slot) {
+    throw createError("KhÃ´ng tÃ¬m tháº¥y slot khÃ¡m.", 404);
+  }
+  return slot;
 }

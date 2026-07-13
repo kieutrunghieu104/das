@@ -30,7 +30,7 @@ export default function PatientAppointmentCard({
   const canModify = canModifyAppointment(appointment);
   const currentRescheduleForm = rescheduleForm || {
     date: clinicDateInput(appointment.startAt) || todayInput(),
-    time: getAppointmentSlot(appointment.startAt, slotOptions)?.value || slotOptions[0]?.value || bookingSlotOptions[0].value,
+    time: slotOptions.length ? getAppointmentSlot(appointment.startAt, slotOptions)?.value || slotOptions[0]?.value || "" : "",
     dentistId: appointment.dentist?._id || dentistOptions[0]?._id || ""
   };
   const scheduleText = arrangedStatuses.has(appointment.status)

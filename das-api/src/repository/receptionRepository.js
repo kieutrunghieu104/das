@@ -100,6 +100,14 @@ export function findActiveAppointmentSlots() {
   return findMany(COLLECTIONS.appointmentSlots, { isActive: { $ne: false } }, { sort: { order: 1, startTime: 1 } });
 }
 
+export function findAppointmentSlots() {
+  return findMany(COLLECTIONS.appointmentSlots, {}, { sort: { order: 1, startTime: 1 } });
+}
+
+export function updateAppointmentSlot(slotId, data) {
+  return updateById(COLLECTIONS.appointmentSlots, slotId, data);
+}
+
 export async function findReceptionRooms() {
   const rooms = await findMany(COLLECTIONS.clinicRooms, {}, { sort: { name: 1 } });
   await populate(rooms, [

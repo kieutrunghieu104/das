@@ -75,7 +75,7 @@ export default function ClinicalDashboard() {
   const [performedServicesForm, setPerformedServicesForm] = useState(defaultPerformedServicesForm);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const slotOptions = useMemo(() => normalizeAppointmentSlots(slots), [slots]);
+  const slotOptions = useMemo(() => normalizeAppointmentSlots(slots, { fallback: false }), [slots]);
 
   async function load() {
     setLoading(true);

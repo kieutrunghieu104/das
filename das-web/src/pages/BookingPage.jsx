@@ -5,7 +5,7 @@ import AppointmentBookingForm from "../components/patient/AppointmentBookingForm
 import { useAuth } from "../redux/AuthContext.jsx";
 import { usePublicBootstrap } from "../utils/usePublicBootstrap.js";
 import { api, getErrorMessage } from "../utils/api.js";
-import { bookingSlotOptions, normalizeAppointmentSlots, todayInput } from "../utils/format.js";
+import { normalizeAppointmentSlots, todayInput } from "../utils/format.js";
 import { canUsePatientBooking } from "../utils/roles.js";
 import { firstError, requireValue, validateDate, validateNote } from "../utils/validation.js";
 
@@ -33,11 +33,11 @@ export default function BookingPage({ embedded = false }) {
   const minDate = useMemo(() => todayInput(), []);
   const maxDate = useMemo(() => maxBookingDate(), []);
   const { services, dentists, rooms, slots, loading: bootstrapLoading } = usePublicBootstrap();
-  const slotOptions = useMemo(() => normalizeAppointmentSlots(slots), [slots]);
+  const slotOptions = useMemo(() => normalizeAppointmentSlots(slots, { fallback: false }), [slots]);
   const [serviceId, setServiceId] = useState("");
   const [date, setDate] = useState(minDate);
   const [dentistId, setDentistId] = useState("random");
-  const [time, setTime] = useState(bookingSlotOptions[0].value);
+  const [time, setTime] = useState("");
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
@@ -56,6 +56,10 @@ export default function BookingPage({ embedded = false }) {
   useEffect(() => {
     setDentistId((current) => current || "random");
   }, [dentistOptions]);
+
+  useEffect(() => {
+    setTime((current) => (slotOptions.some((slot) => slot.value === current) ? current : slotOptions[0]?.value || ""));
+  }, [slotOptions]);
 
   function validateBookingInputs() {
     return firstError(

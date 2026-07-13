@@ -327,6 +327,7 @@ export async function createAppointmentFromSlot({
       dentistPreference: requiresReceptionScheduling ? "random" : dentistPreference,
       startAt: requestedSlot.startAt,
       arrivalAt: calculateArrivalAt(requestedSlot.startAt),
+      patientRequestedAt: new Date(),
       status: "pending",
       paymentStatus: "not_required",
       patientNote: note,
@@ -379,6 +380,7 @@ export async function createAppointmentFromSlot({
     dentistPreference,
     startAt: selected.startAt,
     arrivalAt: selected.arrivalAt,
+    patientRequestedAt: new Date(),
     status: appointmentStatus,
     paymentStatus: "not_required",
     patientNote: note

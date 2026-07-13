@@ -46,7 +46,8 @@ export default function ReceptionistDashboard() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const slotOptions = useMemo(() => normalizeAppointmentSlots(slots), [slots]);
+  const allSlotOptions = useMemo(() => normalizeAppointmentSlots(slots, { fallback: false }), [slots]);
+  const slotOptions = useMemo(() => normalizeAppointmentSlots(slots.filter((slot) => slot.isActive !== false), { fallback: false }), [slots]);
 
   async function load({ silent = false } = {}) {
     if (!silent) setLoading(true);
@@ -59,13 +60,13 @@ export default function ReceptionistDashboard() {
       setConsultations(res.data.consultations);
       setRooms(res.data.rooms);
       const nextSlots = res.data.slots || [];
-      const nextSlotOptions = normalizeAppointmentSlots(nextSlots);
+      const nextSlotOptions = normalizeAppointmentSlots(nextSlots.filter((slot) => slot.isActive !== false), { fallback: false });
       setSlots(nextSlots);
       setBooking((current) => ({
         ...current,
         patientId: current.patientId || res.data.patients[0]?._id || "",
         serviceId: current.serviceId || res.data.services[0]?._id || "",
-        time: nextSlotOptions.some((slot) => slot.value === current.time) ? current.time : nextSlotOptions[0]?.value || bookingSlotOptions[0].value
+        time: nextSlotOptions.some((slot) => slot.value === current.time) ? current.time : nextSlotOptions[0]?.value || ""
       }));
       window.dispatchEvent(new Event("das:refresh-badges"));
     } catch (err) {
@@ -345,6 +346,19 @@ export default function ReceptionistDashboard() {
     }
   }
 
+  async function toggleAppointmentSlot(slot) {
+    const nextActive = slot.isActive === false;
+    if (!window.confirm(`${nextActive ? "Mở lại" : "Đóng"} ${slot.label}?`)) return;
+
+    try {
+      await api.patch(`/reception/slots/${slot._id}`, { isActive: nextActive });
+      setMessage(nextActive ? "Đã mở lại slot khám." : "Đã đóng slot khám. Bệnh nhân sẽ không đặt được slot này.");
+      await load({ silent: true });
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
+  }
+
   function updateManualSchedule(appointment, nextValues) {
     setManualSchedules((current) => ({
       ...current,
@@ -406,7 +420,8 @@ export default function ReceptionistDashboard() {
   }, [clinicalQueueAppointments, rooms]);
 
   const queueSlots = useMemo(() => {
-    return slotOptions.map((slot) => ({
+    const visibleSlots = allSlotOptions.length ? allSlotOptions : slotOptions;
+    return visibleSlots.map((slot) => ({
       slot,
       dentistQueues: dentistColumns.map((dentist) => ({
         dentist,
@@ -419,7 +434,7 @@ export default function ReceptionistDashboard() {
           .sort(compareQueueWithinSlot)
       }))
     }));
-  }, [clinicalQueueAppointments, dentistColumns, slotOptions]);
+  }, [allSlotOptions, clinicalQueueAppointments, dentistColumns, slotOptions]);
 
   return (
     <div className="page-grid">
@@ -432,11 +447,13 @@ export default function ReceptionistDashboard() {
           date={date}
           loading={loading}
           onRejectAppointment={rejectAppointment}
+          onToggleSlot={toggleAppointmentSlot}
           manualSchedules={manualSchedules}
           rooms={rooms}
           scheduleReceptionAppointment={scheduleReceptionAppointment}
           setAppointmentSearch={setAppointmentSearch}
           setDate={setDate}
+          allSlotOptions={allSlotOptions}
           slotOptions={slotOptions}
           updateManualSchedule={updateManualSchedule}
         />
@@ -541,9 +558,14 @@ function isLockedScheduleAppointment(appointment) {
 function defaultManualSchedule(appointment, rooms, slotOptions = bookingSlotOptions) {
   const startAt = appointment.startAt ? new Date(appointment.startAt) : new Date();
   const date = Number.isNaN(startAt.getTime()) ? todayInput() : clinicDateInput(startAt);
+  const currentSlotValue = Number.isNaN(startAt.getTime()) ? "" : getAppointmentSlot(startAt, slotOptions.length ? slotOptions : bookingSlotOptions).value;
   return {
     date,
-    time: Number.isNaN(startAt.getTime()) ? slotOptions[0]?.value || bookingSlotOptions[0].value : getAppointmentSlot(startAt, slotOptions).value,
+    time: Number.isNaN(startAt.getTime())
+      ? slotOptions[0]?.value || ""
+      : slotOptions.some((slot) => slot.value === currentSlotValue)
+        ? currentSlotValue
+        : slotOptions[0]?.value || currentSlotValue,
     roomId: appointment.room?._id || rooms[0]?._id || ""
   };
 }

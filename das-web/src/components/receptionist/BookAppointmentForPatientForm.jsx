@@ -129,11 +129,15 @@ export default function BookAppointmentForPatientForm({
           <label className="field">
             <span>Slot khám</span>
             <select value={booking.time} onChange={(event) => onBookingChange({ time: event.target.value })} required>
-              {slotOptions.map((option) => (
-                <option value={option.value} key={option.value}>
-                  {option.label}
-                </option>
-              ))}
+              {slotOptions.length ? (
+                slotOptions.map((option) => (
+                  <option value={option.value} key={option.value}>
+                    {option.label}
+                  </option>
+                ))
+              ) : (
+                <option value="">Chưa có slot đang mở</option>
+              )}
             </select>
           </label>
           <label className="field reception-booking-note">
@@ -142,7 +146,7 @@ export default function BookAppointmentForPatientForm({
           </label>
         </div>
 
-        <button className="button primary booking-submit-final">Đặt lịch hộ</button>
+        <button className="button primary booking-submit-final" disabled={!slotOptions.length}>Đặt lịch hộ</button>
       </form>
     </section>
   );

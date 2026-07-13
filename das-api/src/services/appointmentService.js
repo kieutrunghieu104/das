@@ -260,6 +260,7 @@ export async function rescheduleAppointment(appointmentId, user, body) {
 
   updated.status = user.role === "patient" ? "pending" : previousStatus === "pending" ? "pending" : "confirmed";
   if (user.role === "patient") {
+    updated.patientRequestedAt = new Date();
     updated.receptionistNote = "Bệnh nhân đã thay đổi lịch và đang chờ lễ tân xác nhận lại.";
   }
   await appointmentRepository.saveAppointment(updated);
