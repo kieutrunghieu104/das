@@ -18,6 +18,7 @@ import {
 
 const STAFF_ROLES = new Set(["receptionist", "admin", "nurse"]);
 const LOCKED_APPOINTMENT_STATUSES = new Set(["cancelled", "rejected"]);
+const CHANGEABLE_APPOINTMENT_STATUSES = new Set(["pending", "scheduled"]);
 const INSTALLMENT_MONTH_OPTIONS = new Set([3, 6, 9]);
 
 function createError(message, statusCode) {
@@ -39,6 +40,20 @@ function normalizeId(value) {
 
 function sameId(left, right) {
   return normalizeId(left)?.toString() === normalizeId(right)?.toString();
+}
+
+function patientNotificationUser(appointment) {
+  const patient = normalizeId(appointment.patient);
+  return patient && !appointment.patient?.isGuest ? patient : null;
+}
+
+async function createAppointmentPatientNotification(appointment, data) {
+  const user = patientNotificationUser(appointment);
+  if (!user) return null;
+  return appointmentRepository.createPatientNotification({
+    ...data,
+    user
+  });
 }
 
 function assertBookingWindow(user, dateText) {
@@ -82,6 +97,12 @@ function assertAppointmentCanChange(appointment, user) {
 
   if (LOCKED_APPOINTMENT_STATUSES.has(appointment.status)) {
     throw createError("Lịch hẹn đã hủy hoặc bị từ chối nên không thể cập nhật thêm.", 409);
+  }
+}
+
+function assertAppointmentCanRescheduleOrCancel(appointment) {
+  if (!CHANGEABLE_APPOINTMENT_STATUSES.has(appointment.status)) {
+    throw createError("Chỉ lịch chờ xác nhận hoặc chưa diễn ra mới được đổi/hủy.", 409);
   }
 }
 
@@ -146,8 +167,7 @@ async function notifyPatientOfReceptionDecision(appointment, status) {
   const content = messages[status];
   if (!content) return;
 
-  await appointmentRepository.createPatientNotification({
-    user: normalizeId(appointment.patient),
+  await createAppointmentPatientNotification(appointment, {
     title: content.title,
     message: content.message,
     isRead: false
@@ -200,13 +220,15 @@ export async function createAppointment(user, body) {
   }
 
   const patientId = user.role === "patient" ? user._id : data.patientId;
-  if (!patientId) {
-    throw createError("Cần chọn bệnh nhân khi nhân sự đặt lịch hộ.", 400);
+  const guestPatient = user.role === "patient" ? undefined : data.guestPatient;
+  if (!patientId && !guestPatient) {
+    throw createError("Cần chọn bệnh nhân hoặc nhập thông tin bệnh nhân chưa có tài khoản.", 400);
   }
 
   const appointment = await createAppointmentFromSlot({
     requester: user,
     patientId,
+    guestPatient,
     serviceId: data.serviceId,
     date: data.date,
     startAt: data.startAt,
@@ -226,6 +248,7 @@ export async function rescheduleAppointment(appointmentId, user, body) {
   const appointment = await requireAccessibleAppointment(appointmentId, user);
 
   assertAppointmentCanChange(appointment, user);
+  assertAppointmentCanRescheduleOrCancel(appointment);
   const previousStatus = appointment.status;
   const updated = await rescheduleAppointmentFromSlot({
     appointment,
@@ -252,6 +275,7 @@ export async function scheduleByReception(appointmentId, user, body) {
   if (!appointment) throw createError("Không tìm thấy lịch hẹn.", 404);
 
   assertAppointmentCanChange(appointment, user);
+  assertAppointmentCanRescheduleOrCancel(appointment);
   const updated = await rescheduleAppointmentFromSlot({
     appointment,
     serviceId: data.serviceId,
@@ -266,8 +290,7 @@ export async function scheduleByReception(appointmentId, user, body) {
   await appointmentRepository.saveAppointment(updated);
   await appointmentRepository.populateAppointment(updated);
 
-  await appointmentRepository.createPatientNotification({
-    user: normalizeId(updated.patient),
+  await createAppointmentPatientNotification(updated, {
     title: "Lễ tân đã xếp lịch khám",
     message: `Lịch hẹn ${updated.service?.name || "khám"} của bạn đã được xếp lúc ${formatClinicDateTime(updated.startAt)} với ${updated.dentist?.fullName || "bác sĩ do lễ tân sắp xếp"}.`,
     isRead: false
@@ -281,6 +304,7 @@ export async function cancelAppointment(appointmentId, user, body) {
   const appointment = await requireAccessibleAppointment(appointmentId, user);
 
   assertAppointmentCanChange(appointment, user);
+  assertAppointmentCanRescheduleOrCancel(appointment);
   appointment.status = "cancelled";
   appointment.cancelledAt = new Date();
   appointment.cancelledBy = user._id;
@@ -288,8 +312,7 @@ export async function cancelAppointment(appointmentId, user, body) {
   appointment.cancellationReason = data.reason;
   await appointmentRepository.updateAppointmentRoomStatus(normalizeId(appointment.room), "available");
   await appointmentRepository.saveAppointment(appointment);
-  await appointmentRepository.createPatientNotification({
-    user: normalizeId(appointment.patient),
+  await createAppointmentPatientNotification(appointment, {
     title: "Lịch hẹn đã hủy",
     message: `Lịch hẹn đã được hủy. Lý do: ${data.reason}`,
     isRead: false
@@ -407,8 +430,7 @@ export async function recordConfirmationCall(appointmentId, user, body) {
   }
 
   await appointmentRepository.saveAppointment(appointment);
-  await appointmentRepository.createPatientNotification({
-    user: appointment.patient,
+  await createAppointmentPatientNotification(appointment, {
     title: "Lịch hẹn đã được xác nhận",
     message: `Lễ tân đã gọi xác nhận lịch ${appointment.service?.name || "khám"} của bạn.`,
     isRead: false
@@ -430,8 +452,7 @@ export async function checkInAppointment(appointmentId, user, body) {
   appointment.paymentStatus = "not_required";
 
   await appointmentRepository.saveAppointment(appointment);
-  await appointmentRepository.createPatientNotification({
-    user: appointment.patient,
+  await createAppointmentPatientNotification(appointment, {
     title: "Đã ghi nhận bệnh nhân đến",
     message: "Lịch hẹn của bạn đã được ghi nhận đến tại quầy lễ tân.",
     isRead: false
@@ -495,7 +516,7 @@ export async function createInvoiceForAppointment(appointmentId, body) {
 
   const invoice = await appointmentRepository.createInvoice({
     appointment: appointment._id,
-    patient: appointment.patient,
+    patient: appointment.patient?.isGuest ? undefined : appointment.patient,
     items: invoiceItems,
     total,
     paidAmount: 0,
@@ -508,8 +529,7 @@ export async function createInvoiceForAppointment(appointmentId, body) {
 
   appointment.paymentStatus = "unpaid";
   await appointmentRepository.saveAppointment(appointment);
-  await appointmentRepository.createPatientNotification({
-    user: normalizeId(appointment.patient),
+  await createAppointmentPatientNotification(appointment, {
     title: "Bạn có hóa đơn mới",
     message: `Lễ tân đã tạo hóa đơn ${total.toLocaleString("vi-VN")} VND cho lịch khám của bạn.`,
     isRead: false

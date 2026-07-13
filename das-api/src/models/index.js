@@ -1,5 +1,6 @@
 import AdminProfile from "./AdminProfile.js";
 import Appointment from "./Appointment.js";
+import AppointmentSlot from "./AppointmentSlot.js";
 import ClinicRoom from "./ClinicRoom.js";
 import ClinicSetting from "./ClinicSetting.js";
 import ConsultationRequest from "./ConsultationRequest.js";
@@ -20,6 +21,7 @@ import User from "./User.js";
 export {
   AdminProfile,
   Appointment,
+  AppointmentSlot,
   ClinicRoom,
   ClinicSetting,
   ConsultationRequest,
@@ -41,6 +43,7 @@ export {
 export const COLLECTIONS = Object.freeze({
   adminProfiles: "adminprofiles",
   appointments: "appointments",
+  appointmentSlots: "appointmentslots",
   clinicSettings: "clinicsettings",
   clinicRooms: "clinicrooms",
   consultationRequests: "consultationrequests",
@@ -62,6 +65,7 @@ export const COLLECTIONS = Object.freeze({
 export const MODELS = Object.freeze({
   [COLLECTIONS.adminProfiles]: AdminProfile,
   [COLLECTIONS.appointments]: Appointment,
+  [COLLECTIONS.appointmentSlots]: AppointmentSlot,
   [COLLECTIONS.clinicSettings]: ClinicSetting,
   [COLLECTIONS.clinicRooms]: ClinicRoom,
   [COLLECTIONS.consultationRequests]: ConsultationRequest,
@@ -88,6 +92,10 @@ export const COLLECTION_INDEXES = Object.freeze({
   ],
   [COLLECTIONS.roles]: [{ key: { roleName: 1 }, options: { unique: true } }],
   [COLLECTIONS.clinicSettings]: [{ key: { key: 1 }, options: { unique: true } }],
+  [COLLECTIONS.appointmentSlots]: [
+    { key: { order: 1 } },
+    { key: { startTime: 1 }, options: { unique: true } }
+  ],
   [COLLECTIONS.adminProfiles]: [{ key: { user: 1 }, options: { unique: true } }],
   [COLLECTIONS.patients]: [{ key: { user: 1 }, options: { unique: true } }],
   [COLLECTIONS.receptionists]: [{ key: { user: 1 }, options: { unique: true } }],
@@ -108,9 +116,9 @@ export const COLLECTION_INDEXES = Object.freeze({
     }
   ],
   [COLLECTIONS.appointments]: [
-    { key: { room: 1, startAt: 1, endAt: 1 } },
+    { key: { room: 1, startAt: 1, slot: 1 } },
     { key: { patient: 1, startAt: -1 } },
-    { key: { patient: 1, status: 1, startAt: 1, endAt: 1 } },
+    { key: { patient: 1, status: 1, startAt: 1, slot: 1 } },
     { key: { dentist: 1, startAt: -1 } },
     { key: { status: 1, startAt: 1 } }
   ],
@@ -136,6 +144,7 @@ export const COLLECTION_INDEXES = Object.freeze({
 
 export const RELATION_COLLECTIONS = Object.freeze({
   appointment: COLLECTIONS.appointments,
+  slot: COLLECTIONS.appointmentSlots,
   assignedDentist: COLLECTIONS.users,
   assignedNurse: COLLECTIONS.users,
   cancelledBy: COLLECTIONS.users,

@@ -7,7 +7,7 @@ import ClinicalPerformedServices from "../../components/clinical/nurse/ClinicalP
 import Feedback from "../../components/Feedback.jsx";
 import { useAuth } from "../../redux/AuthContext.jsx";
 import { api, getErrorMessage } from "../../utils/api.js";
-import { bookingSlotOptions, compareQueueWithinSlot, getAppointmentSlot, todayInput } from "../../utils/format.js";
+import { bookingSlotOptions, compareQueueWithinSlot, getAppointmentSlot, normalizeAppointmentSlots, todayInput } from "../../utils/format.js";
 
 function getClinicalFeatures(role) {
   return [
@@ -65,6 +65,7 @@ export default function ClinicalDashboard() {
   const [records, setRecords] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [services, setServices] = useState([]);
+  const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [recordForm, setRecordForm] = useState(defaultRecordForm);
   const [treatmentSearchPhone, setTreatmentSearchPhone] = useState("");
@@ -74,6 +75,7 @@ export default function ClinicalDashboard() {
   const [performedServicesForm, setPerformedServicesForm] = useState(defaultPerformedServicesForm);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const slotOptions = useMemo(() => normalizeAppointmentSlots(slots), [slots]);
 
   async function load() {
     setLoading(true);
@@ -87,6 +89,7 @@ export default function ClinicalDashboard() {
       setRecords(res.data.records || []);
       setRooms(nextRooms);
       setServices(nextServices);
+      setSlots(res.data.slots || []);
       setTreatmentCreateForm((current) => ({
         ...current,
         serviceId: current.serviceId || nextServices[0]?._id || ""
@@ -129,7 +132,7 @@ export default function ClinicalDashboard() {
   }, [activeFeature, clinicalFeatures, location.search]);
 
   const clinicalColumns = useMemo(() => buildClinicalColumns(appointments, rooms), [appointments, rooms]);
-  const clinicalRows = useMemo(() => buildClinicalRows(appointments, clinicalColumns), [appointments, clinicalColumns]);
+  const clinicalRows = useMemo(() => buildClinicalRows(appointments, clinicalColumns, slotOptions), [appointments, clinicalColumns, slotOptions]);
   const selectedAppointment = appointments.find((appointment) => appointment._id === recordForm.appointmentId);
   const selectedSearchTreatmentRecord = treatmentSearchResults.find((record) => record._id === recordForm.recordId);
   const selectedTreatmentRecords = useMemo(() => getPatientTreatmentRecords(records, selectedAppointment), [records, selectedAppointment]);
@@ -686,14 +689,14 @@ function buildClinicalColumns(appointments, rooms) {
   return Array.from(columns.values());
 }
 
-function buildClinicalRows(appointments, columns) {
-  return bookingSlotOptions.map((slot) => ({
+function buildClinicalRows(appointments, columns, slotOptions = bookingSlotOptions) {
+  return slotOptions.map((slot) => ({
     slotId: slot.slotId,
     slotName: slot.slotName,
     timeLabel: slot.timeLabel,
     cells: columns.map((column) =>
       appointments
-        .filter((appointment) => appointment.dentist?._id === column._id && getAppointmentSlot(appointment.startAt).slotId === slot.slotId)
+        .filter((appointment) => appointment.dentist?._id === column._id && getAppointmentSlot(appointment.startAt, slotOptions).slotId === slot.slotId)
         .sort(compareQueueWithinSlot)
     )
   }));

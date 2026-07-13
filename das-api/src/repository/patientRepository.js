@@ -13,6 +13,7 @@ const appointmentPopulate = [
   { path: "dentist", select: "fullName phone" },
   { path: "nurse", select: "fullName phone" },
   { path: "room", select: "name status equipment" },
+  { path: "slot", select: "slotName startTime endTime order" },
   {
     path: "service",
     select: "name price"

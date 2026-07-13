@@ -9,7 +9,7 @@ import {
   populate
 } from "./mongoRepository.js";
 
-const appointmentIdFields = ["_id", "patient", "dentist", "nurse", "room", "service"];
+const appointmentIdFields = ["_id", "patient", "dentist", "nurse", "room", "service", "slot"];
 
 export function findAppointments(query, select) {
   return findMany(
@@ -29,6 +29,14 @@ export function findAppointmentConflict(query, select) {
 
 export function findServiceById(serviceId) {
   return findById(COLLECTIONS.dentalServices, serviceId);
+}
+
+export function findActiveAppointmentSlots() {
+  return findMany(
+    COLLECTIONS.appointmentSlots,
+    { isActive: { $ne: false } },
+    { sort: { order: 1, startTime: 1 } }
+  );
 }
 
 export async function findActiveRoomsWithDentists() {
@@ -65,6 +73,13 @@ export async function findPatientById(patientId) {
   return patient;
 }
 
+export async function findPatientByPhone(phone) {
+  const patient = await findOne(COLLECTIONS.users, { phone, status: "active" });
+  await populate(patient, { path: "roleRef", select: "roleName" });
+  if (patient?.roleRef?.roleName) patient.role = patient.roleRef.roleName;
+  return patient?.role === "patient" ? patient : null;
+}
+
 export function createAppointment(data) {
   return insertDocuments(COLLECTIONS.appointments, {
     status: "pending",
@@ -82,12 +97,17 @@ export function saveAppointment(appointment) {
     "nurse",
     "room",
     "service",
+    "slot",
     "confirmationBy",
     "cancelledBy"
   ];
   const update = { ...appointment };
   delete update._id;
   for (const field of relationFields) {
+    if (field === "patient" && update[field]?.isGuest) {
+      delete update[field];
+      continue;
+    }
     if (update[field]?._id) update[field] = update[field]._id;
   }
   return getCollection(COLLECTIONS.appointments).findOneAndUpdate(

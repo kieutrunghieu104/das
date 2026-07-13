@@ -1,5 +1,4 @@
 import { CalendarSearch } from "lucide-react";
-import { bookingSlotOptions } from "../../utils/format.js";
 
 export default function AppointmentBookingForm({
   bootstrapLoading,
@@ -14,6 +13,7 @@ export default function AppointmentBookingForm({
   onSubmit,
   serviceId,
   services,
+  slotOptions,
   submitting,
   time,
   user
@@ -70,7 +70,7 @@ export default function AppointmentBookingForm({
         <fieldset className="booking-time-field">
           <legend>Slot khám</legend>
           <div className="booking-time-options">
-            {bookingSlotOptions.map((option) => (
+            {slotOptions.map((option) => (
               <label key={option.value}>
                 <input
                   type="radio"

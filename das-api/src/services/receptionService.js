@@ -43,15 +43,16 @@ function buildAppointmentQuery(dateText) {
 
 export async function getDashboard(query) {
   const patientFilter = await buildPatientFilter(query.q);
-  const [appointments, patients, services, consultations, rooms] = await Promise.all([
+  const [appointments, patients, services, consultations, rooms, slots] = await Promise.all([
     receptionRepository.findReceptionAppointments(buildAppointmentQuery(query.date && query.scopeByDate === "true" ? query.date : "")),
     receptionRepository.findReceptionPatients(patientFilter, 40),
     receptionRepository.findActiveServices(),
     receptionRepository.findConsultationRequests({}, 60),
-    receptionRepository.findReceptionRooms()
+    receptionRepository.findReceptionRooms(),
+    receptionRepository.findActiveAppointmentSlots()
   ]);
 
-  return { appointments, patients, services, consultations, rooms };
+  return { appointments, patients, services, consultations, rooms, slots };
 }
 
 export async function getPatients(query) {
@@ -76,6 +77,10 @@ export async function resetPatientPassword(patientId, body) {
 
 export async function createPatient(body) {
   const data = createReceptionPatientSchema.parse(body);
+  if (!data.createAccount) {
+    throw createError("Chỉ tạo tài khoản khi lễ tân đã tick chọn tạo tài khoản.", 400);
+  }
+
   const duplicate = await receptionRepository.findUserByPhone(data.phone);
 
   if (duplicate) {

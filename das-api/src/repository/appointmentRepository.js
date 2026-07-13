@@ -19,13 +19,14 @@ export const appointmentPopulate = [
   { path: "dentist", select: "fullName phone avatarUrl yearsOfExperience bio" },
   { path: "nurse", select: "fullName phone" },
   { path: "room", select: "name status equipment" },
+  { path: "slot", select: "slotName startTime endTime order" },
   {
     path: "service",
     select: "name price"
   }
 ];
 
-const appointmentIdFields = ["_id", "patient", "dentist", "nurse", "room", "service"];
+const appointmentIdFields = ["_id", "patient", "dentist", "nurse", "room", "service", "slot"];
 const appointmentRelationFields = [
   "patient",
   "createdBy",
@@ -34,9 +35,20 @@ const appointmentRelationFields = [
   "nurse",
   "room",
   "service",
+  "slot",
   "confirmationBy",
   "cancelledBy"
 ];
+
+function attachGuestPatient(appointment) {
+  if (appointment && !appointment.patient && appointment.guestPatient) {
+    appointment.patient = {
+      ...appointment.guestPatient,
+      isGuest: true
+    };
+  }
+  return appointment;
+}
 
 export async function findAppointments(query) {
   const appointments = await findMany(
@@ -45,7 +57,7 @@ export async function findAppointments(query) {
     { sort: { startAt: 1 }, limit: 200 }
   );
   await populate(appointments, appointmentPopulate);
-  return appointments;
+  return appointments.map(attachGuestPatient);
 }
 
 export function findAppointmentById(appointmentId) {
@@ -55,29 +67,33 @@ export function findAppointmentById(appointmentId) {
 export async function findAppointmentByIdPopulated(appointmentId) {
   const appointment = await findAppointmentById(appointmentId);
   await populate(appointment, appointmentPopulate);
-  return appointment;
+  return attachGuestPatient(appointment);
 }
 
 export async function findAppointmentWithService(appointmentId) {
   const appointment = await findAppointmentById(appointmentId);
   await populate(appointment, { path: "service" });
-  return appointment;
+  return attachGuestPatient(appointment);
 }
 
 export async function findAppointmentWithServiceName(appointmentId) {
   const appointment = await findAppointmentById(appointmentId);
   await populate(appointment, { path: "service", select: "name" });
-  return appointment;
+  return attachGuestPatient(appointment);
 }
 
 export function populateAppointment(appointment) {
-  return populate(appointment, appointmentPopulate);
+  return populate(appointment, appointmentPopulate).then(attachGuestPatient);
 }
 
 export function saveAppointment(appointment) {
   const update = { ...appointment };
   delete update._id;
   for (const field of appointmentRelationFields) {
+    if (field === "patient" && update[field]?.isGuest) {
+      delete update[field];
+      continue;
+    }
     if (update[field]?._id) update[field] = update[field]._id;
   }
   return getCollection(COLLECTIONS.appointments).findOneAndUpdate(

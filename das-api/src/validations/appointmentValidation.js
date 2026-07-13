@@ -1,14 +1,25 @@
 import { z } from "zod";
 import {
   futureDateInputSchema,
+  nameSchema,
   noteSchema,
   objectIdSchema,
+  optionalEmailSchema,
   optionalIsoDateTimeSchema,
-  optionalObjectIdSchema
+  optionalObjectIdSchema,
+  phoneSchema
 } from "../utils/validation.js";
 
 export const createAppointmentSchema = z.object({
   patientId: optionalObjectIdSchema,
+  guestPatient: z
+    .object({
+      fullName: nameSchema,
+      phone: phoneSchema,
+      email: optionalEmailSchema,
+      gender: z.enum(["male", "female", "other", "unknown"]).default("unknown")
+    })
+    .optional(),
   serviceId: objectIdSchema,
   date: futureDateInputSchema,
   startAt: optionalIsoDateTimeSchema,

@@ -7,9 +7,7 @@ const genderOptions = [
   { value: "other", label: "Khac" }
 ];
 
-export default function EditUserProfile({ form, onCancel, onChange, onSubmit, userRole }) {
-  const isPatient = userRole === "patient";
-
+export default function EditUserProfile({ form, onCancel, onChange, onSubmit }) {
   return (
     <div className="modal-backdrop" role="dialog" aria-modal="true" onMouseDown={(event) => event.currentTarget === event.target && onCancel()}>
       <form className="account-modal panel" onSubmit={onSubmit}>
@@ -30,18 +28,16 @@ export default function EditUserProfile({ form, onCancel, onChange, onSubmit, us
           <input type="email" value={form.email || ""} onChange={(event) => onChange({ ...form, email: event.target.value })} />
         </label>
         <div className="form-grid account-form-grid">
-          {isPatient && (
-            <label className="field">
-              <span>Giới tính</span>
-              <select value={form.gender} onChange={(event) => onChange({ ...form, gender: event.target.value })}>
-                {genderOptions.map((option) => (
-                  <option value={option.value} key={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
+          <label className="field">
+            <span>Giới tính</span>
+            <select value={form.gender} onChange={(event) => onChange({ ...form, gender: event.target.value })}>
+              {genderOptions.map((option) => (
+                <option value={option.value} key={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
           <label className="field">
             <span>Địa chỉ</span>
             <input value={form.address} onChange={(event) => onChange({ ...form, address: event.target.value })} maxLength={255} />

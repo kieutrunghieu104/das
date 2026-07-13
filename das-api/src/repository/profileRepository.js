@@ -53,6 +53,7 @@ export function pickProfileFields(role, data = {}) {
 
   if (role === "dentist") {
     return compact({
+      gender: data.gender,
       qualification: data.qualification,
       experienceYears: data.experienceYears ?? data.yearsOfExperience,
       description: data.description ?? data.bio,
@@ -63,6 +64,7 @@ export function pickProfileFields(role, data = {}) {
 
   if (role === "nurse") {
     return compact({
+      gender: data.gender,
       qualification: data.qualification,
       address: data.address,
       avatarUrl: data.avatarUrl || undefined,
@@ -72,6 +74,7 @@ export function pickProfileFields(role, data = {}) {
 
   if (role === "receptionist") {
     return compact({
+      gender: data.gender,
       address: data.address,
       avatarUrl: data.avatarUrl || undefined,
       bio: data.bio
@@ -80,6 +83,7 @@ export function pickProfileFields(role, data = {}) {
 
   if (role === "admin") {
     return compact({
+      gender: data.gender,
       position: data.position,
       permissionLevel: data.permissionLevel,
       address: data.address,
@@ -100,8 +104,9 @@ export function mergeProfileFields(user, profile = null) {
     merged.profile = profile;
   }
 
+  merged.gender = profile?.gender || user.gender || "unknown";
+
   if (merged.role === "patient") {
-    merged.gender = profile?.gender || user.gender || "unknown";
     merged.address = profile?.address || "";
     merged.medicalNote = profile?.medicalNote || "";
     merged.avatarUrl = profile?.avatarUrl || "";

@@ -2,15 +2,6 @@ export const WORKING_DAYS = [0, 1, 2, 3, 4, 5, 6];
 
 const CLINIC_UTC_OFFSET_MINUTES = 7 * 60;
 
-export const APPOINTMENT_SLOTS = [
-  { label: "Slot 1", start: "08:00", end: "10:30" },
-  { label: "Slot 2", start: "10:30", end: "12:00" },
-  { label: "Slot 3", start: "14:00", end: "16:00" },
-  { label: "Slot 4", start: "16:00", end: "17:30" }
-];
-
-export const WORKING_SESSIONS = APPOINTMENT_SLOTS;
-
 function parseDateParts(dateString) {
   const [year, month, day] = dateString.split("-").map(Number);
   if (!year || !month || !day) {

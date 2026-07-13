@@ -57,6 +57,17 @@ function timeTextFromMinutes(minutes) {
   return `${hour}:${minute}`;
 }
 
+function minutesFromTime(timeText) {
+  const [hour, minute] = String(timeText || "").split(":").map(Number);
+  if (!Number.isFinite(hour) || !Number.isFinite(minute)) return 0;
+  return hour * 60 + minute;
+}
+
+function timeFromValue(value) {
+  if (typeof value === "string" && /^\d{2}:\d{2}$/.test(value)) return value;
+  return formatTime(value);
+}
+
 export const bookingSlotOptions = [
   { value: "08:00", slotId: "slot-0800", slotName: "Slot 1", startMinutes: 8 * 60, endMinutes: 10 * 60 + 30 },
   { value: "10:30", slotId: "slot-1030", slotName: "Slot 2", startMinutes: 10 * 60 + 30, endMinutes: 12 * 60 },
@@ -72,12 +83,38 @@ export const bookingSlotOptions = [
   };
 });
 
-export function getAppointmentSlot(value) {
-  const time = formatTime(value);
+export function normalizeAppointmentSlots(slots = []) {
+  const normalized = slots
+    .filter(Boolean)
+    .map((slot, index) => {
+      const startTime = slot.startTime || slot.value;
+      const endTime = slot.endTime || timeTextFromMinutes(slot.endMinutes || minutesFromTime(startTime));
+      const startMinutes = minutesFromTime(startTime);
+      const endMinutes = minutesFromTime(endTime);
+      const slotName = slot.slotName || slot.name || `Slot ${index + 1}`;
+      return {
+        ...slot,
+        value: startTime,
+        slotId: String(slot._id || slot.slotId || `slot-${String(startTime).replace(":", "")}`),
+        slotName,
+        startMinutes,
+        endMinutes,
+        timeLabel: `${startTime} - ${endTime}`,
+        label: `${slotName} (${startTime} - ${endTime})`
+      };
+    })
+    .sort((first, second) => (first.order ?? first.startMinutes) - (second.order ?? second.startMinutes));
+
+  return normalized.length ? normalized : bookingSlotOptions;
+}
+
+export function getAppointmentSlot(value, slotOptions = bookingSlotOptions) {
+  const options = normalizeAppointmentSlots(slotOptions);
+  const time = timeFromValue(value);
   const [hour, minute] = time.split(":").map(Number);
   const minutes = hour * 60 + minute;
-  return bookingSlotOptions.find((slot) => slot.value === time) ||
-    bookingSlotOptions.find((slot) => minutes >= slot.startMinutes && minutes < slot.endMinutes) || {
+  return options.find((slot) => slot.value === time) ||
+    options.find((slot) => minutes >= slot.startMinutes && minutes < slot.endMinutes) || {
     value: time,
     slotId: `slot-${time.replace(":", "")}`,
     slotName: time,
@@ -86,8 +123,9 @@ export function getAppointmentSlot(value) {
   };
 }
 
-export function formatSlotWithDate(value) {
-  const slot = getAppointmentSlot(value);
+export function formatSlotWithDate(value, slotOrOptions = bookingSlotOptions) {
+  const directSlot = Array.isArray(slotOrOptions) ? null : slotOrOptions?.startTime ? normalizeAppointmentSlots([slotOrOptions])[0] : null;
+  const slot = directSlot || getAppointmentSlot(value, Array.isArray(slotOrOptions) ? slotOrOptions : bookingSlotOptions);
   return `${formatDateOnly(value)} - ${slot.label}`;
 }
 

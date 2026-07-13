@@ -18,6 +18,7 @@ const clinicalAppointmentPopulate = [
   { path: "dentist", select: "fullName" },
   { path: "nurse", select: "fullName" },
   { path: "room", select: "name status" },
+  { path: "slot", select: "slotName startTime endTime order" },
   { path: "service", select: "name price" }
 ];
 
@@ -41,7 +42,17 @@ const patientHistoryPopulate = [
   { path: "nurse", select: "fullName" }
 ];
 
-const appointmentIdFields = ["patient", "dentist", "nurse", "room", "service"];
+const appointmentIdFields = ["patient", "dentist", "nurse", "room", "service", "slot"];
+
+function attachGuestPatient(appointment) {
+  if (appointment && !appointment.patient && appointment.guestPatient) {
+    appointment.patient = {
+      ...appointment.guestPatient,
+      isGuest: true
+    };
+  }
+  return appointment;
+}
 
 export async function findClinicalAppointments(query, limit = 120) {
   const appointments = await findMany(
@@ -50,7 +61,11 @@ export async function findClinicalAppointments(query, limit = 120) {
     { sort: { startAt: 1 }, limit }
   );
   await populate(appointments, clinicalAppointmentPopulate);
-  return appointments;
+  return appointments.map(attachGuestPatient);
+}
+
+export function findActiveAppointmentSlots() {
+  return findMany(COLLECTIONS.appointmentSlots, { isActive: { $ne: false } }, { sort: { order: 1, startTime: 1 } });
 }
 
 export async function findClinicalTreatmentRecords(query, limit = 100) {

@@ -1,4 +1,4 @@
-import { bookingSlotOptions, todayInput } from "../../utils/format.js";
+import { todayInput } from "../../utils/format.js";
 import { maxBookingDate } from "../../pages/BookingPage.jsx";
 
 export default function RescheduleAppointmentModal({
@@ -6,7 +6,8 @@ export default function RescheduleAppointmentModal({
   form,
   onCancel,
   onChange,
-  onSubmit
+  onSubmit,
+  slotOptions
 }) {
   return (
     <div className="patient-reschedule-box">
@@ -26,7 +27,7 @@ export default function RescheduleAppointmentModal({
         ))}
       </select>
       <select value={form.time} onChange={(event) => onChange({ time: event.target.value })}>
-        {bookingSlotOptions.map((option) => (
+        {slotOptions.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>

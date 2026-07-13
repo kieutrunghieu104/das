@@ -18,6 +18,7 @@ const appointmentPopulate = [
   { path: "dentist", select: "fullName phone" },
   { path: "nurse", select: "fullName phone" },
   { path: "room", select: "name status equipment" },
+  { path: "slot", select: "slotName startTime endTime order" },
   {
     path: "service",
     select: "name price"
@@ -32,6 +33,16 @@ async function attachRole(user) {
   await populate(user, { path: "roleRef", select: "roleName" });
   if (user?.roleRef?.roleName) user.role = user.roleRef.roleName;
   return user;
+}
+
+function attachGuestPatient(appointment) {
+  if (appointment && !appointment.patient && appointment.guestPatient) {
+    appointment.patient = {
+      ...appointment.guestPatient,
+      isGuest: true
+    };
+  }
+  return appointment;
 }
 
 export async function findReceptionAppointments(query) {
@@ -70,7 +81,7 @@ export async function findReceptionAppointments(query) {
       appointment.invoice = invoiceMap.get(appointment._id.toString()) || null;
     });
   }
-  return appointments;
+  return appointments.map(attachGuestPatient);
 }
 
 export function findReceptionPatients(filter, limit = 50) {
@@ -83,6 +94,10 @@ export function findReceptionPatients(filter, limit = 50) {
 
 export function findActiveServices() {
   return findMany(COLLECTIONS.dentalServices, {}, { sort: { name: 1 } });
+}
+
+export function findActiveAppointmentSlots() {
+  return findMany(COLLECTIONS.appointmentSlots, { isActive: { $ne: false } }, { sort: { order: 1, startTime: 1 } });
 }
 
 export async function findReceptionRooms() {

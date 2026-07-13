@@ -6,7 +6,7 @@ import {
 import { COLLECTIONS } from "../models/index.js";
 import { insertDocuments } from "../repository/mongoRepository.js";
 import { hashPassword } from "./password.js";
-import { APPOINTMENT_SLOTS, combineDateAndTime, isWorkingDate, toDateInputValue } from "./time.js";
+import { combineDateAndTime, isWorkingDate, toDateInputValue } from "./time.js";
 
 function nextWorkingDates(count, offsetDays = 1) {
   const dates = [];
@@ -44,9 +44,20 @@ async function clearDatabase() {
 
 const ROLE_NAMES = ["admin", "receptionist", "dentist", "nurse", "patient"];
 
+const DEFAULT_APPOINTMENT_SLOTS = [
+  { slotName: "Slot 1", startTime: "08:00", endTime: "10:30", order: 1, isActive: true },
+  { slotName: "Slot 2", startTime: "10:30", endTime: "12:00", order: 2, isActive: true },
+  { slotName: "Slot 3", startTime: "14:00", endTime: "16:00", order: 3, isActive: true },
+  { slotName: "Slot 4", startTime: "16:00", endTime: "17:30", order: 4, isActive: true }
+];
+
 async function createRoles() {
   const createdRoles = await insertDocuments(COLLECTIONS.roles, ROLE_NAMES.map((roleName) => ({ roleName })));
   return Object.fromEntries(createdRoles.map((role) => [role.roleName, role]));
+}
+
+function createAppointmentSlots() {
+  return insertDocuments(COLLECTIONS.appointmentSlots, DEFAULT_APPOINTMENT_SLOTS);
 }
 
 async function createClinicSettings() {
@@ -317,6 +328,7 @@ async function createSampleAppointment({
   receptionist,
   room,
   service,
+  slots,
   date,
   time,
   status,
@@ -325,11 +337,10 @@ async function createSampleAppointment({
   dentistPreference = "selected"
 }) {
   const selectedSlot =
-    APPOINTMENT_SLOTS.find((slot) => slot.start === time) ||
-    APPOINTMENT_SLOTS.find((slot) => time >= slot.start && time < slot.end) ||
-    APPOINTMENT_SLOTS[0];
-  const startAt = combineDateAndTime(date, selectedSlot.start);
-  const endAt = combineDateAndTime(date, selectedSlot.end);
+    slots.find((slot) => slot.startTime === time) ||
+    slots.find((slot) => time >= slot.startTime && time < slot.endTime) ||
+    slots[0];
+  const startAt = combineDateAndTime(date, selectedSlot.startTime);
 
   return insertDocuments(COLLECTIONS.appointments, {
     patient: patient._id,
@@ -339,10 +350,10 @@ async function createSampleAppointment({
     nurse: room?.assignedNurse,
     room: room?._id,
     service: service._id,
+    slot: selectedSlot._id,
     channel,
     dentistPreference,
     startAt,
-    endAt,
     arrivalAt: startAt,
     checkedInAt: ["checked_in", "in_treatment", "completed"].includes(status) ? startAt : undefined,
     checkInTime: ["checked_in", "in_treatment", "completed"].includes(status) ? startAt : undefined,
@@ -376,7 +387,7 @@ async function seedInvoice(appointment, patient, service, paidAmount) {
     installmentMonths,
     installmentAmount,
     invoiceDate: new Date(),
-    paidAt: status === "paid" ? appointment.endAt : undefined,
+    paidAt: status === "paid" ? appointment.startAt : undefined,
     status
   });
 
@@ -386,7 +397,7 @@ async function seedInvoice(appointment, patient, service, paidAmount) {
       paymentMethod: "cash",
       installmentNumber: 1,
       amount: normalizedPaidAmount,
-      paymentDate: appointment.endAt
+      paymentDate: appointment.startAt
     });
   }
   return invoice;
@@ -394,10 +405,11 @@ async function seedInvoice(appointment, patient, service, paidAmount) {
 
 async function seedOperationalData(users, clinic) {
   const { receptionists, patients } = users;
-  const { services, rooms, workingDates } = clinic;
+  const { services, rooms, slots, workingDates } = clinic;
   const pastDates = previousWorkingDates(4);
+  const createAppointment = (data) => createSampleAppointment({ ...data, slots });
 
-  const pendingRandom = await createSampleAppointment({
+  const pendingRandom = await createAppointment({
     patient: patients[0],
     requester: patients[0],
     service: services[0],
@@ -407,7 +419,7 @@ async function seedOperationalData(users, clinic) {
     note: "Đau nhẹ răng hàm, chưa chọn bác sĩ.",
     dentistPreference: "random"
   });
-  const pendingSelected = await createSampleAppointment({
+  const pendingSelected = await createAppointment({
     patient: patients[2],
     requester: patients[2],
     room: rooms[1],
@@ -418,7 +430,7 @@ async function seedOperationalData(users, clinic) {
     note: "Muốn bác sĩ kiểm tra răng khôn.",
     dentistPreference: "selected"
   });
-  const confirmed = await createSampleAppointment({
+  const confirmed = await createAppointment({
     patient: patients[3],
     requester: patients[3],
     receptionist: receptionists[0],
@@ -429,7 +441,7 @@ async function seedOperationalData(users, clinic) {
     status: "confirmed",
     note: "Lịch đã được lễ tân xác nhận."
   });
-  const confirmedForPatient = await createSampleAppointment({
+  const confirmedForPatient = await createAppointment({
     patient: patients[0],
     requester: patients[0],
     receptionist: receptionists[0],
@@ -440,7 +452,7 @@ async function seedOperationalData(users, clinic) {
     status: "confirmed",
     note: "Tái khám và vệ sinh răng."
   });
-  const checkedIn = await createSampleAppointment({
+  const checkedIn = await createAppointment({
     patient: patients[1],
     requester: receptionists[0],
     receptionist: receptionists[0],
@@ -452,7 +464,7 @@ async function seedOperationalData(users, clinic) {
     note: "Bệnh nhân đã có mặt tại phòng khám.",
     channel: "offline"
   });
-  const inTreatment = await createSampleAppointment({
+  const inTreatment = await createAppointment({
     patient: patients[2],
     requester: receptionists[0],
     receptionist: receptionists[0],
@@ -464,7 +476,7 @@ async function seedOperationalData(users, clinic) {
     note: "Đang thực hiện điều trị.",
     channel: "offline"
   });
-  const rejected = await createSampleAppointment({
+  const rejected = await createAppointment({
     patient: patients[0],
     requester: patients[0],
     service: services[1],
@@ -474,7 +486,7 @@ async function seedOperationalData(users, clinic) {
     note: "Lịch mẫu đã bị từ chối để kiểm tra trạng thái.",
     dentistPreference: "random"
   });
-  const completedOne = await createSampleAppointment({
+  const completedOne = await createAppointment({
     patient: patients[0],
     requester: receptionists[0],
     receptionist: receptionists[0],
@@ -486,7 +498,7 @@ async function seedOperationalData(users, clinic) {
     note: "Đã hoàn tất cạo vôi răng.",
     channel: "offline"
   });
-  const completedTwo = await createSampleAppointment({
+  const completedTwo = await createAppointment({
     patient: patients[1],
     requester: receptionists[0],
     receptionist: receptionists[0],
@@ -498,7 +510,7 @@ async function seedOperationalData(users, clinic) {
     note: "Đã hoàn tất trám răng.",
     channel: "offline"
   });
-  const completedThree = await createSampleAppointment({
+  const completedThree = await createAppointment({
     patient: patients[2],
     requester: receptionists[0],
     receptionist: receptionists[0],
@@ -510,7 +522,7 @@ async function seedOperationalData(users, clinic) {
     note: "Đã hoàn tất tẩy trắng răng.",
     channel: "offline"
   });
-  await createSampleAppointment({
+  await createAppointment({
     patient: patients[4],
     requester: receptionists[0],
     receptionist: receptionists[0],
@@ -539,7 +551,7 @@ async function seedOperationalData(users, clinic) {
       diagnosis: "Vôi răng mức độ trung bình.",
       treatmentResult: "Đã làm sạch vôi răng và đánh bóng.",
       treatmentNote: "Hướng dẫn dùng chỉ nha khoa hằng ngày.",
-      updatedAt: completedOne.endAt
+      updatedAt: completedOne.startAt
     }],
     status: "completed"
   });
@@ -555,7 +567,7 @@ async function seedOperationalData(users, clinic) {
       diagnosis: "Sâu răng hàm dưới.",
       treatmentResult: "Đã làm sạch và trám phục hồi.",
       treatmentNote: "Theo dõi ê buốt trong 48 giờ.",
-      updatedAt: completedTwo.endAt
+      updatedAt: completedTwo.startAt
     }],
     status: "completed"
   });
@@ -692,7 +704,11 @@ async function run() {
   const roles = await createRoles();
   await createClinicSettings();
   const users = await seedUsers(roles, passwordHash);
-  const clinic = await seedClinic(users.dentists, users.nurses);
+  const slots = await createAppointmentSlots();
+  const clinic = {
+    ...(await seedClinic(users.dentists, users.nurses)),
+    slots
+  };
   await seedOperationalData(users, clinic);
   await closeMongoDB();
 }

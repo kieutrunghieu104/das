@@ -5,11 +5,11 @@ import PatientAppointmentList from "../../components/patient/PatientAppointmentL
 import PatientInvoiceList from "../../components/patient/PatientInvoiceList.jsx";
 import PatientTreatmentRecords from "../../components/patient/PatientTreatmentRecords.jsx";
 import { api, getErrorMessage } from "../../utils/api.js";
-import { bookingSlotOptions, clinicDateInput, formatPriceText, getAppointmentSlot, todayInput } from "../../utils/format.js";
+import { bookingSlotOptions, clinicDateInput, formatPriceText, getAppointmentSlot, normalizeAppointmentSlots, todayInput } from "../../utils/format.js";
 import { usePublicBootstrap } from "../../utils/usePublicBootstrap.js";
 import BookingPage, { maxBookingDate, toClinicIso } from "../BookingPage.jsx";
 
-const lockedPatientStatuses = new Set(["cancelled", "rejected", "completed", "no_show"]);
+const changeablePatientStatuses = new Set(["pending", "scheduled"]);
 const patientFeatures = new Set(["home", "booking", "appointments", "history", "invoices", "records"]);
 
 export default function PatientDashboard() {
@@ -26,7 +26,8 @@ export default function PatientDashboard() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const { services, dentists, rooms } = usePublicBootstrap();
+  const { services, dentists, rooms, slots } = usePublicBootstrap();
+  const slotOptions = useMemo(() => normalizeAppointmentSlots(slots), [slots]);
 
   const dentistOptions = useMemo(() => {
     const roomDentists = rooms.map((room) => room.assignedDentist).filter(Boolean);
@@ -136,7 +137,7 @@ export default function PatientDashboard() {
       ...current,
       [appointment._id]: {
         date: clinicDateInput(appointment.startAt) || todayInput(),
-        time: getAppointmentSlot(appointment.startAt)?.value || bookingSlotOptions[0].value,
+        time: getAppointmentSlot(appointment.startAt, slotOptions)?.value || slotOptions[0]?.value || bookingSlotOptions[0].value,
         dentistId: appointment.dentist?._id || dentistOptions[0]?._id || "",
         ...(current[appointment._id] || {}),
         ...values
@@ -200,7 +201,7 @@ export default function PatientDashboard() {
       return false;
     }
 
-    const slot = bookingSlotOptions.find((option) => option.value === form.time);
+    const slot = slotOptions.find((option) => option.value === form.time);
     if (!window.confirm(`Xác nhận đổi lịch sang ${form.date}, ${slot?.label || form.time}?`)) return false;
 
     try {
@@ -254,6 +255,7 @@ export default function PatientDashboard() {
             loading={loading}
             rescheduleAppointment={rescheduleAppointment}
             rescheduleForms={rescheduleForms}
+            slotOptions={slotOptions}
             updateRescheduleForm={updateRescheduleForm}
           />
         )}
@@ -269,6 +271,7 @@ export default function PatientDashboard() {
             loading={loading}
             rescheduleAppointment={rescheduleAppointment}
             rescheduleForms={rescheduleForms}
+            slotOptions={slotOptions}
             updateRescheduleForm={updateRescheduleForm}
           />
         )}
@@ -335,5 +338,5 @@ function PatientServices({ services }) {
 }
 
 function canModifyAppointment(appointment) {
-  return !lockedPatientStatuses.has(appointment.status) && new Date(appointment.startAt) > new Date();
+  return changeablePatientStatuses.has(appointment.status) && new Date(appointment.startAt) > new Date();
 }

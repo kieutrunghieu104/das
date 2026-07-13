@@ -20,6 +20,7 @@ export default function PatientAppointmentCard({
   dentistOptions,
   rescheduleAppointment,
   rescheduleForm,
+  slotOptions = bookingSlotOptions,
   updateRescheduleForm
 }) {
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
@@ -29,12 +30,12 @@ export default function PatientAppointmentCard({
   const canModify = canModifyAppointment(appointment);
   const currentRescheduleForm = rescheduleForm || {
     date: clinicDateInput(appointment.startAt) || todayInput(),
-    time: getAppointmentSlot(appointment.startAt)?.value || bookingSlotOptions[0].value,
+    time: getAppointmentSlot(appointment.startAt, slotOptions)?.value || slotOptions[0]?.value || bookingSlotOptions[0].value,
     dentistId: appointment.dentist?._id || dentistOptions[0]?._id || ""
   };
   const scheduleText = arrangedStatuses.has(appointment.status)
     ? `Giờ đến: ${formatDateTime(appointment.checkInTime || appointment.startAt)}`
-    : `Slot đã đặt: ${formatSlotWithDate(appointment.startAt)}`;
+    : `Slot đã đặt: ${formatSlotWithDate(appointment.startAt, appointment.slot?.startTime ? appointment.slot : slotOptions)}`;
 
   function openRescheduleForm() {
     updateRescheduleForm(appointment, {});
@@ -61,6 +62,9 @@ export default function PatientAppointmentCard({
         <div className="patient-appointment-meta">
           <span className="mini">Bác sĩ: {appointment.dentist?.fullName || "Lễ tân sắp xếp"}</span>
           {appointment.patientNote && <span className="mini">Ghi chú: {appointment.patientNote}</span>}
+          {appointment.status === "cancelled" && appointment.cancellationReason && (
+            <span className="mini">Lý do hủy: {appointment.cancellationReason}</span>
+          )}
         </div>
         {canModify ? (
           <div className="patient-appointment-actions">
@@ -85,6 +89,7 @@ export default function PatientAppointmentCard({
                 onCancel={() => setRescheduleOpen(false)}
                 onChange={(next) => updateRescheduleForm(appointment, next)}
                 onSubmit={submitReschedule}
+                slotOptions={slotOptions}
               />
             )}
             {cancelOpen && (

@@ -1,10 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { ClipboardPenLine, Plus, Search, Trash2 } from "lucide-react";
 import StatusBadge from "../StatusBadge.jsx";
-import { formatDateOnly, formatDateTime, todayInput } from "../../utils/format.js";
+import { formatDateOnly, todayInput } from "../../utils/format.js";
 
 export default function ClinicalTreatmentForm({
-  appointments,
   createForm,
   form,
   onChange,
@@ -15,46 +14,18 @@ export default function ClinicalTreatmentForm({
   onSearchPhoneChange,
   onSelectRecord,
   onSubmit,
-  records = [],
   searchedPatient,
   searchPhone,
   searchResults = [],
-  selectedAppointment,
   selectedRecord,
   services = [],
   treatmentVisits = [],
   user
 }) {
   const isNurse = user?.role === "nurse";
-  const isDentist = user?.role === "dentist";
-  const [dentistSearch, setDentistSearch] = useState("");
-  const [activeRecordIndex, setActiveRecordIndex] = useState(0);
-  const [activeVisit, setActiveVisit] = useState(1);
   const [visitCount, setVisitCount] = useState(5);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
-  const selectedPatientId = selectedAppointment?.patient?._id || selectedAppointment?.patient;
-  const selectedAppointmentId = selectedAppointment?._id?.toString?.();
-  const dentistRecords = useMemo(() => {
-    const keyword = dentistSearch.trim().toLowerCase();
-    return records
-      .filter((record) => {
-        const recordAppointmentId = (record.appointment?._id || record.appointment)?.toString?.();
-        if (selectedAppointmentId) return recordAppointmentId === selectedAppointmentId;
-        const patientId = record.patient?._id || record.patient;
-        const bySelectedAppointment = selectedPatientId ? patientId?.toString?.() === selectedPatientId?.toString?.() : false;
-        if (!keyword) return bySelectedAppointment;
-        const name = record.patient?.fullName?.toLowerCase?.() || "";
-        const phone = record.patient?.phone?.toLowerCase?.() || "";
-        const matchesKeyword = name.includes(keyword) || phone.includes(keyword);
-        return selectedPatientId ? matchesKeyword && bySelectedAppointment : matchesKeyword;
-      })
-      .sort((first, second) => new Date(second.treatmentDate || second.updatedAt || 0) - new Date(first.treatmentDate || first.updatedAt || 0));
-  }, [dentistSearch, records, selectedPatientId, selectedAppointmentId]);
-
-  const activeRecord = dentistRecords[Math.min(activeRecordIndex, Math.max(dentistRecords.length - 1, 0))];
-  const dentistVisits = useMemo(() => normalizeRecordVisits(activeRecord), [activeRecord]);
-  const activeDentistVisit = dentistVisits.find((visit) => visit.visitNumber === activeVisit) || dentistVisits[dentistVisits.length - 1];
   const activeNurseVisit = treatmentVisits.find((visit) => visit.visitNumber === Number(form.visitNumber));
   const visibleVisitCount = Math.max(visitCount, treatmentVisits.length + 1, 5);
   const nextAllowedVisit = treatmentVisits.length + 1;
@@ -62,22 +33,11 @@ export default function ClinicalTreatmentForm({
     ? searchResults.filter((record) => record._id === selectedRecord._id)
     : searchResults;
 
-  useEffect(() => {
-    setActiveVisit(Number(form.visitNumber || 1));
-  }, [form.visitNumber]);
-
-  useEffect(() => {
-    if (isDentist && dentistVisits.length) {
-      setActiveVisit(dentistVisits[dentistVisits.length - 1].visitNumber);
-    }
-  }, [activeRecord?._id, dentistVisits.length, isDentist]);
-
   function addVisitPage() {
     setVisitCount((current) => current + 1);
   }
 
   function chooseVisit(visitNumber) {
-    setActiveVisit(visitNumber);
     onChange("visitNumber", visitNumber);
   }
 
@@ -207,43 +167,81 @@ export default function ClinicalTreatmentForm({
           )}
         </div>
       ) : (
-        <form className="stack" onSubmit={onSubmit}>
-          <label className="field">
-            <span>Lịch khám</span>
-            <select value={form.appointmentId} onChange={(event) => onChange("appointmentId", event.target.value)}>
-              <option value="">Chọn lịch khám</option>
-              {appointments.map((appointment) => (
-                <option key={appointment._id} value={appointment._id}>
-                  {patientLabel(appointment.patient)} - {appointment.service?.name || "Dịch vụ"} - {formatDateTime(appointment.startAt)}
-                </option>
-              ))}
-            </select>
-          </label>
+        <div className="stack">
+          <form
+            className="toolbar-row"
+            onSubmit={(event) => {
+              event.preventDefault();
+              onSearch(searchPhone);
+            }}
+          >
+            <label className="field inline-field">
+              <span>Tìm theo SĐT</span>
+              <div className="input-with-icon">
+                <Search size={17} />
+                <input
+                  value={searchPhone}
+                  onChange={(event) => onSearchPhoneChange(event.target.value)}
+                  placeholder="Nhập số điện thoại bệnh nhân"
+                />
+              </div>
+            </label>
+            <button className="button small secondary" type="submit">
+              Tìm hồ sơ
+            </button>
+          </form>
 
-          {selectedAppointment && (
-            <div className="clinical-selected-card">
-              <strong>{patientLabel(selectedAppointment.patient)}</strong>
-              <span>{selectedAppointment.service?.name} / {selectedAppointment.room?.name}</span>
-              <StatusBadge value={selectedAppointment.status} />
+          {searchedPatient && (
+            <div className="clinical-selected-card wide">
+              <strong>{patientLabel(searchedPatient)}</strong>
+              <span>{searchResults.length ? `${searchResults.length} hồ sơ điều trị` : "Chưa có hồ sơ điều trị"}</span>
             </div>
           )}
 
-          {isDentist && (
-            <DentistRecordBrowser
-              activeDentistVisit={activeDentistVisit}
-              activeRecord={activeRecord}
-              activeRecordIndex={activeRecordIndex}
-              activeVisit={activeVisit}
-              dentistRecords={dentistRecords}
-              dentistSearch={dentistSearch}
-              dentistVisits={dentistVisits}
-              selectedPatientId={selectedPatientId}
-              setActiveRecordIndex={setActiveRecordIndex}
-              setActiveVisit={setActiveVisit}
-              setDentistSearch={setDentistSearch}
+          {displayedSearchResults.length ? (
+            <div className="mini-list treatment-record-list">
+              {displayedSearchResults.map((record) => (
+                <div className={`mini-row ${selectedRecord?._id === record._id ? "active" : ""}`} key={record._id}>
+                  <div className="treatment-record-info">
+                    <strong>{record.serviceSnapshot?.name || record.appointment?.service?.name || "Hồ sơ điều trị"}</strong>
+                    <span>{patientLabel(record.patient)}</span>
+                    <small>Ngày điều trị: {formatDateOnly(record.treatmentDate || record.createdAt)}</small>
+                  </div>
+                  <div className="row-actions">
+                    <StatusBadge value={record.status || "active"} />
+                    <button className="button small secondary" type="button" onClick={() => onSelectRecord(record)}>
+                      Xem chi tiết
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : searchedPatient ? (
+            <div className="empty-state">
+              <strong>Không có hồ sơ điều trị</strong>
+              <span>Không tìm thấy hồ sơ điều trị phù hợp với bệnh nhân này.</span>
+            </div>
+          ) : null}
+
+          {selectedRecord ? (
+            <TreatmentEditor
+              activeVisit={activeNurseVisit}
+              addVisitPage={addVisitPage}
+              form={form}
+              isDentist={true}
+              nextAllowedVisit={Math.max(treatmentVisits.length, 1)}
+              onChange={onChange}
+              onSubmit={onSubmit}
+              visibleVisitCount={Math.max(treatmentVisits.length, 1)}
+              chooseVisit={chooseVisit}
             />
+          ) : (
+            <div className="empty-state">
+              <strong>Chọn hồ sơ điều trị</strong>
+              <span>Tìm theo số điện thoại rồi bấm xem chi tiết ở hồ sơ cần xem.</span>
+            </div>
           )}
-        </form>
+        </div>
       )}
     </section>
   );
@@ -280,9 +278,11 @@ function TreatmentEditor({
               </button>
             );
           })}
-          <button className="add-page" onClick={addVisitPage} type="button">
-            +
-          </button>
+          {!isDentist && (
+            <button className="add-page" onClick={addVisitPage} type="button">
+              +
+            </button>
+          )}
         </div>
         <div className="clinical-selected-card wide">
           <strong>Lần {form.visitNumber}</strong>
@@ -350,133 +350,8 @@ function TreatmentEditor({
   );
 }
 
-function DentistRecordBrowser({
-  activeDentistVisit,
-  activeRecord,
-  activeRecordIndex,
-  activeVisit,
-  dentistRecords,
-  dentistSearch,
-  dentistVisits,
-  selectedPatientId,
-  setActiveRecordIndex,
-  setActiveVisit,
-  setDentistSearch
-}) {
-  return (
-    <div className="clinical-record-browser">
-      <label className="field">
-        <span>Tìm hồ sơ theo tên hoặc SĐT</span>
-        <input
-          value={dentistSearch}
-          onChange={(event) => {
-            setDentistSearch(event.target.value);
-            setActiveRecordIndex(0);
-          }}
-          placeholder="Nhập tên hoặc số điện thoại bệnh nhân"
-        />
-      </label>
-      {dentistRecords.length ? (
-        <>
-          {!selectedPatientId && dentistRecords.length > 1 && (
-            <div className="treatment-page-tabs">
-              {dentistRecords.map((record, index) => (
-                <button
-                  className={index === Math.min(activeRecordIndex, dentistRecords.length - 1) ? "active" : ""}
-                  key={record._id || index}
-                  onClick={() => {
-                    setActiveRecordIndex(index);
-                    setActiveVisit(1);
-                  }}
-                  type="button"
-                >
-                  {record.patient?.fullName || "Bệnh nhân"}
-                </button>
-              ))}
-            </div>
-          )}
-          {dentistVisits.length ? (
-            <div className="treatment-page-tabs">
-              {dentistVisits.map((visit) => (
-                <button
-                  className={visit.visitNumber === activeVisit ? "active" : ""}
-                  key={`${activeRecord?._id}-visit-${visit.visitNumber}`}
-                  onClick={() => setActiveVisit(visit.visitNumber)}
-                  type="button"
-                >
-                  Lần {visit.visitNumber}
-                </button>
-              ))}
-            </div>
-          ) : null}
-          <div className="readonly-record-grid">
-            <div className="clinical-selected-card wide">
-              <strong>{patientLabel(activeRecord.patient)}</strong>
-              <span>Cập nhật: {formatDateOnly(activeDentistVisit?.updatedAt || activeRecord.updatedAt)}</span>
-            </div>
-            <ReadOnlyField label="Ngày điều trị" value={formatDateOnly(activeDentistVisit?.visitDate || activeRecord.treatmentDate)} />
-            <ReadOnlyField label="Huyết áp" value={activeDentistVisit?.vitalSigns?.bloodPressure} />
-            <ReadOnlyField label="Nhịp tim" value={activeDentistVisit?.vitalSigns?.heartRate} />
-            <ReadOnlyField label="SpO2" value={activeDentistVisit?.vitalSigns?.spo2} />
-            <ReadOnlyField label="Nhiệt độ" value={activeDentistVisit?.vitalSigns?.temperature} />
-            <ReadOnlyField label="Nhịp thở" value={activeDentistVisit?.vitalSigns?.respiratoryRate} />
-            <ReadOnlyField label="Tiền sử bệnh án" value={activeDentistVisit?.medicalHistory} wide />
-            <ReadOnlyField label="Chẩn đoán" value={activeDentistVisit?.diagnosis} wide />
-            <ReadOnlyField label="Điều trị đã thực hiện" value={activeDentistVisit?.treatmentResult} wide />
-            <ReadOnlyField label="Đơn thuốc" value={activeDentistVisit?.prescription} wide />
-            <ReadOnlyField label="Điều trị dự kiến" value={activeDentistVisit?.treatmentPlan} wide />
-            <ReadOnlyField label="Hướng dẫn sau điều trị" value={activeDentistVisit?.aftercareInstructions} wide />
-            <ReadOnlyField label="Ghi chú điều trị" value={activeDentistVisit?.treatmentNote} wide />
-          </div>
-        </>
-      ) : (
-        <div className="empty-state">
-          <strong>Không có hồ sơ điều trị</strong>
-          <span>Không tìm thấy hồ sơ điều trị phù hợp với bệnh nhân hoặc từ khóa hiện tại.</span>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ReadOnlyField({ label, value, wide = false }) {
-  return (
-    <div className={`readonly-record-field ${wide ? "wide" : ""}`}>
-      <span>{label}</span>
-      <strong>{value || "Chưa cập nhật"}</strong>
-    </div>
-  );
-}
-
 function patientLabel(patient) {
   return [patient?.fullName || "Bệnh nhân", patient?.phone].filter(Boolean).join(" - ");
-}
-
-function normalizeRecordVisits(record) {
-  if (!record) return [];
-  const visits = Array.isArray(record.visits) ? record.visits.filter(Boolean) : [];
-  if (visits.length) {
-    return visits
-      .map((visit, index) => ({ ...visit, visitNumber: Number(visit.visitNumber || index + 1) }))
-      .sort((first, second) => first.visitNumber - second.visitNumber);
-  }
-
-  const hasLegacyData = treatmentContentFields.some((field) => hasTreatmentValue(record[field]));
-  return hasLegacyData
-    ? [{
-        visitNumber: 1,
-        vitalSigns: record.vitalSigns || {},
-        diagnosis: record.diagnosis || "",
-        medicalHistory: record.medicalHistory || "",
-        treatmentResult: record.treatmentResult || "",
-        treatmentNote: record.treatmentNote || "",
-        treatmentPlan: record.treatmentPlan || "",
-        prescription: record.prescription || "",
-        aftercareInstructions: record.aftercareInstructions || "",
-        updatedAt: record.updatedAt || record.treatmentDate,
-        visitDate: record.treatmentDate || record.updatedAt
-      }]
-    : [];
 }
 
 const treatmentContentFields = [

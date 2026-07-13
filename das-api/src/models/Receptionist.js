@@ -5,6 +5,7 @@ const receptionistSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "users"
   },
+  gender: String,
   address: String,
   avatarUrl: String,
   bio: String

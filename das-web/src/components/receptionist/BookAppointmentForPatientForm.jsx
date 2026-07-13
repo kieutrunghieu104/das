@@ -1,5 +1,5 @@
 import { CalendarPlus, UserCheck, UserPlus } from "lucide-react";
-import { bookingSlotOptions, todayInput } from "../../utils/format.js";
+import { todayInput } from "../../utils/format.js";
 import { maxBookingDate } from "../../pages/BookingPage.jsx";
 
 export default function BookAppointmentForPatientForm({
@@ -16,7 +16,8 @@ export default function BookAppointmentForPatientForm({
   patientSearch,
   selectablePatients,
   services,
-  setPatientSearch
+  setPatientSearch,
+  slotOptions
 }) {
   return (
     <section className="panel receptionist-booking-panel">
@@ -88,6 +89,18 @@ export default function BookAppointmentForPatientForm({
                 ))}
               </select>
             </label>
+            <label className="account-create-option">
+              <input
+                type="checkbox"
+                checked={Boolean(newPatient.createAccount)}
+                onChange={(event) => onNewPatientChange({ createAccount: event.target.checked })}
+              />
+              <span className="account-create-box">✓</span>
+              <span>
+                <strong>Tạo tài khoản cho bệnh nhân</strong>
+                <small>Không tick thì chỉ lưu thông tin vào lịch hẹn, không tạo tài khoản.</small>
+              </span>
+            </label>
           </div>
         )}
 
@@ -116,7 +129,7 @@ export default function BookAppointmentForPatientForm({
           <label className="field">
             <span>Slot khám</span>
             <select value={booking.time} onChange={(event) => onBookingChange({ time: event.target.value })} required>
-              {bookingSlotOptions.map((option) => (
+              {slotOptions.map((option) => (
                 <option value={option.value} key={option.value}>
                   {option.label}
                 </option>

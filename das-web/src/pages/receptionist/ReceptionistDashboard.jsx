@@ -8,7 +8,7 @@ import ReceptionCheckInAppointments from "../../components/receptionist/Receptio
 import ReceptionClinicalQueue from "../../components/receptionist/ReceptionClinicalQueue.jsx";
 import ReceptionIntakeAppointments from "../../components/receptionist/ReceptionIntakeAppointments.jsx";
 import { api, getErrorMessage } from "../../utils/api.js";
-import { bookingSlotOptions, clinicDateInput, compareQueueWithinSlot, getAppointmentSlot, todayInput } from "../../utils/format.js";
+import { bookingSlotOptions, clinicDateInput, compareQueueWithinSlot, getAppointmentSlot, normalizeAppointmentSlots, todayInput } from "../../utils/format.js";
 import { firstError, requireValue, validateDate, validateName, validateNote, validatePhone } from "../../utils/validation.js";
 import { maxBookingDate, toClinicIso } from "../BookingPage.jsx";
 
@@ -33,10 +33,11 @@ export default function ReceptionistDashboard() {
   const [services, setServices] = useState([]);
   const [consultations, setConsultations] = useState([]);
   const [rooms, setRooms] = useState([]);
+  const [slots, setSlots] = useState([]);
   const [appointmentSearch, setAppointmentSearch] = useState("");
   const [patientSearch, setPatientSearch] = useState("");
   const [accountMode, setAccountMode] = useState("existing");
-  const [newPatient, setNewPatient] = useState({ fullName: "", email: "", phone: "", gender: "unknown", createAccount: true });
+  const [newPatient, setNewPatient] = useState({ fullName: "", email: "", phone: "", gender: "unknown", createAccount: false });
   const [booking, setBooking] = useState({ patientId: "", serviceId: "", time: "08:00", note: "" });
   const [resetPasswords, setResetPasswords] = useState({});
   const [manualSchedules, setManualSchedules] = useState({});
@@ -45,6 +46,7 @@ export default function ReceptionistDashboard() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const slotOptions = useMemo(() => normalizeAppointmentSlots(slots), [slots]);
 
   async function load({ silent = false } = {}) {
     if (!silent) setLoading(true);
@@ -56,10 +58,14 @@ export default function ReceptionistDashboard() {
       setServices(res.data.services);
       setConsultations(res.data.consultations);
       setRooms(res.data.rooms);
+      const nextSlots = res.data.slots || [];
+      const nextSlotOptions = normalizeAppointmentSlots(nextSlots);
+      setSlots(nextSlots);
       setBooking((current) => ({
         ...current,
         patientId: current.patientId || res.data.patients[0]?._id || "",
-        serviceId: current.serviceId || res.data.services[0]?._id || ""
+        serviceId: current.serviceId || res.data.services[0]?._id || "",
+        time: nextSlotOptions.some((slot) => slot.value === current.time) ? current.time : nextSlotOptions[0]?.value || bookingSlotOptions[0].value
       }));
       window.dispatchEvent(new Event("das:refresh-badges"));
     } catch (err) {
@@ -135,15 +141,26 @@ export default function ReceptionistDashboard() {
 
     try {
       let patientId = booking.patientId;
+      let guestPatient;
 
       if (accountMode === "new") {
-        const res = await api.post("/reception/patients", newPatient);
-        patientId = res.data.patient._id;
-        setNewPatient({ fullName: "", email: "", phone: "", gender: "unknown", createAccount: true });
+        if (newPatient.createAccount) {
+          const res = await api.post("/reception/patients", newPatient);
+          patientId = res.data.patient._id;
+        } else {
+          patientId = "";
+          guestPatient = {
+            fullName: newPatient.fullName,
+            email: newPatient.email || undefined,
+            phone: newPatient.phone,
+            gender: newPatient.gender
+          };
+        }
+        setNewPatient({ fullName: "", email: "", phone: "", gender: "unknown", createAccount: false });
       }
 
       await api.post("/appointments", {
-        patientId,
+        ...(patientId ? { patientId } : { guestPatient }),
         serviceId: booking.serviceId,
         date,
         startAt: toClinicIso(date, booking.time),
@@ -282,7 +299,7 @@ export default function ReceptionistDashboard() {
   }
 
   async function scheduleReceptionAppointment(appointment) {
-    const form = manualSchedules[appointment._id] || defaultManualSchedule(appointment, rooms);
+    const form = manualSchedules[appointment._id] || defaultManualSchedule(appointment, rooms, slotOptions);
     if (!form.date || !form.time || !form.roomId) {
       setError("Chọn ngày, giờ và bác sĩ/phòng trước khi xác nhận lịch hẹn.");
       return;
@@ -332,7 +349,7 @@ export default function ReceptionistDashboard() {
     setManualSchedules((current) => ({
       ...current,
       [appointment._id]: {
-        ...defaultManualSchedule(appointment, rooms),
+        ...defaultManualSchedule(appointment, rooms, slotOptions),
         ...(current[appointment._id] || {}),
         ...nextValues
       }
@@ -389,7 +406,7 @@ export default function ReceptionistDashboard() {
   }, [clinicalQueueAppointments, rooms]);
 
   const queueSlots = useMemo(() => {
-    return bookingSlotOptions.map((slot) => ({
+    return slotOptions.map((slot) => ({
       slot,
       dentistQueues: dentistColumns.map((dentist) => ({
         dentist,
@@ -397,12 +414,12 @@ export default function ReceptionistDashboard() {
           .filter(
             (appointment) =>
               appointment.dentist?._id === dentist._id &&
-              getAppointmentSlot(appointment.startAt).slotId === slot.slotId
+              getAppointmentSlot(appointment.startAt, slotOptions).slotId === slot.slotId
           )
           .sort(compareQueueWithinSlot)
       }))
     }));
-  }, [clinicalQueueAppointments, dentistColumns]);
+  }, [clinicalQueueAppointments, dentistColumns, slotOptions]);
 
   return (
     <div className="page-grid">
@@ -420,6 +437,7 @@ export default function ReceptionistDashboard() {
           scheduleReceptionAppointment={scheduleReceptionAppointment}
           setAppointmentSearch={setAppointmentSearch}
           setDate={setDate}
+          slotOptions={slotOptions}
           updateManualSchedule={updateManualSchedule}
         />
       )}
@@ -474,6 +492,7 @@ export default function ReceptionistDashboard() {
           selectablePatients={selectablePatients}
           services={services}
           setPatientSearch={setPatientSearch}
+          slotOptions={slotOptions}
         />
       )}
 
@@ -519,12 +538,12 @@ function isLockedScheduleAppointment(appointment) {
   return ["cancelled", "rejected"].includes(appointment.status);
 }
 
-function defaultManualSchedule(appointment, rooms) {
+function defaultManualSchedule(appointment, rooms, slotOptions = bookingSlotOptions) {
   const startAt = appointment.startAt ? new Date(appointment.startAt) : new Date();
   const date = Number.isNaN(startAt.getTime()) ? todayInput() : clinicDateInput(startAt);
   return {
     date,
-    time: Number.isNaN(startAt.getTime()) ? bookingSlotOptions[0].value : getAppointmentSlot(startAt).value,
+    time: Number.isNaN(startAt.getTime()) ? slotOptions[0]?.value || bookingSlotOptions[0].value : getAppointmentSlot(startAt, slotOptions).value,
     roomId: appointment.room?._id || rooms[0]?._id || ""
   };
 }

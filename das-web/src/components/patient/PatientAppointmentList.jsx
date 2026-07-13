@@ -14,6 +14,7 @@ export default function PatientAppointmentList({
   loading,
   rescheduleAppointment,
   rescheduleForms,
+  slotOptions,
   updateRescheduleForm
 }) {
   const [filterDate, setFilterDate] = useState("");
@@ -54,6 +55,7 @@ export default function PatientAppointmentList({
               key={appointment._id}
               rescheduleAppointment={rescheduleAppointment}
               rescheduleForm={rescheduleForms[appointment._id]}
+              slotOptions={slotOptions}
               updateRescheduleForm={updateRescheduleForm}
             />
           ))}

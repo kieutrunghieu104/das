@@ -8,6 +8,7 @@ const dentistSchema = new mongoose.Schema({
   qualification: String,
   experienceYears: Number,
   description: String,
+  gender: String,
   address: String,
   avatarUrl: String
 }, {

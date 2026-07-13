@@ -1,5 +1,5 @@
 import * as clinicalRepository from "../repository/clinicalRepository.js";
-import { endOfLocalDay, startOfLocalDay } from "../utils/time.js";
+import { combineDateAndTime, endOfLocalDay, startOfLocalDay } from "../utils/time.js";
 import {
   clinicalRoomStatusSchema,
   createTreatmentRecordSchema,
@@ -60,9 +60,10 @@ function normalizeVisits(record) {
 }
 
 function buildVisitPayload(data, visitNumber, user) {
+  const visitDate = dateInputToDateText(data.visitDate);
   return {
     visitNumber,
-    visitDate: dateInputToDateText(data.visitDate),
+    visitDate,
     vitalSigns: data.vitalSigns || {},
     diagnosis: data.diagnosis || "",
     medicalHistory: data.medicalHistory || "",
@@ -73,7 +74,7 @@ function buildVisitPayload(data, visitNumber, user) {
     aftercareInstructions: data.aftercareInstructions || "",
     estimatedCost: data.estimatedCost || 0,
     updatedBy: user._id,
-    updatedAt: new Date()
+    updatedAt: combineDateAndTime(visitDate, "00:00")
   };
 }
 
@@ -123,11 +124,12 @@ async function assertPatientAccess(user, patientId) {
 }
 
 export async function getDashboard(user, query) {
-  const [appointments, records, rooms, services] = await Promise.all([
+  const [appointments, records, rooms, services, slots] = await Promise.all([
     clinicalRepository.findClinicalAppointments(buildScheduleQuery(user, query.date), 120),
     clinicalRepository.findClinicalTreatmentRecords(buildRecordQuery(user), 60),
     clinicalRepository.findClinicalRooms(),
-    clinicalRepository.findActiveDentalServices()
+    clinicalRepository.findActiveDentalServices(),
+    clinicalRepository.findActiveAppointmentSlots()
   ]);
 
   const visibleRooms = user.role === "dentist"
@@ -136,7 +138,7 @@ export async function getDashboard(user, query) {
       ? rooms.filter((room) => sameId(room.assignedNurse, user._id) || appointments.some((appointment) => sameId(appointment.room, room._id)))
       : rooms;
 
-  return { appointments, records, rooms: visibleRooms, services };
+  return { appointments, records, rooms: visibleRooms, services, slots };
 }
 
 export function getTreatmentRecords(user) {

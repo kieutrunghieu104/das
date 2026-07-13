@@ -16,6 +16,7 @@ export default function ReceptionIntakeAppointments({
   scheduleReceptionAppointment,
   setAppointmentSearch,
   setDate,
+  slotOptions,
   updateManualSchedule
 }) {
   return (
@@ -40,7 +41,7 @@ export default function ReceptionIntakeAppointments({
           {appointments.map((appointment) => {
             const manualForm = manualSchedules[appointment._id] || {
               date: appointment.startAt ? new Date(appointment.startAt).toISOString().slice(0, 10) : todayInput(),
-              time: appointment.startAt ? getAppointmentSlot(appointment.startAt).value : bookingSlotOptions[0].value,
+              time: appointment.startAt ? getAppointmentSlot(appointment.startAt, slotOptions).value : slotOptions[0]?.value || bookingSlotOptions[0].value,
               roomId: appointment.room?._id || rooms[0]?._id || ""
             };
             return (
@@ -55,7 +56,7 @@ export default function ReceptionIntakeAppointments({
                   </div>
                   <div className="appointment-slot-box">
                     <strong>{appointment.service?.name || "Dịch vụ nha khoa"}</strong>
-                    <span>Slot bệnh nhân chọn: {formatSlotWithDate(appointment.startAt)}</span>
+                    <span>Slot bệnh nhân chọn: {formatSlotWithDate(appointment.startAt, appointment.slot?.startTime ? appointment.slot : slotOptions)}</span>
                     <span>Bác sĩ: {appointment.dentist?.fullName || "Lễ tân sắp xếp"}</span>
                     <span>Kênh: {appointment.channel === "online" ? "Online" : "Tại quầy"}</span>
                   </div>
@@ -71,7 +72,7 @@ export default function ReceptionIntakeAppointments({
                       onChange={(event) => updateManualSchedule(appointment, { date: event.target.value })}
                     />
                     <select value={manualForm.time} onChange={(event) => updateManualSchedule(appointment, { time: event.target.value })}>
-                      {bookingSlotOptions.map((slot) => (
+                      {slotOptions.map((slot) => (
                         <option value={slot.value} key={slot.value}>
                           {slot.label}
                         </option>

@@ -4,6 +4,7 @@ const adminProfileSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
   position: String,
   permissionLevel: String,
+  gender: String,
   address: String,
   avatarUrl: String,
   bio: String
