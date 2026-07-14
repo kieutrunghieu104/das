@@ -92,6 +92,50 @@
   opacity: 0.82;
 }
 
+.slot-toggle-list {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 8px;
+  margin: 8px 0 16px;
+}
+
+.slot-toggle-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-height: 46px;
+  padding: 9px 12px;
+  gap: 10px;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.slot-toggle-row > span {
+  color: #102234;
+  font-weight: 760;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.slot-toggle-row .row-actions {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-self: end;
+  gap: 8px;
+}
+
+.slot-toggle-row .status {
+  min-height: 26px;
+  padding: 3px 9px;
+  font-size: 0.76rem;
+}
+
+.slot-toggle-row .button.small {
+  min-width: 88px;
+  min-height: 34px;
+  justify-content: center;
+  padding: 0 12px;
+}
+
 .reception-appointment-card {
   grid-template-columns: minmax(360px, 1fr) minmax(320px, 0.9fr);
   align-items: stretch;

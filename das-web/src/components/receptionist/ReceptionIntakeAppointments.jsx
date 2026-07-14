@@ -38,9 +38,9 @@ export default function ReceptionIntakeAppointments({
         showDate
       />
 
-      <div className="mini-list">
+      <div className="mini-list slot-toggle-list">
         {allSlotOptions.map((slot) => (
-          <div className="mini-row" key={slot._id || slot.slotId}>
+          <div className="mini-row slot-toggle-row" key={slot._id || slot.slotId}>
             <span>{slot.label}</span>
             <div className="row-actions">
               <StatusBadge value={slot.isClosed ? "closed" : "active"} />

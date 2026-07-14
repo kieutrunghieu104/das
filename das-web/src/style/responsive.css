@@ -84,6 +84,19 @@
     align-items: start;
   }
 
+  .slot-toggle-list {
+    grid-template-columns: 1fr;
+  }
+
+  .slot-toggle-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .slot-toggle-row .row-actions {
+    justify-self: end;
+  }
+
   .reception-appointment-card {
     grid-template-columns: 1fr;
   }
