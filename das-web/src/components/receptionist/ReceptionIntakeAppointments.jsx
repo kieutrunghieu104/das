@@ -1,7 +1,7 @@
 import { ClipboardList } from "lucide-react";
 import EmptyState from "../EmptyState.jsx";
 import StatusBadge from "../StatusBadge.jsx";
-import { formatDateTime, formatSlotWithDate, getAppointmentSlot, todayInput } from "../../utils/format.js";
+import { filterOpenSlotsForDate, formatDateTime, formatSlotWithDate, getAppointmentSlot, todayInput } from "../../utils/format.js";
 import { maxBookingDate } from "../../pages/BookingPage.jsx";
 import ReceptionAppointmentFilters from "./ReceptionAppointmentFilters.jsx";
 
@@ -18,6 +18,8 @@ export default function ReceptionIntakeAppointments({
   scheduleReceptionAppointment,
   setAppointmentSearch,
   setDate,
+  slots = [],
+  slotClosures = [],
   slotOptions,
   updateManualSchedule
 }) {
@@ -33,7 +35,7 @@ export default function ReceptionIntakeAppointments({
         setDate={setDate}
         appointmentSearch={appointmentSearch}
         setAppointmentSearch={setAppointmentSearch}
-        showDate={false}
+        showDate
       />
 
       <div className="mini-list">
@@ -41,9 +43,9 @@ export default function ReceptionIntakeAppointments({
           <div className="mini-row" key={slot._id || slot.slotId}>
             <span>{slot.label}</span>
             <div className="row-actions">
-              <StatusBadge value={slot.isActive === false ? "closed" : "active"} />
+              <StatusBadge value={slot.isClosed ? "closed" : "active"} />
               <button className="button small secondary" type="button" onClick={() => onToggleSlot(slot)}>
-                {slot.isActive === false ? "Mở slot" : "Đóng slot"}
+                {slot.isClosed ? "Mở slot" : "Đóng slot"}
               </button>
             </div>
           </div>
@@ -60,6 +62,8 @@ export default function ReceptionIntakeAppointments({
               time: appointment.startAt ? getAppointmentSlot(appointment.startAt, slotOptions).value : slotOptions[0]?.value || "",
               roomId: appointment.room?._id || rooms[0]?._id || ""
             };
+            const rowSlotOptions = filterOpenSlotsForDate(slots, slotClosures, manualForm.date, { fallback: false });
+            const manualTime = rowSlotOptions.some((slot) => slot.value === manualForm.time) ? manualForm.time : rowSlotOptions[0]?.value || "";
             return (
               <article className="appointment-card reception-appointment-card pending-intake" key={appointment._id}>
                 <div className="appointment-card-main">
@@ -86,11 +90,15 @@ export default function ReceptionIntakeAppointments({
                       min={todayInput()}
                       max={maxBookingDate()}
                       value={manualForm.date}
-                      onChange={(event) => updateManualSchedule(appointment, { date: event.target.value })}
+                      onChange={(event) => {
+                        const nextDate = event.target.value;
+                        const nextSlotOptions = filterOpenSlotsForDate(slots, slotClosures, nextDate, { fallback: false });
+                        updateManualSchedule(appointment, { date: nextDate, time: nextSlotOptions[0]?.value || "" });
+                      }}
                     />
-                    <select value={manualForm.time} onChange={(event) => updateManualSchedule(appointment, { time: event.target.value })}>
-                      {slotOptions.length ? (
-                        slotOptions.map((slot) => (
+                    <select value={manualTime} onChange={(event) => updateManualSchedule(appointment, { time: event.target.value })}>
+                      {rowSlotOptions.length ? (
+                        rowSlotOptions.map((slot) => (
                           <option value={slot.value} key={slot.value}>
                             {slot.label}
                           </option>

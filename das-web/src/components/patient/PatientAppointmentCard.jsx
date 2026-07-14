@@ -1,6 +1,6 @@
 import { useState } from "react";
 import StatusBadge from "../StatusBadge.jsx";
-import { bookingSlotOptions, clinicDateInput, formatDateTime, formatSlotWithDate, getAppointmentSlot, todayInput } from "../../utils/format.js";
+import { bookingSlotOptions, clinicDateInput, filterOpenSlotsForDate, formatDateTime, formatSlotWithDate, getAppointmentSlot, todayInput } from "../../utils/format.js";
 import RescheduleAppointmentModal from "./RescheduleAppointmentModal.jsx";
 
 const cancelReasons = [
@@ -20,6 +20,7 @@ export default function PatientAppointmentCard({
   dentistOptions,
   rescheduleAppointment,
   rescheduleForm,
+  slotClosures = [],
   slotOptions = bookingSlotOptions,
   updateRescheduleForm
 }) {
@@ -30,8 +31,13 @@ export default function PatientAppointmentCard({
   const canModify = canModifyAppointment(appointment);
   const currentRescheduleForm = rescheduleForm || {
     date: clinicDateInput(appointment.startAt) || todayInput(),
-    time: slotOptions.length ? getAppointmentSlot(appointment.startAt, slotOptions)?.value || slotOptions[0]?.value || "" : "",
+    time: "",
     dentistId: appointment.dentist?._id || dentistOptions[0]?._id || ""
+  };
+  const currentSlotOptions = filterOpenSlotsForDate(slotOptions, slotClosures, currentRescheduleForm.date, { fallback: false });
+  const effectiveRescheduleForm = {
+    ...currentRescheduleForm,
+    time: currentRescheduleForm.time || getAppointmentSlot(appointment.startAt, currentSlotOptions)?.value || currentSlotOptions[0]?.value || ""
   };
   const scheduleText = arrangedStatuses.has(appointment.status)
     ? `Giờ đến: ${formatDateTime(appointment.checkInTime || appointment.startAt)}`
@@ -85,11 +91,11 @@ export default function PatientAppointmentCard({
             {rescheduleOpen && (
               <RescheduleAppointmentModal
                 dentistOptions={dentistOptions}
-                form={currentRescheduleForm}
+                form={effectiveRescheduleForm}
                 onCancel={() => setRescheduleOpen(false)}
                 onChange={(next) => updateRescheduleForm(appointment, next)}
                 onSubmit={submitReschedule}
-                slotOptions={slotOptions}
+                slotOptions={currentSlotOptions}
               />
             )}
             {cancelOpen && (

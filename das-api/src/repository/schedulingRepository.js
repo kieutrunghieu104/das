@@ -34,8 +34,16 @@ export function findServiceById(serviceId) {
 export function findActiveAppointmentSlots() {
   return findMany(
     COLLECTIONS.appointmentSlots,
-    { isActive: { $ne: false } },
+    {},
     { sort: { order: 1, startTime: 1 } }
+  );
+}
+
+export function findClosedAppointmentSlots(date) {
+  return findMany(
+    COLLECTIONS.appointmentSlotClosures,
+    { date, isClosed: true },
+    { projection: "slot" }
   );
 }
 

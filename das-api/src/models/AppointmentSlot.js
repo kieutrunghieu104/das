@@ -4,8 +4,7 @@ const appointmentSlotSchema = new mongoose.Schema({
   slotName: String,
   startTime: String,
   endTime: String,
-  order: Number,
-  isActive: Boolean
+  order: Number
 }, {
   timestamps: true,
   collection: "appointmentslots",

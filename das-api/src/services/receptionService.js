@@ -43,16 +43,17 @@ function buildAppointmentQuery(dateText) {
 
 export async function getDashboard(query) {
   const patientFilter = await buildPatientFilter(query.q);
-  const [appointments, patients, services, consultations, rooms, slots] = await Promise.all([
+  const [appointments, patients, services, consultations, rooms, slots, slotClosures] = await Promise.all([
     receptionRepository.findReceptionAppointments(buildAppointmentQuery(query.date && query.scopeByDate === "true" ? query.date : "")),
     receptionRepository.findReceptionPatients(patientFilter, 40),
     receptionRepository.findActiveServices(),
     receptionRepository.findConsultationRequests({}, 60),
     receptionRepository.findReceptionRooms(),
-    receptionRepository.findAppointmentSlots()
+    receptionRepository.findAppointmentSlots(),
+    receptionRepository.findAppointmentSlotClosures()
   ]);
 
-  return { appointments, patients, services, consultations, rooms, slots };
+  return { appointments, patients, services, consultations, rooms, slots, slotClosures };
 }
 
 export async function getPatients(query) {
@@ -146,11 +147,14 @@ export async function deleteConsultation(requestId) {
 }
 
 export async function updateAppointmentSlot(slotId, body) {
-  const slot = await receptionRepository.updateAppointmentSlot(slotId, {
-    isActive: Boolean(body?.isActive)
-  });
-  if (!slot) {
-    throw createError("KhÃ´ng tÃ¬m tháº¥y slot khÃ¡m.", 404);
+  const date = String(body?.date || "").slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    throw createError("Chọn ngày cần đóng hoặc mở slot.", 400);
   }
+  const existingSlot = await receptionRepository.findAppointmentSlotById(slotId);
+  if (!existingSlot) {
+    throw createError("Không tìm thấy slot khám.", 404);
+  }
+  const slot = await receptionRepository.updateAppointmentSlotClosure(slotId, date, Boolean(body?.isClosed));
   return slot;
 }

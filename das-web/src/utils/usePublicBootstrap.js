@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../utils/api.js";
 
-const EMPTY_BOOTSTRAP_DATA = { services: [], dentists: [], rooms: [], reviews: [], slots: [], clinic: {} };
+const EMPTY_BOOTSTRAP_DATA = { services: [], dentists: [], rooms: [], reviews: [], slots: [], slotClosures: [], clinic: {} };
 
 export function usePublicBootstrap() {
   const [data, setData] = useState(EMPTY_BOOTSTRAP_DATA);
@@ -20,6 +20,7 @@ export function usePublicBootstrap() {
           rooms: res.data.rooms || [],
           reviews: res.data.reviews || [],
           slots: res.data.slots || [],
+          slotClosures: res.data.slotClosures || [],
           clinic: res.data.clinic || {}
         });
       })

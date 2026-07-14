@@ -109,6 +109,24 @@ export function normalizeAppointmentSlots(slots = [], options = {}) {
   return normalized.length ? normalized : fallback ? bookingSlotOptions : [];
 }
 
+function slotIdentity(value) {
+  return String(value?._id || value?.slotId || value || "");
+}
+
+export function filterOpenSlotsForDate(slots = [], slotClosures = [], date, options = {}) {
+  const normalizedSlots = normalizeAppointmentSlots(slots, options);
+  if (!date) return normalizedSlots;
+
+  const closedSlotIds = new Set(
+    slotClosures
+      .filter((item) => item?.isClosed !== false && item.date === date)
+      .map((item) => slotIdentity(item.slot))
+      .filter(Boolean)
+  );
+
+  return normalizedSlots.filter((slot) => !closedSlotIds.has(slotIdentity(slot)));
+}
+
 export function getAppointmentSlot(value, slotOptions = bookingSlotOptions) {
   const options = normalizeAppointmentSlots(slotOptions);
   const time = timeFromValue(value);

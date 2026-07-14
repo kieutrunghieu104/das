@@ -45,10 +45,10 @@ async function clearDatabase() {
 const ROLE_NAMES = ["admin", "receptionist", "dentist", "nurse", "patient"];
 
 const DEFAULT_APPOINTMENT_SLOTS = [
-  { slotName: "Slot 1", startTime: "08:00", endTime: "10:30", order: 1, isActive: true },
-  { slotName: "Slot 2", startTime: "10:30", endTime: "12:00", order: 2, isActive: true },
-  { slotName: "Slot 3", startTime: "14:00", endTime: "16:00", order: 3, isActive: true },
-  { slotName: "Slot 4", startTime: "16:00", endTime: "17:30", order: 4, isActive: true }
+  { slotName: "Slot 1", startTime: "08:00", endTime: "10:30", order: 1 },
+  { slotName: "Slot 2", startTime: "10:30", endTime: "12:00", order: 2 },
+  { slotName: "Slot 3", startTime: "14:00", endTime: "16:00", order: 3 },
+  { slotName: "Slot 4", startTime: "16:00", endTime: "17:30", order: 4 }
 ];
 
 async function createRoles() {

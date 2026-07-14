@@ -97,15 +97,28 @@ export function findActiveServices() {
 }
 
 export function findActiveAppointmentSlots() {
-  return findMany(COLLECTIONS.appointmentSlots, { isActive: { $ne: false } }, { sort: { order: 1, startTime: 1 } });
+  return findMany(COLLECTIONS.appointmentSlots, {}, { sort: { order: 1, startTime: 1 } });
 }
 
 export function findAppointmentSlots() {
   return findMany(COLLECTIONS.appointmentSlots, {}, { sort: { order: 1, startTime: 1 } });
 }
 
-export function updateAppointmentSlot(slotId, data) {
-  return updateById(COLLECTIONS.appointmentSlots, slotId, data);
+export function findAppointmentSlotById(slotId) {
+  return findOne(COLLECTIONS.appointmentSlots, { _id: toObjectId(slotId) }, "_id slotName startTime endTime order");
+}
+
+export function findAppointmentSlotClosures() {
+  return findMany(COLLECTIONS.appointmentSlotClosures, { isClosed: true }, { sort: { date: 1 }, limit: 500 });
+}
+
+export function updateAppointmentSlotClosure(slotId, date, isClosed) {
+  return updateOneAndReturn(
+    COLLECTIONS.appointmentSlotClosures,
+    { slot: toObjectId(slotId), date },
+    { slot: toObjectId(slotId), date, isClosed },
+    { upsert: true }
+  );
 }
 
 export async function findReceptionRooms() {

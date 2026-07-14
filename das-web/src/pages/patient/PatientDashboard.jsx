@@ -5,7 +5,7 @@ import PatientAppointmentList from "../../components/patient/PatientAppointmentL
 import PatientInvoiceList from "../../components/patient/PatientInvoiceList.jsx";
 import PatientTreatmentRecords from "../../components/patient/PatientTreatmentRecords.jsx";
 import { api, getErrorMessage } from "../../utils/api.js";
-import { clinicDateInput, formatPriceText, getAppointmentSlot, normalizeAppointmentSlots, todayInput } from "../../utils/format.js";
+import { clinicDateInput, filterOpenSlotsForDate, formatPriceText, getAppointmentSlot, normalizeAppointmentSlots, todayInput } from "../../utils/format.js";
 import { usePublicBootstrap } from "../../utils/usePublicBootstrap.js";
 import BookingPage, { maxBookingDate, toClinicIso } from "../BookingPage.jsx";
 
@@ -26,8 +26,8 @@ export default function PatientDashboard() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const { services, dentists, rooms, slots } = usePublicBootstrap();
-  const slotOptions = useMemo(() => normalizeAppointmentSlots(slots, { fallback: false }), [slots]);
+  const { services, dentists, rooms, slots, slotClosures } = usePublicBootstrap();
+  const allSlotOptions = useMemo(() => normalizeAppointmentSlots(slots, { fallback: false }), [slots]);
 
   const dentistOptions = useMemo(() => {
     const roomDentists = rooms.map((room) => room.assignedDentist).filter(Boolean);
@@ -133,16 +133,24 @@ export default function PatientDashboard() {
   }
 
   function updateRescheduleForm(appointment, values) {
-    setRescheduleForms((current) => ({
-      ...current,
-      [appointment._id]: {
-        date: clinicDateInput(appointment.startAt) || todayInput(),
-        time: slotOptions.length ? getAppointmentSlot(appointment.startAt, slotOptions)?.value || slotOptions[0]?.value || "" : "",
-        dentistId: appointment.dentist?._id || dentistOptions[0]?._id || "",
-        ...(current[appointment._id] || {}),
-        ...values
-      }
-    }));
+    setRescheduleForms((current) => {
+      const previous = current[appointment._id] || {};
+      const date = values.date || previous.date || clinicDateInput(appointment.startAt) || todayInput();
+      const dateSlots = filterOpenSlotsForDate(slots, slotClosures, date, { fallback: false });
+      const requestedTime = values.time || previous.time || getAppointmentSlot(appointment.startAt, dateSlots)?.value || "";
+      const time = dateSlots.some((slot) => slot.value === requestedTime) ? requestedTime : dateSlots[0]?.value || "";
+
+      return {
+        ...current,
+        [appointment._id]: {
+          dentistId: appointment.dentist?._id || dentistOptions[0]?._id || "",
+          ...previous,
+          ...values,
+          date,
+          time
+        }
+      };
+    });
   }
 
   async function submitReview(event, appointmentId) {
@@ -185,8 +193,13 @@ export default function PatientDashboard() {
     }
 
     const form = rescheduleForms[appointment._id] || {};
+    const formSlotOptions = filterOpenSlotsForDate(slots, slotClosures, form.date, { fallback: false });
     if (!form.date || !form.time || !form.dentistId) {
       setError("Chọn ngày, giờ và bác sĩ trước khi đổi lịch.");
+      return false;
+    }
+    if (!formSlotOptions.some((option) => option.value === form.time)) {
+      setError("Slot này đã đóng trong ngày bạn chọn.");
       return false;
     }
     if (form.date > maxBookingDate()) {
@@ -201,7 +214,7 @@ export default function PatientDashboard() {
       return false;
     }
 
-    const slot = slotOptions.find((option) => option.value === form.time);
+    const slot = formSlotOptions.find((option) => option.value === form.time);
     if (!window.confirm(`Xác nhận đổi lịch sang ${form.date}, ${slot?.label || form.time}?`)) return false;
 
     try {
@@ -255,7 +268,8 @@ export default function PatientDashboard() {
             loading={loading}
             rescheduleAppointment={rescheduleAppointment}
             rescheduleForms={rescheduleForms}
-            slotOptions={slotOptions}
+            slotClosures={slotClosures}
+            slotOptions={allSlotOptions}
             updateRescheduleForm={updateRescheduleForm}
           />
         )}
@@ -271,7 +285,8 @@ export default function PatientDashboard() {
             loading={loading}
             rescheduleAppointment={rescheduleAppointment}
             rescheduleForms={rescheduleForms}
-            slotOptions={slotOptions}
+            slotClosures={slotClosures}
+            slotOptions={allSlotOptions}
             updateRescheduleForm={updateRescheduleForm}
           />
         )}

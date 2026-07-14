@@ -43,7 +43,11 @@ export function findActiveServices() {
 }
 
 export function findActiveAppointmentSlots() {
-  return findMany(COLLECTIONS.appointmentSlots, { isActive: { $ne: false } }, { sort: { order: 1, startTime: 1 } });
+  return findMany(COLLECTIONS.appointmentSlots, {}, { sort: { order: 1, startTime: 1 } });
+}
+
+export function findAppointmentSlotClosures() {
+  return findMany(COLLECTIONS.appointmentSlotClosures, { isClosed: true }, { sort: { date: 1 }, limit: 500 });
 }
 
 export async function findClinicInformation() {
@@ -178,15 +182,16 @@ export async function findReviewsByDentist(dentistId, limit = 10) {
 }
 
 export async function getPublicBootstrapData() {
-  const [services, dentists, rooms, reviews, clinic, slots] = await Promise.all([
+  const [services, dentists, rooms, reviews, clinic, slots, slotClosures] = await Promise.all([
     findActiveServices(),
     findActiveDentists(),
     findActiveRooms(),
     findPublicReviews(8),
     findClinicInformation(),
-    findActiveAppointmentSlots()
+    findActiveAppointmentSlots(),
+    findAppointmentSlotClosures()
   ]);
-  return { services, dentists, rooms, reviews, clinic, slots };
+  return { services, dentists, rooms, reviews, clinic, slots, slotClosures };
 }
 
 export function createConsultationRequest(data) {

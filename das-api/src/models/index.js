@@ -1,6 +1,7 @@
 import AdminProfile from "./AdminProfile.js";
 import Appointment from "./Appointment.js";
 import AppointmentSlot from "./AppointmentSlot.js";
+import AppointmentSlotClosure from "./AppointmentSlotClosure.js";
 import ClinicRoom from "./ClinicRoom.js";
 import ClinicSetting from "./ClinicSetting.js";
 import ConsultationRequest from "./ConsultationRequest.js";
@@ -22,6 +23,7 @@ export {
   AdminProfile,
   Appointment,
   AppointmentSlot,
+  AppointmentSlotClosure,
   ClinicRoom,
   ClinicSetting,
   ConsultationRequest,
@@ -44,6 +46,7 @@ export const COLLECTIONS = Object.freeze({
   adminProfiles: "adminprofiles",
   appointments: "appointments",
   appointmentSlots: "appointmentslots",
+  appointmentSlotClosures: "appointmentslotclosures",
   clinicSettings: "clinicsettings",
   clinicRooms: "clinicrooms",
   consultationRequests: "consultationrequests",
@@ -66,6 +69,7 @@ export const MODELS = Object.freeze({
   [COLLECTIONS.adminProfiles]: AdminProfile,
   [COLLECTIONS.appointments]: Appointment,
   [COLLECTIONS.appointmentSlots]: AppointmentSlot,
+  [COLLECTIONS.appointmentSlotClosures]: AppointmentSlotClosure,
   [COLLECTIONS.clinicSettings]: ClinicSetting,
   [COLLECTIONS.clinicRooms]: ClinicRoom,
   [COLLECTIONS.consultationRequests]: ConsultationRequest,
@@ -95,6 +99,9 @@ export const COLLECTION_INDEXES = Object.freeze({
   [COLLECTIONS.appointmentSlots]: [
     { key: { order: 1 } },
     { key: { startTime: 1 }, options: { unique: true } }
+  ],
+  [COLLECTIONS.appointmentSlotClosures]: [
+    { key: { date: 1, slot: 1 }, options: { unique: true } }
   ],
   [COLLECTIONS.adminProfiles]: [{ key: { user: 1 }, options: { unique: true } }],
   [COLLECTIONS.patients]: [{ key: { user: 1 }, options: { unique: true } }],

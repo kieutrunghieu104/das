@@ -14,6 +14,7 @@ export default function PatientAppointmentList({
   loading,
   rescheduleAppointment,
   rescheduleForms,
+  slotClosures = [],
   slotOptions,
   updateRescheduleForm
 }) {
@@ -55,6 +56,7 @@ export default function PatientAppointmentList({
               key={appointment._id}
               rescheduleAppointment={rescheduleAppointment}
               rescheduleForm={rescheduleForms[appointment._id]}
+              slotClosures={slotClosures}
               slotOptions={slotOptions}
               updateRescheduleForm={updateRescheduleForm}
             />

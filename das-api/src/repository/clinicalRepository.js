@@ -65,7 +65,7 @@ export async function findClinicalAppointments(query, limit = 120) {
 }
 
 export function findActiveAppointmentSlots() {
-  return findMany(COLLECTIONS.appointmentSlots, { isActive: { $ne: false } }, { sort: { order: 1, startTime: 1 } });
+  return findMany(COLLECTIONS.appointmentSlots, {}, { sort: { order: 1, startTime: 1 } });
 }
 
 export async function findClinicalTreatmentRecords(query, limit = 100) {

@@ -65,11 +65,20 @@ function findSlotForDateTime(slots, date, value, exactStart = false) {
     });
 }
 
+async function findBookableAppointmentSlots(date) {
+  const [slots, closedSlots] = await Promise.all([
+    schedulingRepository.findActiveAppointmentSlots(),
+    schedulingRepository.findClosedAppointmentSlots(date)
+  ]);
+  const closedSlotIds = new Set(closedSlots.map((item) => item.slot?.toString()).filter(Boolean));
+  return slots.filter((slot) => !closedSlotIds.has(slot._id.toString()));
+}
+
 async function getRequestedSlot(date, startAt) {
-  const slots = await schedulingRepository.findActiveAppointmentSlots();
+  const slots = await findBookableAppointmentSlots(date);
   const found = findSlotForDateTime(slots, date, startAt, true);
   if (!found) {
-    throw httpError("Slot khám không hợp lệ. Vui lòng chọn slot có trong hệ thống.", 400);
+    throw httpError("Slot khám không hợp lệ hoặc đã đóng trong ngày này.", 400);
   }
   return found;
 }
@@ -197,7 +206,7 @@ export async function findAvailableSlots({ date, serviceId, excludeAppointmentId
   const [rooms, appointments, activeSlots] = await Promise.all([
     schedulingRepository.findActiveRoomsWithDentists(),
     getAppointmentsForDate(date, excludeAppointmentId),
-    schedulingRepository.findActiveAppointmentSlots()
+    findBookableAppointmentSlots(date)
   ]);
 
   const slots = [];
