@@ -99,19 +99,23 @@ export default function ReceptionIntakeAppointments({
                       onChange={(event) => {
                         const nextDate = event.target.value;
                         const nextSlotOptions = filterOpenSlotsForDate(slots, slotClosures, nextDate, { fallback: false });
+                        const nextSlot = nextSlotOptions[0];
                         updateManualSchedule(appointment, {
                           date: nextDate,
-                          time: nextSlotOptions[0]?.value || "",
-                          arrivalTime: nextSlotOptions[0]?.value || ""
+                          time: nextSlot?.value || "",
+                          arrivalTime: nextSlot?.value || ""
                         });
                       }}
                     />
                     <select
                       value={manualTime}
-                      onChange={(event) => updateManualSchedule(appointment, {
-                        time: event.target.value,
-                        arrivalTime: event.target.value
-                      })}
+                      onChange={(event) => {
+                        const nextSlot = rowSlotOptions.find((slot) => slot.value === event.target.value);
+                        updateManualSchedule(appointment, {
+                          time: event.target.value,
+                          arrivalTime: nextSlot?.value || ""
+                        });
+                      }}
                     >
                       {rowSlotOptions.length ? (
                         rowSlotOptions.map((slot) => (
@@ -127,12 +131,13 @@ export default function ReceptionIntakeAppointments({
                       <span>Giờ đến</span>
                       <input
                         type="time"
-                        step="300"
+                        step="60"
                         min={selectedSlot?.value || ""}
-                        max={selectedSlot?.endTime || ""}
+                        max={selectedSlot?.endTime ? previousMinuteTime(selectedSlot.endTime) : ""}
                         value={arrivalTime}
                         onChange={(event) => updateManualSchedule(appointment, { arrivalTime: event.target.value })}
                         disabled={!selectedSlot}
+                        title={selectedSlot ? `Chọn từ ${selectedSlot.value} đến trước ${selectedSlot.endTime}` : "Chọn slot trước"}
                       />
                     </label>
                     <select
@@ -168,4 +173,11 @@ export default function ReceptionIntakeAppointments({
 function isArrivalTimeInsideSlot(arrivalTime, slot) {
   if (!arrivalTime || !slot?.value || !slot?.endTime) return false;
   return arrivalTime >= slot.value && arrivalTime < slot.endTime;
+}
+
+function previousMinuteTime(value) {
+  const [hour, minute] = String(value || "").split(":").map(Number);
+  if (!Number.isFinite(hour) || !Number.isFinite(minute)) return "";
+  const total = Math.max(hour * 60 + minute - 1, 0);
+  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
 }
