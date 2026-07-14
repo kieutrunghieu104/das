@@ -317,8 +317,8 @@ export default function ReceptionistDashboard() {
 
   async function scheduleReceptionAppointment(appointment) {
     const form = manualSchedules[appointment._id] || defaultManualSchedule(appointment, rooms, slots, slotClosures);
-    if (!form.date || !form.time || !form.roomId) {
-      setError("Chọn ngày, giờ và bác sĩ/phòng trước khi xác nhận lịch hẹn.");
+    if (!form.date || !form.time || !form.arrivalTime || !form.roomId) {
+      setError("Chọn ngày, slot, giờ đến và bác sĩ/phòng trước khi xác nhận lịch hẹn.");
       return;
     }
     const validationError = firstError(
@@ -334,6 +334,11 @@ export default function ReceptionistDashboard() {
       setError("Slot này đã đóng trong ngày đã chọn.");
       return;
     }
+    const selectedSlot = formSlotOptions.find((slot) => slot.value === form.time);
+    if (!isArrivalTimeInsideSlot(form.arrivalTime, selectedSlot)) {
+      setError("Giờ đến phải nằm trong khoảng slot đã chọn.");
+      return;
+    }
 
     const room = rooms.find((item) => item._id === form.roomId);
     if (!room?.assignedDentist?._id) {
@@ -341,13 +346,13 @@ export default function ReceptionistDashboard() {
       return;
     }
 
-    if (!window.confirm(`Xác nhận lịch ${form.date} ${form.time} với ${room.assignedDentist.fullName}?`)) return;
+    if (!window.confirm(`Xác nhận lịch ${form.date} ${form.arrivalTime} với ${room.assignedDentist.fullName}?`)) return;
 
     try {
       await api.patch(`/appointments/${appointment._id}/reception-schedule`, {
         serviceId: appointment.service?._id,
         date: form.date,
-        startAt: toClinicIso(form.date, form.time),
+        startAt: toClinicIso(form.date, form.arrivalTime),
         roomId: room._id,
         note: "Lễ tân đã xác nhận ngày, giờ và bác sĩ khám."
       });
@@ -592,6 +597,7 @@ function defaultManualSchedule(appointment, rooms, slots = bookingSlotOptions, s
   const date = appointmentDate && appointmentDate >= todayInput() ? appointmentDate : todayInput();
   const slotOptions = filterOpenSlotsForDate(slots, slotClosures, date, { fallback: false });
   const currentSlotValue = Number.isNaN(startAt.getTime()) ? "" : getAppointmentSlot(startAt, slotOptions.length ? slotOptions : bookingSlotOptions).value;
+  const slot = slotOptions.find((option) => option.value === currentSlotValue) || slotOptions[0];
   return {
     date,
     time: Number.isNaN(startAt.getTime())
@@ -599,6 +605,12 @@ function defaultManualSchedule(appointment, rooms, slots = bookingSlotOptions, s
       : slotOptions.some((slot) => slot.value === currentSlotValue)
         ? currentSlotValue
         : slotOptions[0]?.value || currentSlotValue,
+    arrivalTime: isArrivalTimeInsideSlot(currentSlotValue, slot) ? currentSlotValue : slot?.value || "",
     roomId: appointment.room?._id || rooms[0]?._id || ""
   };
+}
+
+function isArrivalTimeInsideSlot(arrivalTime, slot) {
+  if (!arrivalTime || !slot?.value || !slot?.endTime) return false;
+  return arrivalTime >= slot.value && arrivalTime < slot.endTime;
 }

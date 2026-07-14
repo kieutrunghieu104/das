@@ -66,6 +66,10 @@ export default function ReceptionIntakeAppointments({
             };
             const rowSlotOptions = filterOpenSlotsForDate(slots, slotClosures, manualForm.date, { fallback: false });
             const manualTime = rowSlotOptions.some((slot) => slot.value === manualForm.time) ? manualForm.time : rowSlotOptions[0]?.value || "";
+            const selectedSlot = rowSlotOptions.find((slot) => slot.value === manualTime) || rowSlotOptions[0];
+            const arrivalTime = isArrivalTimeInsideSlot(manualForm.arrivalTime, selectedSlot)
+              ? manualForm.arrivalTime
+              : selectedSlot?.value || "";
             return (
               <article className="appointment-card reception-appointment-card pending-intake" key={appointment._id}>
                 <div className="appointment-card-main">
@@ -95,10 +99,20 @@ export default function ReceptionIntakeAppointments({
                       onChange={(event) => {
                         const nextDate = event.target.value;
                         const nextSlotOptions = filterOpenSlotsForDate(slots, slotClosures, nextDate, { fallback: false });
-                        updateManualSchedule(appointment, { date: nextDate, time: nextSlotOptions[0]?.value || "" });
+                        updateManualSchedule(appointment, {
+                          date: nextDate,
+                          time: nextSlotOptions[0]?.value || "",
+                          arrivalTime: nextSlotOptions[0]?.value || ""
+                        });
                       }}
                     />
-                    <select value={manualTime} onChange={(event) => updateManualSchedule(appointment, { time: event.target.value })}>
+                    <select
+                      value={manualTime}
+                      onChange={(event) => updateManualSchedule(appointment, {
+                        time: event.target.value,
+                        arrivalTime: event.target.value
+                      })}
+                    >
                       {rowSlotOptions.length ? (
                         rowSlotOptions.map((slot) => (
                           <option value={slot.value} key={slot.value}>
@@ -109,6 +123,18 @@ export default function ReceptionIntakeAppointments({
                         <option value="">Chưa có slot đang mở</option>
                       )}
                     </select>
+                    <label className="field inline-field compact-time-field">
+                      <span>Giờ đến</span>
+                      <input
+                        type="time"
+                        step="300"
+                        min={selectedSlot?.value || ""}
+                        max={selectedSlot?.endTime || ""}
+                        value={arrivalTime}
+                        onChange={(event) => updateManualSchedule(appointment, { arrivalTime: event.target.value })}
+                        disabled={!selectedSlot}
+                      />
+                    </label>
                     <select
                       aria-label="Bác sĩ"
                       value={manualForm.roomId}
@@ -137,4 +163,9 @@ export default function ReceptionIntakeAppointments({
       )}
     </section>
   );
+}
+
+function isArrivalTimeInsideSlot(arrivalTime, slot) {
+  if (!arrivalTime || !slot?.value || !slot?.endTime) return false;
+  return arrivalTime >= slot.value && arrivalTime < slot.endTime;
 }

@@ -198,3 +198,12 @@
 .manual-schedule-tools {
   align-items: center;
 }
+
+.manual-schedule-tools .compact-time-field {
+  max-width: 150px;
+  margin-bottom: 0;
+}
+
+.manual-schedule-tools .compact-time-field input[type="time"] {
+  width: 150px;
+}

@@ -98,6 +98,8 @@ export function normalizeAppointmentSlots(slots = [], options = {}) {
         value: startTime,
         slotId: String(slot._id || slot.slotId || `slot-${String(startTime).replace(":", "")}`),
         slotName,
+        startTime,
+        endTime,
         startMinutes,
         endMinutes,
         timeLabel: `${startTime} - ${endTime}`,

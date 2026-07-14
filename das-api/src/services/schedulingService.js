@@ -409,6 +409,11 @@ function selectRequestedSlot(slots, requestedStart, roomId, dentistPreference) {
   return matches[Math.floor(Math.random() * matches.length)];
 }
 
+function slotContainsStartTime(slot, date, requestedStart) {
+  const window = slotWindow(date, slot.slot);
+  return requestedStart >= window.startAt && requestedStart < window.endAt;
+}
+
 export async function rescheduleAppointmentFromSlot({ appointment, serviceId, date, startAt, roomId }) {
   const requestedStart = startAt ? new Date(startAt) : null;
   const targetServiceId = serviceId || appointment.service.toString();
@@ -426,7 +431,7 @@ export async function rescheduleAppointmentFromSlot({ appointment, serviceId, da
   const selected = requestedStart
     ? slots.find(
         (slot) =>
-          slot.startAt.getTime() === requestedStart.getTime() &&
+          slotContainsStartTime(slot, date, requestedStart) &&
           (!roomId || sameId(slot.room._id, roomId))
       )
     : slots.find((slot) => !patientAppointments.some((appointmentItem) => sameSlot(appointmentItem, slot.slot)));
@@ -443,14 +448,15 @@ export async function rescheduleAppointmentFromSlot({ appointment, serviceId, da
     knownAppointments: patientAppointments
   });
   const nurse = selected.nurse || await selectAvailableNurse(selected.slot, date);
+  const confirmedStartAt = requestedStart || selected.startAt;
 
   appointment.service = selected.service._id;
   appointment.room = selected.room._id;
   appointment.dentist = selected.dentist._id;
   appointment.nurse = nurse?._id;
   appointment.slot = selected.slot._id;
-  appointment.startAt = selected.startAt;
-  appointment.arrivalAt = selected.arrivalAt;
+  appointment.startAt = confirmedStartAt;
+  appointment.arrivalAt = calculateArrivalAt(confirmedStartAt);
   appointment.status = "scheduled";
   return schedulingRepository.saveAppointment(appointment);
 }
