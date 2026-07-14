@@ -321,6 +321,14 @@ export default function ReceptionistDashboard() {
       setError("Chọn ngày, giờ và bác sĩ/phòng trước khi xác nhận lịch hẹn.");
       return;
     }
+    const validationError = firstError(
+      validateDate(form.date),
+      form.date <= maxBookingDate() ? "" : "Lễ tân chỉ được xếp lịch trước tối đa 1 tháng."
+    );
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     const formSlotOptions = filterOpenSlotsForDate(slots, slotClosures, form.date, { fallback: false });
     if (!formSlotOptions.some((slot) => slot.value === form.time)) {
       setError("Slot này đã đóng trong ngày đã chọn.");
@@ -580,7 +588,8 @@ function isLockedScheduleAppointment(appointment) {
 
 function defaultManualSchedule(appointment, rooms, slots = bookingSlotOptions, slotClosures = []) {
   const startAt = appointment.startAt ? new Date(appointment.startAt) : new Date();
-  const date = Number.isNaN(startAt.getTime()) ? todayInput() : clinicDateInput(startAt);
+  const appointmentDate = Number.isNaN(startAt.getTime()) ? "" : clinicDateInput(startAt);
+  const date = appointmentDate && appointmentDate >= todayInput() ? appointmentDate : todayInput();
   const slotOptions = filterOpenSlotsForDate(slots, slotClosures, date, { fallback: false });
   const currentSlotValue = Number.isNaN(startAt.getTime()) ? "" : getAppointmentSlot(startAt, slotOptions.length ? slotOptions : bookingSlotOptions).value;
   return {

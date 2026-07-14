@@ -1,7 +1,7 @@
 import { ClipboardList } from "lucide-react";
 import EmptyState from "../EmptyState.jsx";
 import StatusBadge from "../StatusBadge.jsx";
-import { filterOpenSlotsForDate, formatDateTime, formatSlotWithDate, getAppointmentSlot, todayInput } from "../../utils/format.js";
+import { clinicDateInput, filterOpenSlotsForDate, formatDateTime, formatSlotWithDate, getAppointmentSlot, todayInput } from "../../utils/format.js";
 import { maxBookingDate } from "../../pages/BookingPage.jsx";
 import ReceptionAppointmentFilters from "./ReceptionAppointmentFilters.jsx";
 
@@ -57,8 +57,10 @@ export default function ReceptionIntakeAppointments({
       ) : appointments.length ? (
         <div className="appointment-list">
           {appointments.map((appointment) => {
+            const appointmentDate = clinicDateInput(appointment.startAt);
+            const defaultDate = appointmentDate && appointmentDate >= todayInput() ? appointmentDate : todayInput();
             const manualForm = manualSchedules[appointment._id] || {
-              date: appointment.startAt ? new Date(appointment.startAt).toISOString().slice(0, 10) : todayInput(),
+              date: defaultDate,
               time: appointment.startAt ? getAppointmentSlot(appointment.startAt, slotOptions).value : slotOptions[0]?.value || "",
               roomId: appointment.room?._id || rooms[0]?._id || ""
             };
