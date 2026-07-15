@@ -4,15 +4,19 @@ import StatusBadge from "../StatusBadge.jsx";
 import { formatTime } from "../../utils/format.js";
 
 export default function ReceptionClinicalQueue({
+  allSlotOptions = [],
   date,
   dentistColumns,
   isLockedScheduleAppointment,
   loading,
   onCheckInAppointment,
   onMarkNoShow,
+  onToggleSlot,
   queueSlots,
   rooms,
-  setDate
+  setDate,
+  statusFilter = "all",
+  setStatusFilter
 }) {
   return (
     <section className="panel reception-schedule-panel">
@@ -39,6 +43,30 @@ export default function ReceptionClinicalQueue({
           <span>Ngày</span>
           <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
         </label>
+        <label className="field inline-field">
+          <span>Trạng thái</span>
+          <select value={statusFilter} onChange={(event) => setStatusFilter?.(event.target.value)}>
+            <option value="all">Tất cả</option>
+            <option value="scheduled">Chưa diễn ra</option>
+            <option value="confirmed">Đã xác nhận</option>
+            <option value="checked_in">Có mặt</option>
+            <option value="in_treatment">Đang khám</option>
+          </select>
+        </label>
+      </div>
+
+      <div className="mini-list slot-toggle-list">
+        {allSlotOptions.map((slot) => (
+          <div className="mini-row slot-toggle-row" key={slot._id || slot.slotId}>
+            <span>{slot.label}</span>
+            <div className="row-actions">
+              <StatusBadge value={slot.isClosed ? "closed" : "active"} />
+              <button className="button small secondary" type="button" onClick={() => onToggleSlot?.(slot)}>
+                {slot.isClosed ? "Mở slot" : "Đóng slot"}
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
 
       {loading ? (

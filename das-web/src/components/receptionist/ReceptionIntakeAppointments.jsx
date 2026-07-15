@@ -6,13 +6,11 @@ import { maxBookingDate } from "../../pages/BookingPage.jsx";
 import ReceptionAppointmentFilters from "./ReceptionAppointmentFilters.jsx";
 
 export default function ReceptionIntakeAppointments({
-  allSlotOptions = [],
   appointmentSearch,
   appointments,
   date,
   loading,
   onRejectAppointment,
-  onToggleSlot,
   manualSchedules,
   rooms,
   scheduleReceptionAppointment,
@@ -37,20 +35,6 @@ export default function ReceptionIntakeAppointments({
         setAppointmentSearch={setAppointmentSearch}
         showDate
       />
-
-      <div className="mini-list slot-toggle-list">
-        {allSlotOptions.map((slot) => (
-          <div className="mini-row slot-toggle-row" key={slot._id || slot.slotId}>
-            <span>{slot.label}</span>
-            <div className="row-actions">
-              <StatusBadge value={slot.isClosed ? "closed" : "active"} />
-              <button className="button small secondary" type="button" onClick={() => onToggleSlot(slot)}>
-                {slot.isClosed ? "Mở slot" : "Đóng slot"}
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
 
       {loading ? (
         <EmptyState title="Đang tải lịch hẹn" text="Hệ thống đang lấy dữ liệu mới nhất." />

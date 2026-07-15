@@ -97,6 +97,14 @@
     justify-self: end;
   }
 
+  .consultation-row {
+    grid-template-columns: 1fr;
+  }
+
+  .consultation-actions {
+    justify-content: flex-start;
+  }
+
   .reception-appointment-card {
     grid-template-columns: 1fr;
   }

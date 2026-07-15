@@ -286,7 +286,7 @@ export default function AppLayout() {
               ["scheduled", "confirmed", "checked_in", "in_treatment"].includes(item.status) &&
               clinicDateInput(item.startAt) === today
           ).length,
-          consultations: consultations.filter((item) => clinicDateInput(item.createdAt) === today).length
+          consultations: consultations.filter((item) => (item.status || "waiting") === "waiting").length
         });
         return;
       }

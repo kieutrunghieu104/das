@@ -55,6 +55,7 @@ export function createConsultation(body) {
     fullName: data.fullName,
     phone: data.phone,
     gender: data.gender,
-    service: data.service || undefined
+    service: data.service || undefined,
+    status: "waiting"
   });
 }

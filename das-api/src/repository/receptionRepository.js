@@ -196,3 +196,7 @@ export function createPatientProfile(data) {
 export function deleteConsultationRequest(requestId) {
   return removeById(COLLECTIONS.consultationRequests, requestId);
 }
+
+export function updateConsultationRequest(requestId, data) {
+  return updateById(COLLECTIONS.consultationRequests, requestId, data);
+}

@@ -632,19 +632,22 @@ async function seedOperationalData(users, clinic) {
       fullName: "Đỗ Minh Khang",
       phone: "0988000001",
       service: services[2]._id,
-      gender: "male"
+      gender: "male",
+      status: "waiting"
     },
     {
       fullName: "Võ Ngọc Lan",
       phone: "0988000002",
       service: services[1]._id,
-      gender: "female"
+      gender: "female",
+      status: "waiting"
     },
     {
       fullName: "Bùi Thanh Mai",
       phone: "0988000003",
       service: services[4]._id,
-      gender: "female"
+      gender: "female",
+      status: "waiting"
     }
   ]);
 

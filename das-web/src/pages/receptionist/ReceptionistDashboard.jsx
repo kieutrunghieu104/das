@@ -36,6 +36,8 @@ export default function ReceptionistDashboard() {
   const [slots, setSlots] = useState([]);
   const [slotClosures, setSlotClosures] = useState([]);
   const [appointmentSearch, setAppointmentSearch] = useState("");
+  const [scheduleStatusFilter, setScheduleStatusFilter] = useState("all");
+  const [consultationStatusFilter, setConsultationStatusFilter] = useState("waiting");
   const [patientSearch, setPatientSearch] = useState("");
   const [accountMode, setAccountMode] = useState("existing");
   const [newPatient, setNewPatient] = useState({ fullName: "", email: "", phone: "", gender: "unknown", createAccount: false });
@@ -368,13 +370,65 @@ export default function ReceptionistDashboard() {
     }
   }
 
-  async function deleteConsultation(id) {
-    if (!window.confirm("Xóa yêu cầu tư vấn này khỏi hệ thống?")) return;
+  async function updateConsultationStatus(consultation, status) {
+    try {
+      await api.patch(`/reception/consultations/${consultation._id}`, { status });
+      setMessage(status === "contacted" ? "Đã cập nhật yêu cầu tư vấn sang đã tư vấn." : "Đã chuyển yêu cầu tư vấn về chờ tư vấn.");
+      await load({ silent: true });
+    } catch (err) {
+      setError(getErrorMessage(err));
+    }
+  }
+
+  async function bookConsultation(consultation) {
+    const phone = String(consultation.phone || "").trim();
+    if (!phone) {
+      setError("Yêu cầu tư vấn thiếu số điện thoại nên chưa thể đặt lịch.");
+      return;
+    }
 
     try {
-      await api.delete(`/reception/consultations/${id}`);
-      setMessage("Đã xóa yêu cầu tư vấn.");
-      load();
+      const res = await api.get("/reception/patients", { params: { q: phone } });
+      const matchedPatients = res.data.patients || [];
+      const matchedPatient = matchedPatients.find((patient) => patient.phone === phone);
+      const consultationServiceId = typeof consultation.service === "string" ? consultation.service : consultation.service?._id;
+      const selectedServiceId = consultationServiceId || booking.serviceId || services[0]?._id || "";
+      const selectedTime = slotOptions.some((slot) => slot.value === booking.time) ? booking.time : slotOptions[0]?.value || "";
+
+      if (matchedPatient) {
+        setPatients(matchedPatients);
+        setPatientSearch(phone);
+        setAccountMode("existing");
+        setBooking((current) => ({
+          ...current,
+          patientId: matchedPatient._id,
+          serviceId: selectedServiceId,
+          time: selectedTime,
+          note: current.note || "Đặt lịch từ yêu cầu tư vấn."
+        }));
+        setMessage("Đã tìm thấy tài khoản bệnh nhân. Hệ thống chuyển sang phần Đã có tài khoản.");
+      } else {
+        setPatientSearch("");
+        setAccountMode("new");
+        setNewPatient({
+          fullName: consultation.fullName || "",
+          email: "",
+          phone,
+          gender: consultation.gender || "unknown",
+          createAccount: false
+        });
+        setBooking((current) => ({
+          ...current,
+          patientId: "",
+          serviceId: selectedServiceId,
+          time: selectedTime,
+          note: current.note || "Đặt lịch từ yêu cầu tư vấn."
+        }));
+        setMessage("Chưa tìm thấy tài khoản bệnh nhân. Hệ thống chuyển sang phần Chưa có tài khoản.");
+      }
+
+      setActiveFeature("booking");
+      navigate("/dashboard?tab=booking", { replace: true });
     } catch (err) {
       setError(getErrorMessage(err));
     }
@@ -420,8 +474,16 @@ export default function ReceptionistDashboard() {
   const filteredBaseAppointments = appointments.filter((appointment) => matchesAppointmentFilters(appointment, appointmentSearch));
   const dateFilteredAppointments = filteredBaseAppointments.filter((appointment) => !date || clinicDateInput(appointment.startAt) === date);
   const intakeAppointments = filteredBaseAppointments.filter((appointment) => intakeStatuses.has(appointment.status));
-  const clinicalQueueAppointments = dateFilteredAppointments.filter((appointment) => clinicalQueueStatuses.has(appointment.status));
+  const clinicalQueueAppointments = dateFilteredAppointments.filter(
+    (appointment) =>
+      clinicalQueueStatuses.has(appointment.status) &&
+      (scheduleStatusFilter === "all" || appointment.status === scheduleStatusFilter)
+  );
   const paymentAppointments = filteredBaseAppointments.filter((appointment) => paymentStatuses.has(appointment.status));
+  const filteredConsultations = consultations.filter((consultation) => {
+    const status = consultation.status || "waiting";
+    return consultationStatusFilter === "all" || status === consultationStatusFilter;
+  });
   const patientKeyword = patientSearch.trim().toLowerCase();
   const selectablePatients = patients.filter((patient) => {
     if (!patientKeyword) return true;
@@ -481,13 +543,11 @@ export default function ReceptionistDashboard() {
           date={date}
           loading={loading}
           onRejectAppointment={rejectAppointment}
-          onToggleSlot={toggleAppointmentSlot}
           manualSchedules={manualSchedules}
           rooms={rooms}
           scheduleReceptionAppointment={scheduleReceptionAppointment}
           setAppointmentSearch={setAppointmentSearch}
           setDate={setDate}
-          allSlotOptions={allSlotOptions}
           slots={slots}
           slotClosures={slotClosures}
           slotOptions={slotOptions}
@@ -515,17 +575,19 @@ export default function ReceptionistDashboard() {
 
       {activeFeature === "schedule" && (
         <ReceptionClinicalQueue
-          appointmentSearch={appointmentSearch}
+          allSlotOptions={allSlotOptions}
           date={date}
           dentistColumns={dentistColumns}
           isLockedScheduleAppointment={isLockedScheduleAppointment}
           loading={loading}
           onCheckInAppointment={checkInClinicalAppointment}
           onMarkNoShow={markNoShow}
+          onToggleSlot={toggleAppointmentSlot}
           queueSlots={queueSlots}
           rooms={rooms}
-          setAppointmentSearch={setAppointmentSearch}
           setDate={setDate}
+          statusFilter={scheduleStatusFilter}
+          setStatusFilter={setScheduleStatusFilter}
         />
       )}
 
@@ -563,9 +625,12 @@ export default function ReceptionistDashboard() {
 
       {activeFeature === "consultations" && (
         <ConsultationRequestList
-          consultations={consultations}
+          consultations={filteredConsultations}
+          statusFilter={consultationStatusFilter}
           loading={loading}
-          onDeleteConsultation={deleteConsultation}
+          onBookConsultation={bookConsultation}
+          onStatusFilterChange={setConsultationStatusFilter}
+          onUpdateConsultationStatus={updateConsultationStatus}
         />
       )}
     </div>

@@ -138,6 +138,19 @@ export function getConsultations() {
   return receptionRepository.findConsultationRequests({}, 100);
 }
 
+export async function updateConsultation(requestId, body) {
+  const status = body?.status;
+  if (!["waiting", "contacted"].includes(status)) {
+    throw createError("Trạng thái tư vấn không hợp lệ.", 400);
+  }
+
+  const request = await receptionRepository.updateConsultationRequest(requestId, { status });
+  if (!request) {
+    throw createError("Không tìm thấy yêu cầu tư vấn.", 404);
+  }
+  return request;
+}
+
 export async function deleteConsultation(requestId) {
   const request = await receptionRepository.deleteConsultationRequest(requestId);
   if (!request) {

@@ -136,6 +136,51 @@
   padding: 0 12px;
 }
 
+.consultation-list {
+  gap: 8px;
+}
+
+.consultation-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  padding: 12px 14px;
+}
+
+.consultation-info {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.consultation-info strong {
+  color: var(--primary-dark);
+  font-weight: 850;
+}
+
+.consultation-info span {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.consultation-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.consultation-actions select {
+  min-width: 132px;
+  height: 36px;
+  padding: 0 10px;
+}
+
+.consultation-actions .button.small {
+  min-height: 36px;
+  gap: 6px;
+}
+
 .reception-appointment-card {
   grid-template-columns: minmax(360px, 1fr) minmax(320px, 0.9fr);
   align-items: stretch;

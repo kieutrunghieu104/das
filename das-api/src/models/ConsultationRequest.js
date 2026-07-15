@@ -4,7 +4,11 @@ const consultationRequestSchema = new mongoose.Schema({
   fullName: String,
   phone: String,
   gender: String,
-  service: { type: mongoose.Schema.Types.ObjectId, ref: "dentalservices" }
+  service: { type: mongoose.Schema.Types.ObjectId, ref: "dentalservices" },
+  status: {
+    type: String,
+    default: "waiting"
+  }
 }, {
   timestamps: { createdAt: true, updatedAt: false },
   collection: "consultationrequests",
