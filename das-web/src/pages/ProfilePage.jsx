@@ -41,12 +41,12 @@ export default function ProfilePage() {
       return;
     }
 
-    if (!window.confirm("Xác nhận cập nhật hồ sơ?")) return;
+    if (!window.confirm("Xác nhận lưu thay đổi hồ sơ cá nhân?")) return;
 
     try {
       const res = await api.patch("/auth/me", profile);
       localStorage.setItem("das_user", JSON.stringify(res.data.user));
-      setMessage("Đã cập nhật hồ sơ. Tải lại trang để đồng bộ thông tin trên thanh tiêu đề.");
+      setMessage("Đã cập nhật hồ sơ cá nhân.");
     } catch (err) {
       setError(getErrorMessage(err));
     }
@@ -66,12 +66,12 @@ export default function ProfilePage() {
       return;
     }
 
-    if (!window.confirm("Xác nhận đổi mật khẩu?")) return;
+    if (!window.confirm("Xác nhận đổi mật khẩu tài khoản?")) return;
 
     try {
       await api.patch("/auth/change-password", passwords);
       setPasswords({ currentPassword: "", newPassword: "" });
-      setMessage("Đã đổi mật khẩu.");
+      setMessage("Đã đổi mật khẩu. Vui lòng dùng mật khẩu mới ở lần đăng nhập tiếp theo.");
     } catch (err) {
       setError(getErrorMessage(err));
     }

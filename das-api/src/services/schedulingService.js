@@ -78,7 +78,7 @@ async function getRequestedSlot(date, startAt) {
   const slots = await findBookableAppointmentSlots(date);
   const found = findSlotForDateTime(slots, date, startAt, true);
   if (!found) {
-    throw httpError("Slot khám không hợp lệ hoặc đã đóng trong ngày này.", 400);
+    throw httpError("Khung giờ khám không hợp lệ hoặc đã đóng trong ngày này.", 400);
   }
   return found;
 }
@@ -125,7 +125,7 @@ async function resolveAppointmentOwner(patientOrId, guestPatient) {
 
 async function assertPatientHasNoSameSlot({ patientId, guestPhone, date, slot, excludeAppointmentId, knownAppointments }) {
   if (knownAppointments?.some((appointment) => sameSlot(appointment, slot))) {
-    throw httpError("Bệnh nhân đã có lịch hẹn trong cùng slot của ngày này.", 409);
+    throw httpError("Bệnh nhân đã có lịch hẹn trong cùng khung giờ của ngày này.", 409);
   }
 
   const ownerFilters = [];
@@ -148,7 +148,7 @@ async function assertPatientHasNoSameSlot({ patientId, guestPhone, date, slot, e
   if (excludeAppointmentId) query._id = { $ne: excludeAppointmentId };
   const existing = await schedulingRepository.findAppointmentConflict(query, "_id");
   if (existing) {
-    throw httpError("Bệnh nhân đã có lịch hẹn trong cùng slot của ngày này.", 409);
+    throw httpError("Bệnh nhân đã có lịch hẹn trong cùng khung giờ của ngày này.", 409);
   }
 }
 
@@ -181,19 +181,19 @@ async function assertAppointmentResourcesAvailable({ patientId, guestPhone, dent
   if (!conflict) return;
 
   if (patientId && sameId(conflict.patient, patientId)) {
-    throw httpError("Bệnh nhân đã có lịch hẹn trong cùng slot của ngày này.", 409);
+    throw httpError("Bệnh nhân đã có lịch hẹn trong cùng khung giờ của ngày này.", 409);
   }
   if (guestPhone && conflict.guestPatient?.phone === guestPhone) {
-    throw httpError("Bệnh nhân đã có lịch hẹn trong cùng slot của ngày này.", 409);
+    throw httpError("Bệnh nhân đã có lịch hẹn trong cùng khung giờ của ngày này.", 409);
   }
   if (sameId(conflict.room, roomId)) {
-    throw httpError("Phòng khám đã có lịch hẹn trong slot này.", 409);
+    throw httpError("Phòng khám đã có lịch hẹn trong khung giờ này.", 409);
   }
   if (sameId(conflict.dentist, dentistId)) {
-    throw httpError("Bác sĩ đã có lịch hẹn trong slot này.", 409);
+    throw httpError("Bác sĩ đã có lịch hẹn trong khung giờ này.", 409);
   }
   if (nurseId && sameId(conflict.nurse, nurseId)) {
-    throw httpError("Y tá đã có lịch hẹn trong slot này.", 409);
+    throw httpError("Y tá đã có lịch hẹn trong khung giờ này.", 409);
   }
 }
 

@@ -69,8 +69,8 @@ export default function BookingPage({ embedded = false }) {
       requireValue(serviceId, "Dịch vụ"),
       dentistId === "random" ? "" : requireValue(dentistId, "Bác sĩ"),
       validateDate(date),
-      date <= maxDate ? "" : "Bạn chỉ được đặt lịch trước tối đa 1 tháng.",
-      requireValue(time, "Slot khám"),
+      date <= maxDate ? "" : "Bạn chỉ được đặt lịch trong vòng 1 tháng tính từ hôm nay.",
+      requireValue(time, "Khung giờ khám"),
       validateNote(note)
     );
   }
@@ -84,7 +84,7 @@ export default function BookingPage({ embedded = false }) {
     }
 
     if (!canUsePatientBooking(user.role)) {
-      setError("Chỉ tài khoản bệnh nhân được đặt lịch tại màn hình này.");
+      setError("Chỉ tài khoản bệnh nhân mới được đặt lịch ở màn hình này.");
       return;
     }
 
@@ -97,12 +97,12 @@ export default function BookingPage({ embedded = false }) {
     const wantsRandomDentist = dentistId === "random";
     const room = wantsRandomDentist ? null : rooms.find((item) => item.assignedDentist?._id === dentistId);
     if (!wantsRandomDentist && !room) {
-      setError("Chưa có phòng khám được gán bác sĩ. Vui lòng liên hệ lễ tân.");
+      setError("Bác sĩ này chưa được gán phòng khám. Vui lòng chọn bác sĩ khác hoặc để lễ tân sắp xếp.");
       return;
     }
 
     const selectedSlot = slotOptions.find((option) => option.value === time);
-    if (!window.confirm(`Xác nhận đặt lịch ca ${selectedSlot?.label || time}?`)) return;
+    if (!window.confirm(`Xác nhận đặt lịch vào ${selectedSlot?.label || time}?`)) return;
 
     setError("");
     setMessage("");
@@ -117,7 +117,7 @@ export default function BookingPage({ embedded = false }) {
         dentistPreference: wantsRandomDentist ? "random" : "selected",
         note
       });
-      setMessage("Đã gửi yêu cầu đặt lịch. Lễ tân sẽ tiếp nhận và cập nhật trạng thái cho bạn.");
+      setMessage("Đã gửi yêu cầu đặt lịch. Lễ tân sẽ xác nhận và cập nhật trạng thái cho bạn.");
       setNote("");
     } catch (err) {
       setError(getErrorMessage(err));

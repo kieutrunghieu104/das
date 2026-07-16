@@ -22,7 +22,7 @@ export default function ReceptionClinicalQueue({
     <section className="panel reception-schedule-panel">
       <div className="section-title">
         <CalendarDays size={20} />
-        <h2>Lịch khám theo thứ tự check-in</h2>
+        <h2>Lịch khám theo thứ tự có mặt</h2>
       </div>
 
       <div className="reception-room-status-grid">
@@ -62,7 +62,7 @@ export default function ReceptionClinicalQueue({
             <div className="row-actions">
               <StatusBadge value={slot.isClosed ? "closed" : "active"} />
               <button className="button small secondary" type="button" onClick={() => onToggleSlot?.(slot)}>
-                {slot.isClosed ? "Mở slot" : "Đóng slot"}
+                {slot.isClosed ? "Mở giờ" : "Đóng giờ"}
               </button>
             </div>
           </div>
@@ -77,7 +77,7 @@ export default function ReceptionClinicalQueue({
             className="reception-slot-grid reception-slot-grid-head"
             style={{ gridTemplateColumns: `130px repeat(${dentistColumns.length}, minmax(270px, 1fr))` }}
           >
-            <div className="reception-slot-corner">Slot</div>
+            <div className="reception-slot-corner">Khung giờ</div>
             {dentistColumns.map((dentist) => (
               <div className="reception-dentist-head" key={dentist._id}>
                 <strong>{dentist.fullName}</strong>

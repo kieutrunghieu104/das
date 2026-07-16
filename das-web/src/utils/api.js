@@ -44,7 +44,7 @@ export function getErrorMessage(error) {
   }
 
   if (error.code === "ECONNABORTED") return "Máy chủ phản hồi quá chậm. Vui lòng thử lại.";
-  if (error.message === "Network Error") return "Không thể kết nối đến máy chủ. Vui lòng kiểm tra API và MongoDB.";
+  if (error.message === "Network Error") return "Không thể kết nối đến máy chủ. Vui lòng kiểm tra lại API hoặc kết nối mạng.";
   if (status >= 500 && !data?.message) return "Hệ thống đang tạm gián đoạn. Vui lòng thử lại sau vài giây.";
 
   return data?.message || "Đã có lỗi xảy ra. Vui lòng thử lại.";

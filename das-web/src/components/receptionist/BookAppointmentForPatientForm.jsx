@@ -25,7 +25,7 @@ export default function BookAppointmentForPatientForm({
         <CalendarPlus size={20} />
         <div>
           <h2>Đặt lịch hộ bệnh nhân</h2>
-          <p>Nhập thông tin bệnh nhân, chọn dịch vụ và slot để tạo lịch chờ xác nhận.</p>
+          <p>Nhập thông tin bệnh nhân, chọn dịch vụ và khung giờ để tạo lịch chờ xác nhận.</p>
         </div>
       </div>
       <form className="stack receptionist-booking-form" onSubmit={onSubmit}>
@@ -127,7 +127,7 @@ export default function BookAppointmentForPatientForm({
             />
           </label>
           <label className="field">
-            <span>Slot khám</span>
+            <span>Khung giờ khám</span>
             <select value={booking.time} onChange={(event) => onBookingChange({ time: event.target.value })} required>
               {slotOptions.length ? (
                 slotOptions.map((option) => (
@@ -136,7 +136,7 @@ export default function BookAppointmentForPatientForm({
                   </option>
                 ))
               ) : (
-                <option value="">Chưa có slot đang mở</option>
+                <option value="">Chưa có khung giờ đang mở</option>
               )}
             </select>
           </label>

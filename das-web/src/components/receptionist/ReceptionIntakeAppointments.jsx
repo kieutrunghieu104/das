@@ -66,7 +66,7 @@ export default function ReceptionIntakeAppointments({
                   </div>
                   <div className="appointment-slot-box">
                     <strong>{appointment.service?.name || "Dịch vụ nha khoa"}</strong>
-                    <span>Slot bệnh nhân chọn: {formatSlotWithDate(appointment.startAt, appointment.slot?.startTime ? appointment.slot : slotOptions)}</span>
+                    <span>Khung giờ bệnh nhân chọn: {formatSlotWithDate(appointment.startAt, appointment.slot?.startTime ? appointment.slot : slotOptions)}</span>
                     <span>Thời gian bệnh nhân gửi: {formatDateTime(appointment.patientRequestedAt || appointment.createdAt)}</span>
                     <span>Bác sĩ: {appointment.dentist?.fullName || "Lễ tân sắp xếp"}</span>
                     <span>Kênh: {appointment.channel === "online" ? "Online" : "Tại quầy"}</span>
@@ -108,7 +108,7 @@ export default function ReceptionIntakeAppointments({
                           </option>
                         ))
                       ) : (
-                        <option value="">Chưa có slot đang mở</option>
+                        <option value="">Chưa có khung giờ đang mở</option>
                       )}
                     </select>
                     <label className="field inline-field compact-time-field">
@@ -121,7 +121,7 @@ export default function ReceptionIntakeAppointments({
                         value={arrivalTime}
                         onChange={(event) => updateManualSchedule(appointment, { arrivalTime: event.target.value })}
                         disabled={!selectedSlot}
-                        title={selectedSlot ? `Chọn từ ${selectedSlot.value} đến trước ${selectedSlot.endTime}` : "Chọn slot trước"}
+                        title={selectedSlot ? `Chọn từ ${selectedSlot.value} đến trước ${selectedSlot.endTime}` : "Chọn khung giờ trước"}
                       />
                     </label>
                     <select

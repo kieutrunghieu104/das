@@ -372,7 +372,7 @@ export async function updatePerformedServices(user, appointmentId, body) {
   }
 
   if (appointment.status !== "in_treatment") {
-    throw createError("Chỉ lịch đang khám mới được xác nhận dịch vụ đã làm.", 409);
+    throw createError("Chỉ lịch đang khám mới được xác nhận dịch vụ đã thực hiện.", 409);
   }
 
   const services = data.services.map((item) => ({

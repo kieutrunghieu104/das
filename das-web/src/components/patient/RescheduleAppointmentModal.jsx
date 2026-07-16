@@ -34,7 +34,7 @@ export default function RescheduleAppointmentModal({
             </option>
           ))
         ) : (
-          <option value="">Chưa có slot đang mở</option>
+          <option value="">Chưa có khung giờ đang mở</option>
         )}
       </select>
       <button className="button small primary" type="button" onClick={onSubmit} disabled={!slotOptions.length}>

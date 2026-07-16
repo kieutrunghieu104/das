@@ -41,7 +41,7 @@ export default function PatientAppointmentCard({
   };
   const scheduleText = arrangedStatuses.has(appointment.status)
     ? `Giờ đến: ${formatDateTime(appointment.checkInTime || appointment.startAt)}`
-    : `Slot đã đặt: ${formatSlotWithDate(appointment.startAt, appointment.slot?.startTime ? appointment.slot : slotOptions)}`;
+    : `Khung giờ đã đặt: ${formatSlotWithDate(appointment.startAt, appointment.slot?.startTime ? appointment.slot : slotOptions)}`;
 
   function openRescheduleForm() {
     updateRescheduleForm(appointment, {});

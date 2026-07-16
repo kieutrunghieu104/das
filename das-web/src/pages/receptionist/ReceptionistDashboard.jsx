@@ -138,7 +138,7 @@ export default function ReceptionistDashboard() {
     const commonError = firstError(
       requireValue(booking.serviceId, "Dịch vụ"),
       validateDate(date),
-      requireValue(booking.time, "Slot khám"),
+      requireValue(booking.time, "Khung giờ khám"),
       validateNote(booking.note)
     );
     const patientError =
@@ -152,11 +152,11 @@ export default function ReceptionistDashboard() {
       return;
     }
     if (date > maxBookingDate()) {
-      setError("Lễ tân chỉ được đặt lịch trước tối đa 1 tháng.");
+      setError("Lễ tân chỉ được đặt lịch trong vòng 1 tháng tính từ hôm nay.");
       return;
     }
 
-    if (!window.confirm("Xác nhận đặt lịch hộ bệnh nhân?")) return;
+    if (!window.confirm("Xác nhận tạo lịch hẹn cho bệnh nhân?")) return;
 
     try {
       let patientId = booking.patientId;
@@ -187,7 +187,7 @@ export default function ReceptionistDashboard() {
         dentistPreference: "random",
         note: booking.note
       });
-      setMessage("Đã tạo lịch hẹn chờ xác nhận và xếp giờ.");
+      setMessage("Đã tạo lịch hẹn. Lịch đang chờ lễ tân xác nhận trong mục Lịch hẹn.");
       setActiveFeature("appointments");
       navigate("/dashboard?tab=appointments", { replace: true });
       await load();
@@ -204,7 +204,7 @@ export default function ReceptionistDashboard() {
         status: "rejected",
         note: "Lễ tân từ chối lịch hẹn."
       });
-      setMessage("Đã từ chối lịch hẹn.");
+      setMessage("Đã từ chối lịch hẹn và cập nhật trạng thái cho bệnh nhân.");
       load();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -221,7 +221,7 @@ export default function ReceptionistDashboard() {
 
     try {
       await api.patch(`/appointments/${appointment._id}/check-in`, { paid: false });
-      setMessage("Đã check-in bệnh nhân. Lịch khám đã chuyển cho y tá và bác sĩ theo slot.");
+      setMessage("Đã ghi nhận bệnh nhân có mặt. Lịch khám đã hiển thị cho bác sĩ và y tá theo khung giờ.");
       await load();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -229,11 +229,11 @@ export default function ReceptionistDashboard() {
   }
 
   async function markNoShow(appointment) {
-    if (!window.confirm("Xác nhận đánh dấu vắng mặt?")) return;
+    if (!window.confirm("Xác nhận bệnh nhân vắng mặt trong lịch khám này?")) return;
 
     try {
       await api.patch(`/appointments/${appointment._id}/no-show`, { note: "Lễ tân đánh dấu bệnh nhân vắng mặt." });
-      setMessage("Đã đánh dấu bệnh nhân vắng mặt.");
+      setMessage("Đã cập nhật lịch khám sang trạng thái vắng mặt.");
       load();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -267,10 +267,10 @@ export default function ReceptionistDashboard() {
     const performedTotal = performedItems.reduce((sum, item) => sum + item.amount, 0);
     const amount = performedTotal;
     if (amount <= 0) {
-      setError("Chờ y tá xác nhận dịch vụ đã thực hiện trước khi tạo hóa đơn.");
+      setError("Chưa có dịch vụ hoặc chi phí phát sinh để tạo hóa đơn.");
       return;
     }
-    if (!window.confirm(`Tạo hóa đơn ${amount.toLocaleString("vi-VN")} VND cho lịch hẹn này?`)) return;
+    if (!window.confirm(`Tạo hóa đơn ${amount.toLocaleString("vi-VN")} VND cho lịch khám này?`)) return;
 
     try {
       const invoicePlan = getInvoicePlan(appointment._id);
@@ -280,7 +280,7 @@ export default function ReceptionistDashboard() {
         paymentPlan: invoicePlan.paymentPlan,
         installmentMonths: invoicePlan.paymentPlan === "monthly" ? Number(invoicePlan.installmentMonths || 3) : undefined
       });
-      setMessage("Đã tạo hóa đơn và gửi tới bệnh nhân.");
+      setMessage("Đã tạo hóa đơn và gửi thông báo cho bệnh nhân.");
       setInvoicePlans((current) => {
         const next = { ...current };
         delete next[appointment._id];
@@ -293,11 +293,11 @@ export default function ReceptionistDashboard() {
   }
 
   async function processPayment(appointment) {
-    if (!window.confirm("Xác nhận đã thu tiền cho lịch hẹn này?")) return;
+    if (!window.confirm("Xác nhận ghi nhận thanh toán cho hóa đơn này?")) return;
 
     try {
       await api.patch(`/appointments/${appointment._id}/payment`, { paymentMethod: paymentMethods[appointment._id] || "cash" });
-      setMessage("Đã ghi nhận thanh toán.");
+      setMessage("Đã ghi nhận thanh toán và cập nhật trạng thái hóa đơn.");
       setPaymentMethods((current) => ({ ...current, [appointment._id]: "cash" }));
       load();
     } catch (err) {
@@ -306,11 +306,11 @@ export default function ReceptionistDashboard() {
   }
 
   async function deleteEmptyInvoiceAppointment(appointment) {
-    if (!window.confirm("Xóa dòng hóa đơn chưa có dịch vụ phát sinh này?")) return;
+    if (!window.confirm("Xóa dòng lịch khám chưa có dịch vụ phát sinh này?")) return;
 
     try {
       await api.delete(`/appointments/${appointment._id}/empty-invoice`);
-      setMessage("Đã xóa dòng hóa đơn chưa có dịch vụ phát sinh.");
+      setMessage("Đã xóa dòng lịch khám chưa có dịch vụ phát sinh.");
       await load();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -320,12 +320,12 @@ export default function ReceptionistDashboard() {
   async function scheduleReceptionAppointment(appointment) {
     const form = manualSchedules[appointment._id] || defaultManualSchedule(appointment, rooms, slots, slotClosures);
     if (!form.date || !form.time || !form.arrivalTime || !form.roomId) {
-      setError("Chọn ngày, slot, giờ đến và bác sĩ/phòng trước khi xác nhận lịch hẹn.");
+      setError("Chọn đầy đủ ngày, khung giờ, giờ đến và bác sĩ/phòng trước khi xác nhận lịch hẹn.");
       return;
     }
     const validationError = firstError(
       validateDate(form.date),
-      form.date <= maxBookingDate() ? "" : "Lễ tân chỉ được xếp lịch trước tối đa 1 tháng."
+      form.date <= maxBookingDate() ? "" : "Lễ tân chỉ được xếp lịch trong vòng 1 tháng tính từ hôm nay."
     );
     if (validationError) {
       setError(validationError);
@@ -333,12 +333,12 @@ export default function ReceptionistDashboard() {
     }
     const formSlotOptions = filterOpenSlotsForDate(slots, slotClosures, form.date, { fallback: false });
     if (!formSlotOptions.some((slot) => slot.value === form.time)) {
-      setError("Slot này đã đóng trong ngày đã chọn.");
+      setError("Khung giờ này đã đóng trong ngày đã chọn.");
       return;
     }
     const selectedSlot = formSlotOptions.find((slot) => slot.value === form.time);
     if (!isArrivalTimeInsideSlot(form.arrivalTime, selectedSlot)) {
-      setError("Giờ đến phải nằm trong khoảng slot đã chọn.");
+      setError("Giờ đến phải nằm trong khoảng khung giờ đã chọn.");
       return;
     }
 
@@ -348,7 +348,7 @@ export default function ReceptionistDashboard() {
       return;
     }
 
-    if (!window.confirm(`Xác nhận lịch ${form.date} ${form.arrivalTime} với ${room.assignedDentist.fullName}?`)) return;
+    if (!window.confirm(`Xác nhận lịch khám ngày ${form.date} lúc ${form.arrivalTime} với ${room.assignedDentist.fullName}?`)) return;
 
     try {
       await api.patch(`/appointments/${appointment._id}/reception-schedule`, {
@@ -358,7 +358,7 @@ export default function ReceptionistDashboard() {
         roomId: room._id,
         note: "Lễ tân đã xác nhận ngày, giờ và bác sĩ khám."
       });
-      setMessage("Đã xếp lịch hẹn và gửi thông tin cho bệnh nhân.");
+      setMessage("Đã xếp lịch khám và gửi thông tin cho bệnh nhân.");
       setManualSchedules((current) => {
         const next = { ...current };
         delete next[appointment._id];
@@ -373,7 +373,7 @@ export default function ReceptionistDashboard() {
   async function updateConsultationStatus(consultation, status) {
     try {
       await api.patch(`/reception/consultations/${consultation._id}`, { status });
-      setMessage(status === "contacted" ? "Đã cập nhật yêu cầu tư vấn sang đã tư vấn." : "Đã chuyển yêu cầu tư vấn về chờ tư vấn.");
+      setMessage(status === "contacted" ? "Đã chuyển yêu cầu tư vấn sang trạng thái đã tư vấn." : "Đã chuyển yêu cầu tư vấn về trạng thái chờ tư vấn.");
       await load({ silent: true });
     } catch (err) {
       setError(getErrorMessage(err));
@@ -383,7 +383,7 @@ export default function ReceptionistDashboard() {
   async function bookConsultation(consultation) {
     const phone = String(consultation.phone || "").trim();
     if (!phone) {
-      setError("Yêu cầu tư vấn thiếu số điện thoại nên chưa thể đặt lịch.");
+      setError("Yêu cầu tư vấn chưa có số điện thoại nên chưa thể đặt lịch.");
       return;
     }
 
@@ -406,7 +406,7 @@ export default function ReceptionistDashboard() {
           time: selectedTime,
           note: current.note || "Đặt lịch từ yêu cầu tư vấn."
         }));
-        setMessage("Đã tìm thấy tài khoản bệnh nhân. Hệ thống chuyển sang phần Đã có tài khoản.");
+        setMessage("Đã tìm thấy tài khoản bệnh nhân. Màn đặt lịch đã chuyển sang chế độ Đã có tài khoản.");
       } else {
         setPatientSearch("");
         setAccountMode("new");
@@ -424,7 +424,7 @@ export default function ReceptionistDashboard() {
           time: selectedTime,
           note: current.note || "Đặt lịch từ yêu cầu tư vấn."
         }));
-        setMessage("Chưa tìm thấy tài khoản bệnh nhân. Hệ thống chuyển sang phần Chưa có tài khoản.");
+        setMessage("Chưa tìm thấy tài khoản bệnh nhân. Màn đặt lịch đã chuyển sang chế độ Chưa có tài khoản.");
       }
 
       setActiveFeature("booking");
@@ -436,11 +436,11 @@ export default function ReceptionistDashboard() {
 
   async function toggleAppointmentSlot(slot) {
     const nextClosed = !slot.isClosed;
-    if (!window.confirm(`${nextClosed ? "Đóng" : "Mở lại"} ${slot.label} ngày ${date}?`)) return;
+    if (!window.confirm(`${nextClosed ? "Đóng" : "Mở lại"} ${slot.label} trong ngày ${date}?`)) return;
 
     try {
       await api.patch(`/reception/slots/${slot._id}`, { date, isClosed: nextClosed });
-      setMessage(nextClosed ? "Đã đóng slot khám trong ngày đã chọn." : "Đã mở lại slot khám trong ngày đã chọn.");
+      setMessage(nextClosed ? "Đã đóng khung giờ khám trong ngày đã chọn." : "Đã mở lại khung giờ khám trong ngày đã chọn.");
       await load({ silent: true });
     } catch (err) {
       setError(getErrorMessage(err));
@@ -460,11 +460,11 @@ export default function ReceptionistDashboard() {
 
   async function resetPatientPassword(patient) {
     const password = resetPasswords[patient._id] || "nhakhoa2026";
-    if (!window.confirm(`Xác nhận reset mật khẩu cho ${patient.fullName}?`)) return;
+    if (!window.confirm(`Xác nhận đặt lại mật khẩu cho ${patient.fullName}?`)) return;
 
     try {
       const res = await api.patch(`/reception/patients/${patient._id}/reset-password`, { password });
-      setMessage(`Đã reset mật khẩu cho ${res.data.patient.fullName}. Mật khẩu tạm: ${res.data.temporaryPassword}`);
+      setMessage(`Đã đặt lại mật khẩu cho ${res.data.patient.fullName}. Mật khẩu tạm thời: ${res.data.temporaryPassword}`);
       setResetPasswords((current) => ({ ...current, [patient._id]: "" }));
     } catch (err) {
       setError(getErrorMessage(err));

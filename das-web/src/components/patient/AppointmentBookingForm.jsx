@@ -68,7 +68,7 @@ export default function AppointmentBookingForm({
         </label>
 
         <fieldset className="booking-time-field">
-          <legend>Slot khám</legend>
+          <legend>Khung giờ khám</legend>
           <div className="booking-time-options">
             {slotOptions.length ? (
               slotOptions.map((option) => (
@@ -84,7 +84,7 @@ export default function AppointmentBookingForm({
                 </label>
               ))
             ) : (
-              <span className="muted">Chưa có slot đang mở</span>
+              <span className="muted">Chưa có khung giờ đang mở</span>
             )}
           </div>
         </fieldset>

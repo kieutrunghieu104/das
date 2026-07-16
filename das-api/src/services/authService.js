@@ -207,7 +207,7 @@ export async function changePassword(user, data) {
     passwordHash: await hashPassword(data.newPassword)
   });
 
-  return { message: "Đã đổi mật khẩu." };
+  return { message: "Đã đổi mật khẩu. Vui lòng đăng nhập lại bằng mật khẩu mới." };
 }
 
 export function logout() {

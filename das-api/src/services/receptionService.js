@@ -162,11 +162,11 @@ export async function deleteConsultation(requestId) {
 export async function updateAppointmentSlot(slotId, body) {
   const date = String(body?.date || "").slice(0, 10);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-    throw createError("Chọn ngày cần đóng hoặc mở slot.", 400);
+    throw createError("Chọn ngày cần đóng hoặc mở khung giờ khám.", 400);
   }
   const existingSlot = await receptionRepository.findAppointmentSlotById(slotId);
   if (!existingSlot) {
-    throw createError("Không tìm thấy slot khám.", 404);
+    throw createError("Không tìm thấy khung giờ khám.", 404);
   }
   const slot = await receptionRepository.updateAppointmentSlotClosure(slotId, date, Boolean(body?.isClosed));
   return slot;

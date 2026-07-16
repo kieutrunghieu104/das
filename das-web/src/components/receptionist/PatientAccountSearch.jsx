@@ -17,7 +17,7 @@ export default function PatientAccountSearch({
         <KeyRound size={20} />
         <h2>Tài khoản bệnh nhân</h2>
       </div>
-      <p className="muted">Tìm bệnh nhân và reset mật khẩu khi bệnh nhân cần hỗ trợ đăng nhập.</p>
+      <p className="muted">Tìm bệnh nhân và đặt lại mật khẩu khi bệnh nhân cần hỗ trợ đăng nhập.</p>
 
       <label className="field">
         <span>Tìm tài khoản bệnh nhân</span>
@@ -45,7 +45,7 @@ export default function PatientAccountSearch({
                 maxLength={72}
               />
               <button className="button small primary" onClick={() => onResetPassword(patient)}>
-                Reset mật khẩu
+                Đặt lại mật khẩu
               </button>
             </article>
           ))}

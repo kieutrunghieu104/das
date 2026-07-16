@@ -69,7 +69,7 @@ async function createClinicSettings() {
     faqs: [
       {
         question: "Tôi có thể thay đổi lịch hẹn sau khi đặt không?",
-        answer: "Bạn có thể thay đổi bác sĩ, ngày hoặc slot khám. Lịch thay đổi sẽ được gửi lại cho lễ tân xác nhận."
+        answer: "Bạn có thể thay đổi bác sĩ, ngày hoặc khung giờ khám. Lịch thay đổi sẽ được gửi lại cho lễ tân xác nhận."
       },
       {
         question: "Nếu tôi không chọn bác sĩ thì sao?",

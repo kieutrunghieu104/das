@@ -13,7 +13,7 @@ function getClinicalFeatures(role) {
   return [
     { id: "schedule", label: "Lịch khám", icon: Stethoscope },
     { id: "treatment", label: "Hồ sơ điều trị", icon: ClipboardPenLine },
-    ...(role === "nurse" ? [{ id: "performedServices", label: "Dịch vụ đã làm", icon: ReceiptText }] : [])
+    ...(role === "nurse" ? [{ id: "performedServices", label: "Dịch vụ đã thực hiện", icon: ReceiptText }] : [])
   ];
 }
 
@@ -209,7 +209,7 @@ export default function ClinicalDashboard() {
         setMessage("");
         setError("Không tìm thấy bệnh nhân theo số điện thoại này.");
       } else if (!nextRecords.length) {
-        setMessage("Bệnh nhân chưa có hồ sơ điều trị.");
+        setMessage("Bệnh nhân chưa có hồ sơ điều trị. Y tá có thể tạo hồ sơ mới nếu cần.");
       }
     } catch (err) {
       setError(getErrorMessage(err));
@@ -235,7 +235,7 @@ export default function ClinicalDashboard() {
   async function createTreatmentRecord(event) {
     event.preventDefault();
     if (treatmentCreateForm.treatmentDate < todayInput()) {
-      setError("Tạo hồ sơ điều trị không được chọn ngày trong quá khứ.");
+      setError("Ngày tạo hồ sơ điều trị không được ở quá khứ.");
       return;
     }
 
@@ -267,7 +267,7 @@ export default function ClinicalDashboard() {
         aftercareInstructions: "",
         estimatedCost: ""
       }));
-      setMessage("Đã tạo hồ sơ điều trị. Bạn có thể cập nhật lần 1 ngay.");
+      setMessage("Đã tạo hồ sơ điều trị. Bạn có thể cập nhật lần điều trị đầu tiên.");
     } catch (err) {
       setError(getErrorMessage(err));
     }
@@ -284,7 +284,7 @@ export default function ClinicalDashboard() {
       setTreatmentSearchResults((current) => current.filter((item) => item._id !== record._id));
       setRecords((current) => current.filter((item) => item._id !== record._id));
       setRecordForm(defaultRecordForm);
-      setMessage("Đã xóa hồ sơ điều trị.");
+      setMessage("Đã xóa hồ sơ điều trị khỏi hệ thống.");
       if (treatmentSearchPhone) await searchTreatmentRecords(treatmentSearchPhone);
       await load();
     } catch (err) {
@@ -304,7 +304,7 @@ export default function ClinicalDashboard() {
     }));
     if (user?.role === "dentist" && !matchingRecords.length) {
       setMessage("");
-      setError("Không có hồ sơ điều trị của bệnh nhân này.");
+      setError("Bệnh nhân này chưa có hồ sơ điều trị.");
     } else {
       setError("");
     }
@@ -382,7 +382,7 @@ export default function ClinicalDashboard() {
   async function submitRecord(event) {
     event.preventDefault();
     if (!recordForm.recordId && !recordForm.appointmentId) {
-      setError(user?.role === "nurse" ? "Chọn hồ sơ điều trị trước khi lưu." : "Chọn lịch khám trước khi lưu điều trị.");
+      setError(user?.role === "nurse" ? "Chọn hồ sơ điều trị trước khi lưu thông tin." : "Chọn lịch khám trước khi lưu hồ sơ điều trị.");
       return;
     }
 
@@ -430,7 +430,7 @@ export default function ClinicalDashboard() {
       } else {
         await api.put(`/clinical/appointments/${recordForm.appointmentId}/treatment-record`, payload);
       }
-      setMessage(user?.role === "nurse" ? "Đã lưu thông tin chung." : "Đã lưu thông tin điều trị.");
+      setMessage(user?.role === "nurse" ? "Đã lưu thông tin hồ sơ điều trị." : "Đã lưu nội dung điều trị.");
       await load();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -440,13 +440,13 @@ export default function ClinicalDashboard() {
   async function submitPerformedServices(event) {
     event.preventDefault();
     if (!performedServicesForm.appointmentId) {
-      setError("Chọn lịch khám trước khi xác nhận dịch vụ.");
+      setError("Chọn lịch khám trước khi xác nhận dịch vụ đã thực hiện.");
       return;
     }
 
     const appointment = appointments.find((item) => item._id === performedServicesForm.appointmentId);
     if (appointment?.status !== "in_treatment") {
-      setError("Chỉ lịch đang khám mới được xác nhận dịch vụ đã làm.");
+      setError("Chỉ lịch đang khám mới được xác nhận dịch vụ đã thực hiện.");
       return;
     }
 
@@ -477,7 +477,7 @@ export default function ClinicalDashboard() {
           note: "Y tá đã hoàn tất lịch khám và xác nhận dịch vụ đã thực hiện."
         });
       }
-      setMessage("Đã hoàn tất lịch khám và gửi dịch vụ đã thực hiện về phần hóa đơn của lễ tân.");
+      setMessage("Đã hoàn tất lịch khám. Thông tin dịch vụ đã được gửi sang phần hóa đơn của lễ tân.");
       openFeature("schedule");
       await load();
     } catch (err) {
@@ -501,12 +501,12 @@ export default function ClinicalDashboard() {
     if (status === "completed") {
       setPerformedServicesFromAppointment(appointment);
       setError("");
-      setMessage("Xác nhận dịch vụ đã làm; có thể để trống rồi bấm xác nhận hoàn tất.");
+      setMessage("Xác nhận dịch vụ đã thực hiện. Có thể để trống nếu không phát sinh dịch vụ.");
       openFeature("performedServices");
       return;
     }
 
-    if (!window.confirm(status === "in_treatment" ? "Chuyển bệnh nhân sang trạng thái đang khám?" : "Xác nhận hoàn tất lịch khám?")) return;
+    if (!window.confirm(status === "in_treatment" ? "Chuyển lịch khám sang trạng thái đang khám?" : "Xác nhận hoàn tất lịch khám?")) return;
 
     try {
       setError("");
@@ -515,7 +515,7 @@ export default function ClinicalDashboard() {
         status,
         note: "Y tá cập nhật trạng thái lịch khám."
       });
-      setMessage(status === "in_treatment" ? "Đã chuyển lịch sang đang khám." : "Đã hoàn tất lịch khám.");
+      setMessage(status === "in_treatment" ? "Đã chuyển lịch khám sang trạng thái đang khám." : "Đã hoàn tất lịch khám.");
       await load();
     } catch (err) {
       setError(getErrorMessage(err));

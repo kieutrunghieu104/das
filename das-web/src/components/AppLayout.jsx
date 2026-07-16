@@ -54,7 +54,7 @@ const dentistTabs = [
 const nurseTabs = [
   { id: "schedule", label: "Lịch khám", icon: Stethoscope },
   { id: "treatment", label: "Hồ sơ điều trị", icon: ClipboardPenLine },
-  { id: "performedServices", label: "Dịch vụ đã làm", icon: ReceiptText }
+  { id: "performedServices", label: "Dịch vụ đã thực hiện", icon: ReceiptText }
 ];
 
 function navForRole(role) {
@@ -235,7 +235,7 @@ export default function AppLayout() {
       setShowAccountMenu(false);
 
       setFeedback({
-        message: "Đã đổi mật khẩu.",
+        message: "Đã đổi mật khẩu. Vui lòng dùng mật khẩu mới ở lần đăng nhập tiếp theo.",
         error: ""
       });
     } catch (error) {
@@ -256,7 +256,7 @@ export default function AppLayout() {
       const res = await api.patch("/auth/me", { avatarUrl });
       updateUser(res.data.user);
       setShowAccountMenu(false);
-      setFeedback({ message: "Đã cập nhật avatar.", error: "" });
+      setFeedback({ message: "Đã cập nhật ảnh đại diện.", error: "" });
     } catch (error) {
       setFeedback({ message: "", error: error.message || getErrorMessage(error) });
     }

@@ -156,11 +156,11 @@ export default function PatientDashboard() {
   async function submitReview(event, appointmentId) {
     event.preventDefault();
     const review = reviewForms[appointmentId] || { rating: 5, comment: "" };
-    if (!window.confirm("Xác nhận gửi đánh giá cho lịch hẹn này?")) return;
+    if (!window.confirm("Xác nhận gửi đánh giá cho lịch khám này?")) return;
 
     try {
       await api.post("/patient/reviews", { ...review, appointmentId });
-      setMessage("Đã gửi đánh giá.");
+      setMessage("Đã gửi đánh giá. Cảm ơn bạn đã chia sẻ trải nghiệm.");
       await load();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -169,17 +169,17 @@ export default function PatientDashboard() {
 
   async function cancelAppointment(appointment, reason) {
     if (!canModifyAppointment(appointment)) {
-      setError("Lịch hẹn này không thể thay đổi thêm.");
+      setError("Lịch hẹn này không còn trong trạng thái được hủy hoặc đổi lịch.");
       return;
     }
     if (!reason?.trim()) {
-      setError("Chọn hoặc nhập lý do hủy lịch.");
+      setError("Vui lòng chọn hoặc nhập lý do hủy lịch.");
       return;
     }
 
     try {
       await api.patch(`/appointments/${appointment._id}/cancel`, { reason });
-      setMessage("Đã hủy lịch hẹn.");
+      setMessage("Đã gửi yêu cầu hủy lịch hẹn.");
       load();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -188,22 +188,22 @@ export default function PatientDashboard() {
 
   async function rescheduleAppointment(appointment) {
     if (!canModifyAppointment(appointment)) {
-      setError("Lịch hẹn này không thể đổi lịch.");
+      setError("Lịch hẹn này không còn trong trạng thái được đổi lịch.");
       return false;
     }
 
     const form = rescheduleForms[appointment._id] || {};
     const formSlotOptions = filterOpenSlotsForDate(slots, slotClosures, form.date, { fallback: false });
     if (!form.date || !form.time || !form.dentistId) {
-      setError("Chọn ngày, giờ và bác sĩ trước khi đổi lịch.");
+      setError("Chọn đầy đủ ngày, khung giờ và bác sĩ trước khi đổi lịch.");
       return false;
     }
     if (!formSlotOptions.some((option) => option.value === form.time)) {
-      setError("Slot này đã đóng trong ngày bạn chọn.");
+      setError("Khung giờ này đã đóng trong ngày bạn chọn.");
       return false;
     }
     if (form.date > maxBookingDate()) {
-      setError("Bạn chỉ được đổi lịch trước tối đa 1 tháng.");
+      setError("Bạn chỉ được đổi lịch trong vòng 1 tháng tính từ hôm nay.");
       return false;
     }
 
@@ -215,7 +215,7 @@ export default function PatientDashboard() {
     }
 
     const slot = formSlotOptions.find((option) => option.value === form.time);
-    if (!window.confirm(`Xác nhận đổi lịch sang ${form.date}, ${slot?.label || form.time}?`)) return false;
+    if (!window.confirm(`Xác nhận đổi lịch sang ngày ${form.date}, ${slot?.label || form.time}?`)) return false;
 
     try {
       await api.patch(`/appointments/${appointment._id}/reschedule`, {
@@ -224,7 +224,7 @@ export default function PatientDashboard() {
         startAt: toClinicIso(form.date, form.time),
         roomId: room?._id
       });
-      setMessage("Đã đổi lịch hẹn.");
+      setMessage("Đã gửi yêu cầu đổi lịch. Lễ tân sẽ xác nhận lại lịch hẹn của bạn.");
       setRescheduleForms((current) => {
         const next = { ...current };
         delete next[appointment._id];

@@ -70,7 +70,7 @@ function assertBookingWindow(user, dateText) {
   const requestedDate = new Date(`${dateText}T00:00:00`);
 
   if (requestedDate > maxDate) {
-    throw createError("Chỉ được đặt, đổi hoặc xếp lịch trong vòng 1 tháng.", 400);
+    throw createError("Chỉ được đặt, đổi hoặc xếp lịch trong vòng 1 tháng tính từ hôm nay.", 400);
   }
 }
 
@@ -102,7 +102,7 @@ function assertAppointmentCanChange(appointment, user) {
 
 function assertAppointmentCanRescheduleOrCancel(appointment) {
   if (!CHANGEABLE_APPOINTMENT_STATUSES.has(appointment.status)) {
-    throw createError("Chỉ lịch chờ xác nhận hoặc chưa diễn ra mới được đổi/hủy.", 409);
+    throw createError("Chỉ lịch chờ xác nhận hoặc chưa diễn ra mới được đổi hoặc hủy.", 409);
   }
 }
 
@@ -123,7 +123,7 @@ function resolveInvoicePaymentPlan(data) {
   const installmentMonths = paymentPlan === "monthly" ? Number(data.installmentMonths) : 1;
 
   if (paymentPlan === "monthly" && !INSTALLMENT_MONTH_OPTIONS.has(installmentMonths)) {
-    throw createError("Chon ky han tra theo thang 3, 6 hoac 9 thang.", 400);
+    throw createError("Chọn kỳ hạn trả theo tháng 3, 6 hoặc 9 tháng.", 400);
   }
 
   return { paymentPlan, installmentMonths };
@@ -152,16 +152,16 @@ function getNextInvoicePayment(invoice, total, paidAmount) {
 async function notifyPatientOfReceptionDecision(appointment, status) {
   const messages = {
     confirmed: {
-      title: "Lịch hẹn đã được chấp nhận",
-      message: "Lễ tân đã chấp nhận lịch hẹn của bạn. Vui lòng đến đúng giờ."
+      title: "Lịch hẹn đã được xác nhận",
+      message: "Lễ tân đã xác nhận lịch hẹn của bạn. Vui lòng đến đúng thời gian đã được xếp."
     },
     waitlisted: {
-      title: "Lịch hẹn được chuyển vào hàng đợi",
-      message: "Lễ tân đã chuyển lịch hẹn của bạn vào hàng đợi và sẽ liên hệ khi có slot phù hợp."
+      title: "Lịch hẹn đang chờ xếp lịch",
+      message: "Lễ tân đã đưa lịch hẹn của bạn vào danh sách chờ và sẽ liên hệ khi có khung giờ phù hợp."
     },
     rejected: {
       title: "Lịch hẹn đã bị từ chối",
-      message: "Lễ tân đã từ chối lịch hẹn này. Bạn có thể chọn slot khác và gửi lại yêu cầu."
+      message: "Lễ tân đã từ chối lịch hẹn này. Bạn có thể chọn khung giờ khác và gửi lại yêu cầu."
     }
   };
   const content = messages[status];
@@ -293,7 +293,7 @@ export async function scheduleByReception(appointmentId, user, body) {
 
   await createAppointmentPatientNotification(updated, {
     title: "Lễ tân đã xếp lịch khám",
-    message: `Lịch hẹn ${updated.service?.name || "khám"} của bạn đã được xếp lúc ${formatClinicDateTime(updated.startAt)} với ${updated.dentist?.fullName || "bác sĩ do lễ tân sắp xếp"}.`,
+    message: `Lịch khám ${updated.service?.name || "nha khoa"} của bạn được xếp lúc ${formatClinicDateTime(updated.startAt)} với ${updated.dentist?.fullName || "bác sĩ do lễ tân sắp xếp"}.`,
     isRead: false
   });
 
@@ -337,10 +337,10 @@ export async function updateAppointmentStatus(appointmentId, user, body) {
     }
   }
   if (user.role === "receptionist" && ["in_treatment", "completed"].includes(data.status)) {
-    throw createError("Lễ tân chỉ check-in hoặc ghi nhận vắng mặt, không hoàn tất lịch khám.", 403);
+    throw createError("Lễ tân chỉ được ghi nhận có mặt hoặc vắng mặt, không hoàn tất lịch khám.", 403);
   }
   if (data.status === "in_treatment" && appointment.status !== "checked_in") {
-    throw createError("Cần check-in bệnh nhân trước khi chuyển sang đang khám.", 409);
+    throw createError("Cần ghi nhận bệnh nhân có mặt trước khi chuyển sang trạng thái đang khám.", 409);
   }
   if (data.status === "completed") {
     if (appointment.status !== "in_treatment") {
@@ -351,14 +351,14 @@ export async function updateAppointmentStatus(appointmentId, user, body) {
     ["checked_in", "in_treatment", "completed"].includes(data.status) &&
     ["pending", "waitlisted", "rejected"].includes(appointment.status)
   ) {
-    throw createError("Cần chấp nhận lịch hẹn trước khi cập nhật trạng thái khám.", 409);
+    throw createError("Cần xác nhận lịch hẹn trước khi cập nhật trạng thái khám.", 409);
   }
 
   if (
     appointment.status === "waitlisted" &&
     ["scheduled", "confirmed", "checked_in", "in_treatment", "completed"].includes(data.status)
   ) {
-    throw createError("Cần đổi lịch sang slot trống trước khi xác nhận lịch hàng đợi.", 409);
+    throw createError("Cần đổi lịch sang khung giờ còn trống trước khi xác nhận lịch đang chờ.", 409);
   }
 
   const previousStatus = appointment.status;
@@ -401,7 +401,7 @@ export async function updateAppointmentStatus(appointmentId, user, body) {
       appointmentRepository.createPatientNotification({
         user: receptionist._id,
         title: "Lịch khám đã hoàn tất",
-        message: `Y tá đã hoàn tất lịch khám của ${appointment.patient?.fullName || "bệnh nhân"}. Nếu có dịch vụ phát sinh, lễ tân có thể tạo hóa đơn từ phần hóa đơn.`,
+        message: `Lịch khám của ${appointment.patient?.fullName || "bệnh nhân"} đã hoàn tất. Lễ tân có thể kiểm tra dịch vụ phát sinh và tạo hóa đơn.`,
         type: "invoice_ready",
         isRead: false
       })
@@ -433,7 +433,7 @@ export async function recordConfirmationCall(appointmentId, user, body) {
   await appointmentRepository.saveAppointment(appointment);
   await createAppointmentPatientNotification(appointment, {
     title: "Lịch hẹn đã được xác nhận",
-    message: `Lễ tân đã gọi xác nhận lịch ${appointment.service?.name || "khám"} của bạn.`,
+    message: `Lễ tân đã gọi xác nhận lịch ${appointment.service?.name || "khám"} của bạn. Vui lòng đến đúng giờ hẹn.`,
     isRead: false
   });
   await appointmentRepository.populateAppointment(appointment);
@@ -454,8 +454,8 @@ export async function checkInAppointment(appointmentId, user, body) {
 
   await appointmentRepository.saveAppointment(appointment);
   await createAppointmentPatientNotification(appointment, {
-    title: "Đã ghi nhận bệnh nhân đến",
-    message: "Lịch hẹn của bạn đã được ghi nhận đến tại quầy lễ tân.",
+    title: "Đã ghi nhận có mặt",
+    message: "Lễ tân đã ghi nhận bạn có mặt tại quầy. Vui lòng chờ điều phối vào phòng khám.",
     isRead: false
   });
   await appointmentRepository.populateAppointment(appointment);
@@ -469,7 +469,7 @@ export async function markNoShow(appointmentId, user, body) {
 
   assertAppointmentCanChange(appointment, user);
   if (appointment.startAt > new Date()) {
-    throw createError("Chỉ có thể đánh dấu vắng mặt sau giờ hẹn.", 409);
+    throw createError("Chỉ có thể cập nhật vắng mặt sau giờ hẹn.", 409);
   }
 
   appointment.status = "no_show";
@@ -532,7 +532,7 @@ export async function createInvoiceForAppointment(appointmentId, body) {
   await appointmentRepository.saveAppointment(appointment);
   await createAppointmentPatientNotification(appointment, {
     title: "Bạn có hóa đơn mới",
-    message: `Lễ tân đã tạo hóa đơn ${total.toLocaleString("vi-VN")} VND cho lịch khám của bạn.`,
+    message: `Lễ tân đã tạo hóa đơn ${total.toLocaleString("vi-VN")} VND cho lịch khám của bạn. Vui lòng kiểm tra trong mục Hóa đơn.`,
     isRead: false
   });
 

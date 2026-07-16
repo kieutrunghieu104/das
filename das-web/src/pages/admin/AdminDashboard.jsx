@@ -114,7 +114,7 @@ export default function AdminDashboard() {
         price: normalizeServicePrice(serviceForm.price)
       });
       setServiceForm(defaultServiceForm);
-      setMessage("Đã tạo dịch vụ.");
+      setMessage("Đã tạo dịch vụ mới.");
       load();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -141,7 +141,7 @@ export default function AdminDashboard() {
         password: "nhakhoa2026"
       });
       setUserForm(defaultUserForm);
-      setMessage("Đã tạo tài khoản. Mật khẩu mặc định: nhakhoa2026");
+      setMessage("Đã tạo tài khoản mới. Mật khẩu mặc định: nhakhoa2026");
       load();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -178,7 +178,7 @@ export default function AdminDashboard() {
         price: normalizeServicePrice(editingService.price)
       });
       setEditingService(null);
-      setMessage("Đã cập nhật dịch vụ.");
+      setMessage("Đã cập nhật thông tin dịch vụ.");
       load();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -186,13 +186,13 @@ export default function AdminDashboard() {
   }
 
   async function deleteService(service) {
-    if (!window.confirm(`Xóa dịch vụ ${service.name}?`)) return;
+    if (!window.confirm(`Xóa dịch vụ ${service.name} khỏi hệ thống?`)) return;
 
     try {
       setError("");
       setMessage("");
       await api.delete(`/admin/services/${service._id}`);
-      setMessage("Đã xóa dịch vụ.");
+      setMessage("Đã xóa dịch vụ khỏi hệ thống.");
       load();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -221,12 +221,12 @@ export default function AdminDashboard() {
   }
 
   async function deleteRoom(room) {
-    if (!window.confirm(`Xóa phòng khám ${room.name}?`)) return;
+    if (!window.confirm(`Xóa phòng khám ${room.name} khỏi hệ thống?`)) return;
     try {
       setError("");
       setMessage("");
       await api.delete(`/admin/rooms/${room._id}`);
-      setMessage("Đã xóa phòng khám.");
+      setMessage("Đã xóa phòng khám khỏi hệ thống.");
       load();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -252,7 +252,7 @@ export default function AdminDashboard() {
         equipment: parseCommaList(editingRoom.equipmentText)
       });
       setEditingRoom(null);
-      setMessage("Đã cập nhật phòng khám.");
+      setMessage("Đã cập nhật thông tin phòng khám.");
       load();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -294,7 +294,7 @@ export default function AdminDashboard() {
         role: editingUser.role
       });
       setEditingUser(null);
-      setMessage("Đã cập nhật tài khoản.");
+      setMessage("Đã cập nhật thông tin tài khoản.");
       load();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -318,7 +318,7 @@ export default function AdminDashboard() {
         assignedNurse: roomForm.assignedNurse || undefined
       });
       setRoomForm(defaultRoomForm);
-      setMessage("Đã tạo phòng khám.");
+      setMessage("Đã tạo phòng khám mới.");
       load();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -330,7 +330,7 @@ export default function AdminDashboard() {
       setMessage("");
       const res = await api.patch(`/admin/reviews/${review._id}`, { isHidden });
       setReviews((current) => current.map((item) => (item._id === review._id ? res.data.review : item)));
-      setMessage(isHidden ? "Đã ẩn đánh giá." : "Đã hiện đánh giá.");
+      setMessage(isHidden ? "Đã ẩn đánh giá khỏi trang khách." : "Đã hiển thị đánh giá trên trang khách.");
     } catch (err) {
       setError(getErrorMessage(err));
     }
@@ -343,7 +343,7 @@ export default function AdminDashboard() {
       setMessage("");
       const res = await api.get("/admin/reports/revenue", { params: reportFilters });
       setRevenueReport(res.data);
-      setMessage("Đã tải báo cáo doanh thu.");
+      setMessage("Đã tải báo cáo doanh thu theo khoảng thời gian đã chọn.");
     } catch (err) {
       setError(getErrorMessage(err));
     }
@@ -356,7 +356,7 @@ export default function AdminDashboard() {
       setMessage("");
       const res = await api.get("/admin/reports/patient-statistics", { params: reportFilters });
       setPatientStatistics(res.data);
-      setMessage("Đã tải thống kê bệnh nhân.");
+      setMessage("Đã tải thống kê bệnh nhân theo khoảng thời gian đã chọn.");
     } catch (err) {
       setError(getErrorMessage(err));
     }
@@ -364,11 +364,11 @@ export default function AdminDashboard() {
 
   function validateReportRange() {
     if (!reportFilters.startDate || !reportFilters.endDate) {
-      setError("Chọn đầy đủ từ ngày và đến ngày.");
+      setError("Vui lòng chọn đầy đủ ngày bắt đầu và ngày kết thúc.");
       return false;
     }
     if (reportFilters.startDate > reportFilters.endDate) {
-      setError("Từ ngày không được lớn hơn đến ngày.");
+      setError("Ngày bắt đầu không được lớn hơn ngày kết thúc.");
       return false;
     }
     return true;

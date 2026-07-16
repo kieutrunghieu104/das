@@ -36,7 +36,7 @@ const avatarSchema = z
   .trim()
   .max(750000)
   .refine((value) => !value || value.startsWith("data:image/") || /^https?:\/\//i.test(value), {
-    message: "Avatar phai la URL anh hoac anh upload hop le."
+    message: "Avatar phải là URL ảnh hoặc ảnh tải lên hợp lệ."
   })
   .optional()
   .or(z.literal(""));

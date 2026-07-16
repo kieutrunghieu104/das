@@ -65,7 +65,7 @@ export default function ClinicalWorkSchedule({
             className="reception-schedule-grid clinical-schedule-grid"
             style={{ gridTemplateColumns: `130px repeat(${clinicalColumns.length}, minmax(250px, 1fr))` }}
           >
-            <div className="schedule-head schedule-index-head">Slot</div>
+            <div className="schedule-head schedule-index-head">Khung giờ</div>
             {clinicalColumns.map((column) => (
               <div className="schedule-head" key={column._id}>
                 <strong>{column.fullName}</strong>
@@ -122,7 +122,7 @@ export default function ClinicalWorkSchedule({
           </div>
         </div>
       ) : (
-        <EmptyState title="Chưa có lịch khám" text="Lịch được check-in hoặc xếp trong ngày sẽ hiển thị tại đây." />
+        <EmptyState title="Chưa có lịch khám" text="Lịch được ghi nhận có mặt hoặc xếp trong ngày sẽ hiển thị tại đây." />
       )}
     </section>
   );
