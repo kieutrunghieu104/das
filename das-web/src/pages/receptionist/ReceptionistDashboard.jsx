@@ -13,7 +13,7 @@ import { firstError, requireValue, validateDate, validateName, validateNote, val
 import { maxBookingDate, toClinicIso } from "../BookingPage.jsx";
 
 const intakeStatuses = new Set(["pending"]);
-const clinicalQueueStatuses = new Set(["scheduled", "confirmed", "checked_in", "in_treatment"]);
+const clinicalQueueStatuses = new Set(["scheduled", "confirmed", "checked_in", "in_treatment", "completed"]);
 const paymentStatuses = new Set(["completed"]);
 
 const genderOptions = [
@@ -36,7 +36,6 @@ export default function ReceptionistDashboard() {
   const [slots, setSlots] = useState([]);
   const [slotClosures, setSlotClosures] = useState([]);
   const [appointmentSearch, setAppointmentSearch] = useState("");
-  const [scheduleStatusFilter, setScheduleStatusFilter] = useState("all");
   const [consultationStatusFilter, setConsultationStatusFilter] = useState("waiting");
   const [patientSearch, setPatientSearch] = useState("");
   const [accountMode, setAccountMode] = useState("existing");
@@ -474,16 +473,14 @@ export default function ReceptionistDashboard() {
   const filteredBaseAppointments = appointments.filter((appointment) => matchesAppointmentFilters(appointment, appointmentSearch));
   const dateFilteredAppointments = filteredBaseAppointments.filter((appointment) => !date || clinicDateInput(appointment.startAt) === date);
   const intakeAppointments = filteredBaseAppointments.filter((appointment) => intakeStatuses.has(appointment.status));
-  const clinicalQueueAppointments = dateFilteredAppointments.filter(
-    (appointment) =>
-      clinicalQueueStatuses.has(appointment.status) &&
-      (scheduleStatusFilter === "all" || appointment.status === scheduleStatusFilter)
-  );
+  const clinicalQueueAppointments = dateFilteredAppointments.filter((appointment) => clinicalQueueStatuses.has(appointment.status));
   const paymentAppointments = filteredBaseAppointments.filter((appointment) => paymentStatuses.has(appointment.status));
-  const filteredConsultations = consultations.filter((consultation) => {
-    const status = consultation.status || "waiting";
-    return consultationStatusFilter === "all" || status === consultationStatusFilter;
-  });
+  const filteredConsultations = consultations
+    .filter((consultation) => {
+      const status = consultation.status || "waiting";
+      return consultationStatusFilter === "all" || status === consultationStatusFilter;
+    })
+    .sort(compareConsultationsOldestFirst);
   const patientKeyword = patientSearch.trim().toLowerCase();
   const selectablePatients = patients.filter((patient) => {
     if (!patientKeyword) return true;
@@ -586,8 +583,6 @@ export default function ReceptionistDashboard() {
           queueSlots={queueSlots}
           rooms={rooms}
           setDate={setDate}
-          statusFilter={scheduleStatusFilter}
-          setStatusFilter={setScheduleStatusFilter}
         />
       )}
 
@@ -654,6 +649,10 @@ function matchesAppointmentFilters(appointment, appointmentSearch) {
 
 function isLockedScheduleAppointment(appointment) {
   return ["cancelled", "rejected"].includes(appointment.status);
+}
+
+function compareConsultationsOldestFirst(a, b) {
+  return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
 }
 
 function defaultManualSchedule(appointment, rooms, slots = bookingSlotOptions, slotClosures = []) {

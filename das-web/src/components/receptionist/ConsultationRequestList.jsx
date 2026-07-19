@@ -1,6 +1,7 @@
 import { CalendarPlus, PhoneCall } from "lucide-react";
 import EmptyState from "../EmptyState.jsx";
 import StatusBadge from "../StatusBadge.jsx";
+import { formatDateTime } from "../../utils/format.js";
 
 const genderLabels = {
   male: "Anh",
@@ -43,6 +44,7 @@ export default function ConsultationRequestList({
             <div className="consultation-info">
               <strong>{genderLabels[item.gender] || "Chưa chọn"} {item.fullName} - {item.phone}</strong>
               <span>Dịch vụ quan tâm: {item.service?.name || "Chưa chọn"}</span>
+              <span>Thời gian đặt tư vấn: {formatDateTime(item.createdAt)}</span>
             </div>
             <div className="row-actions consultation-actions">
               <StatusBadge value={item.status || "waiting"} />

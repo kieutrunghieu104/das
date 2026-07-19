@@ -3,7 +3,7 @@ import {
   createAppointmentFromSlot,
   rescheduleAppointmentFromSlot
 } from "./schedulingService.js";
-import { endOfLocalDay, startOfLocalDay } from "../utils/time.js";
+import { endOfLocalDay, startOfLocalDay, toDateInputValue } from "../utils/time.js";
 import {
   appointmentNoteSchema,
   appointmentPaymentSchema,
@@ -446,6 +446,9 @@ export async function checkInAppointment(appointmentId, user, body) {
   if (!appointment) throw createError("Không tìm thấy lịch hẹn.", 404);
 
   assertAppointmentCanChange(appointment, user);
+  if (toDateInputValue(new Date()) < toDateInputValue(appointment.startAt)) {
+    throw createError("Chỉ được ghi nhận có mặt trong ngày diễn ra lịch khám.", 409);
+  }
   appointment.status = "checked_in";
   appointment.checkedInAt = new Date();
   appointment.checkInTime = appointment.checkedInAt;

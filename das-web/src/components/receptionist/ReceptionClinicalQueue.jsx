@@ -1,7 +1,7 @@
 import { CalendarDays, DoorOpen } from "lucide-react";
 import EmptyState from "../EmptyState.jsx";
 import StatusBadge from "../StatusBadge.jsx";
-import { formatTime } from "../../utils/format.js";
+import { clinicDateInput, formatTime, todayInput } from "../../utils/format.js";
 
 export default function ReceptionClinicalQueue({
   allSlotOptions = [],
@@ -14,9 +14,7 @@ export default function ReceptionClinicalQueue({
   onToggleSlot,
   queueSlots,
   rooms,
-  setDate,
-  statusFilter = "all",
-  setStatusFilter
+  setDate
 }) {
   return (
     <section className="panel reception-schedule-panel">
@@ -42,16 +40,6 @@ export default function ReceptionClinicalQueue({
         <label className="field inline-field">
           <span>Ngày</span>
           <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
-        </label>
-        <label className="field inline-field">
-          <span>Trạng thái</span>
-          <select value={statusFilter} onChange={(event) => setStatusFilter?.(event.target.value)}>
-            <option value="all">Tất cả</option>
-            <option value="scheduled">Chưa diễn ra</option>
-            <option value="confirmed">Đã xác nhận</option>
-            <option value="checked_in">Có mặt</option>
-            <option value="in_treatment">Đang khám</option>
-          </select>
         </label>
       </div>
 
@@ -101,7 +89,8 @@ export default function ReceptionClinicalQueue({
                   {appointments.length ? (
                     appointments.map((appointment) => {
                       const locked = isLockedScheduleAppointment(appointment);
-                      const canCheckIn = !locked && ["scheduled", "confirmed"].includes(appointment.status);
+                      const isFutureAppointment = clinicDateInput(appointment.startAt) > todayInput();
+                      const canCheckIn = !locked && !isFutureAppointment && ["scheduled", "confirmed"].includes(appointment.status);
                       const canMarkNoShow = !locked && ["scheduled", "confirmed", "checked_in"].includes(appointment.status);
                       return (
                         <article className={`schedule-cell-card ${locked ? "locked" : ""}`} key={appointment._id}>
@@ -112,6 +101,9 @@ export default function ReceptionClinicalQueue({
                             {appointment.checkedInAt && <span>Có mặt: {formatTime(appointment.checkedInAt)}</span>}
                             <StatusBadge value={appointment.status} />
                             {locked && <small>Lịch đã hủy hoặc bị từ chối, không thể đổi trạng thái.</small>}
+                            {isFutureAppointment && ["scheduled", "confirmed"].includes(appointment.status) && (
+                              <small>Chỉ ghi nhận có mặt trong ngày diễn ra lịch khám.</small>
+                            )}
                           </div>
                           <div className="row-actions schedule-status-actions">
                             <button
