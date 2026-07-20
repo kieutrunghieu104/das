@@ -471,6 +471,9 @@ export async function markNoShow(appointmentId, user, body) {
   if (!appointment) throw createError("Không tìm thấy lịch hẹn.", 404);
 
   assertAppointmentCanChange(appointment, user);
+  if (appointment.status === "checked_in") {
+    throw createError("Lịch khám đã ghi nhận có mặt nên không thể chuyển sang vắng mặt.", 409);
+  }
   if (appointment.startAt > new Date()) {
     throw createError("Chỉ có thể cập nhật vắng mặt sau giờ hẹn.", 409);
   }

@@ -91,7 +91,7 @@ export default function ReceptionClinicalQueue({
                       const locked = isLockedScheduleAppointment(appointment);
                       const isFutureAppointment = clinicDateInput(appointment.startAt) > todayInput();
                       const canCheckIn = !locked && !isFutureAppointment && ["scheduled", "confirmed"].includes(appointment.status);
-                      const canMarkNoShow = !locked && ["scheduled", "confirmed", "checked_in"].includes(appointment.status);
+                      const canMarkNoShow = !locked && ["scheduled", "confirmed"].includes(appointment.status);
                       return (
                         <article className={`schedule-cell-card ${locked ? "locked" : ""}`} key={appointment._id}>
                           <div>
