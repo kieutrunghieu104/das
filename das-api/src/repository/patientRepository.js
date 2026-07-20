@@ -6,6 +6,7 @@ import {
   populate,
   updateOneAndReturn
 } from "./mongoRepository.js";
+import { startOfLocalDay, toDateInputValue } from "../utils/time.js";
 
 const appointmentPopulate = [
   { path: "createdBy", select: "fullName role" },
@@ -62,11 +63,13 @@ async function attachPaymentsToInvoices(invoices) {
 }
 
 export async function findPatientAppointments(patientId) {
+  const todayStart = startOfLocalDay(toDateInputValue(new Date()));
   const appointments = await findMany(
     COLLECTIONS.appointments,
     {
       patient: toObjectId(patientId),
-      status: { $nin: ["completed", "rejected", "cancelled", "no_show"] }
+      status: { $nin: ["completed", "rejected", "cancelled", "no_show"] },
+      startAt: { $gte: todayStart }
     },
     { sort: { startAt: 1 }, limit: 120 }
   );
@@ -75,11 +78,15 @@ export async function findPatientAppointments(patientId) {
 }
 
 export async function findPatientAppointmentHistory(patientId) {
+  const todayStart = startOfLocalDay(toDateInputValue(new Date()));
   const appointments = await findMany(
     COLLECTIONS.appointments,
     {
       patient: toObjectId(patientId),
-      status: { $in: ["completed", "rejected", "cancelled", "no_show"] }
+      $or: [
+        { status: { $in: ["completed", "rejected", "cancelled", "no_show"] } },
+        { startAt: { $lt: todayStart } }
+      ]
     },
     { sort: { startAt: -1 }, limit: 120 }
   );

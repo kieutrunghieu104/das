@@ -509,7 +509,10 @@ export async function createInvoiceForAppointment(appointmentId, body) {
     : performedItems.length
       ? performedItems
       : [{ name: appointment.service?.name || "Dịch vụ nha khoa", amount: Number(data.amount || 0) }];
-  const total = invoiceItems.reduce((sum, item) => sum + Number(item.amount || 0), 0) || Number(data.amount || 0);
+  const subtotal = invoiceItems.reduce((sum, item) => sum + Number(item.amount || 0), 0) || Number(data.amount || 0);
+  const discountPercent = Number(data.discountPercent || 0);
+  const discountAmount = Math.round(subtotal * discountPercent / 100);
+  const total = Math.max(subtotal - discountAmount, 0);
 
   if (total <= 0) {
     throw createError("Số tiền hóa đơn phải lớn hơn 0.", 400);
@@ -522,6 +525,9 @@ export async function createInvoiceForAppointment(appointmentId, body) {
     appointment: appointment._id,
     patient: appointment.patient?.isGuest ? undefined : appointment.patient,
     items: invoiceItems,
+    subtotal,
+    discountPercent,
+    discountAmount,
     total,
     paidAmount: 0,
     paymentPlan,

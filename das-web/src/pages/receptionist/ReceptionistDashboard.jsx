@@ -13,7 +13,6 @@ import { firstError, requireValue, validateDate, validateName, validateNote, val
 import { maxBookingDate, toClinicIso } from "../BookingPage.jsx";
 
 const intakeStatuses = new Set(["pending"]);
-const clinicalQueueStatuses = new Set(["scheduled", "confirmed", "checked_in", "in_treatment", "completed"]);
 const paymentStatuses = new Set(["completed"]);
 
 const genderOptions = [
@@ -240,7 +239,7 @@ export default function ReceptionistDashboard() {
   }
 
   function getInvoicePlan(appointmentId) {
-    return invoicePlans[appointmentId] || { paymentPlan: "one_time", installmentMonths: 3 };
+    return invoicePlans[appointmentId] || { paymentPlan: "one_time", installmentMonths: 3, discountPercent: 0 };
   }
 
   function updateInvoicePlan(appointmentId, nextValues) {
@@ -249,6 +248,7 @@ export default function ReceptionistDashboard() {
       [appointmentId]: {
         paymentPlan: "one_time",
         installmentMonths: 3,
+        discountPercent: 0,
         ...(current[appointmentId] || {}),
         ...nextValues
       }
@@ -265,17 +265,21 @@ export default function ReceptionistDashboard() {
     }));
     const performedTotal = performedItems.reduce((sum, item) => sum + item.amount, 0);
     const amount = performedTotal;
+    const invoicePlan = getInvoicePlan(appointment._id);
+    const discountPercent = Number(invoicePlan.discountPercent || 0);
+    const discountAmount = Math.round(amount * discountPercent / 100);
+    const payableAmount = Math.max(amount - discountAmount, 0);
     if (amount <= 0) {
       setError("Chưa có dịch vụ hoặc chi phí phát sinh để tạo hóa đơn.");
       return;
     }
-    if (!window.confirm(`Tạo hóa đơn ${amount.toLocaleString("vi-VN")} VND cho lịch khám này?`)) return;
+    if (!window.confirm(`Tạo hóa đơn ${payableAmount.toLocaleString("vi-VN")} VND cho lịch khám này?`)) return;
 
     try {
-      const invoicePlan = getInvoicePlan(appointment._id);
       await api.post(`/appointments/${appointment._id}/invoice`, {
         amount,
         items: performedItems.length ? performedItems : undefined,
+        discountPercent,
         paymentPlan: invoicePlan.paymentPlan,
         installmentMonths: invoicePlan.paymentPlan === "monthly" ? Number(invoicePlan.installmentMonths || 3) : undefined
       });
@@ -473,7 +477,7 @@ export default function ReceptionistDashboard() {
   const filteredBaseAppointments = appointments.filter((appointment) => matchesAppointmentFilters(appointment, appointmentSearch));
   const dateFilteredAppointments = filteredBaseAppointments.filter((appointment) => !date || clinicDateInput(appointment.startAt) === date);
   const intakeAppointments = filteredBaseAppointments.filter((appointment) => intakeStatuses.has(appointment.status));
-  const clinicalQueueAppointments = dateFilteredAppointments.filter((appointment) => clinicalQueueStatuses.has(appointment.status));
+  const clinicalQueueAppointments = dateFilteredAppointments;
   const paymentAppointments = filteredBaseAppointments.filter((appointment) => paymentStatuses.has(appointment.status));
   const filteredConsultations = consultations
     .filter((consultation) => {

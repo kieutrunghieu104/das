@@ -16,13 +16,20 @@ const paymentPlanLabels = {
 };
 
 const installmentOptions = [3, 6, 9];
+const discountOptions = [0, 5, 10, 20, 30];
 
 function getInvoicePlan(invoicePlans, appointmentId) {
-  return invoicePlans[appointmentId] || { paymentPlan: "one_time", installmentMonths: 3 };
+  return invoicePlans[appointmentId] || { paymentPlan: "one_time", installmentMonths: 3, discountPercent: 0 };
 }
 
 function calculateInstallmentAmount(total, installmentMonths) {
   return Math.ceil(Number(total || 0) / Math.max(Number(installmentMonths || 1), 1));
+}
+
+function calculateDiscountedTotal(total, discountPercent) {
+  const subtotal = Number(total || 0);
+  const discount = Math.round(subtotal * Number(discountPercent || 0) / 100);
+  return Math.max(subtotal - discount, 0);
 }
 
 function getNextPaymentInfo(invoice, total, paidAmount) {
@@ -109,11 +116,12 @@ export default function ReceptionCheckInAppointments({
         <div className="appointment-list checkin-list">
           {filteredAppointments.map((appointment) => {
             const invoice = appointment.invoice;
-            const total = Number(invoice?.total || appointment.performedTotal || 0);
+            const invoicePlan = getInvoicePlan(invoicePlans, appointment._id);
+            const rawTotal = Number(invoice?.subtotal || appointment.performedTotal || invoice?.total || 0);
+            const total = Number(invoice?.total || calculateDiscountedTotal(rawTotal, invoicePlan.discountPercent));
             const paidAmount = Number(invoice?.paidAmount || 0);
             const remaining = Math.max(total - paidAmount, 0);
             const items = invoice?.items?.length ? invoice.items : [...(appointment.performedServices || []), ...(appointment.extraCosts || [])];
-            const invoicePlan = getInvoicePlan(invoicePlans, appointment._id);
             const plannedInstallmentAmount = calculateInstallmentAmount(total, invoicePlan.installmentMonths);
             const nextPayment = getNextPaymentInfo(invoice, total, paidAmount);
             const hasServiceItems = (appointment.performedServices || []).length > 0 || (appointment.extraCosts || []).length > 0;
@@ -147,6 +155,11 @@ export default function ReceptionCheckInAppointments({
                   <div className="invoice-payment-summary">
                     <strong>{formatMoney(paidAmount)} / {formatMoney(total)}</strong>
                     {invoice && <StatusBadge value={invoice.status} />}
+                    {invoice?.discountPercent > 0 && (
+                      <span className="payment-plan-note">
+                        Giảm giá: {invoice.discountPercent}% (-{formatMoney(invoice.discountAmount)})
+                      </span>
+                    )}
                     {invoice && (
                       <span className="payment-plan-note">
                         Hình thức: {paymentPlanLabels[invoice.paymentPlan] || paymentPlanLabels.one_time}
@@ -201,6 +214,17 @@ export default function ReceptionCheckInAppointments({
                       {invoicePlan.paymentPlan === "monthly" && (
                         <span className="payment-plan-preview">Mỗi tháng: {formatMoney(plannedInstallmentAmount)}</span>
                       )}
+                      <label className="payment-amount-field">
+                        <span>Giảm giá</span>
+                        <select
+                          value={invoicePlan.discountPercent}
+                          onChange={(event) => updateInvoicePlan(appointment._id, { discountPercent: Number(event.target.value) })}
+                        >
+                          {discountOptions.map((percent) => (
+                            <option key={percent} value={percent}>{percent}%</option>
+                          ))}
+                        </select>
+                      </label>
                       <button className="button small ghost" type="button" disabled={total <= 0} onClick={() => generateInvoice(appointment)}>
                         Tạo hóa đơn
                       </button>

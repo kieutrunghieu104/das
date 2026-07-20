@@ -70,6 +70,13 @@ export const checkInAppointmentSchema = z.object({
 
 export const createAppointmentInvoiceSchema = z.object({
   amount: z.coerce.number().positive("Số tiền hóa đơn phải lớn hơn 0.").optional(),
+  discountPercent: z.coerce
+    .number()
+    .int()
+    .refine((value) => [0, 5, 10, 20, 30].includes(value), {
+      message: "Chọn mức giảm giá 0%, 5%, 10%, 20% hoặc 30%."
+    })
+    .default(0),
   paymentPlan: z.enum(["one_time", "monthly"]).default("one_time"),
   installmentMonths: z.coerce
     .number()
