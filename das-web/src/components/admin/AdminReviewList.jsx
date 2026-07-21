@@ -21,9 +21,10 @@ export default function AdminReviewList({ loading, onToggleVisibility, reviews }
                 ))}
               </div>
               <p>{review.comment || "Không có nhận xét chi tiết."}</p>
-              <div>
+              <div className="admin-review-meta">
                 <strong>{review.patient?.fullName || "Bệnh nhân"}</strong>
-                <span>{review.service?.name || "Dịch vụ"} / {review.dentist?.fullName || "Bác sĩ"}</span>
+                <span><b>Dịch vụ:</b> {review.service?.name || "Chưa có dịch vụ"}</span>
+                <span><b>Bác sĩ:</b> {review.dentist?.fullName || "Chưa có bác sĩ"}</span>
               </div>
               <div className="row-actions">
                 <StatusBadge value={review.isHidden ? "hidden" : "visible"} />

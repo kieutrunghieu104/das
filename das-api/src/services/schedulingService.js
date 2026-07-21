@@ -248,8 +248,7 @@ function buildSlot({ room, service, startAt, slotConfig, conflictingAppointments
     room: {
       _id: room._id,
       name: room.name,
-      status: room.status,
-      equipment: room.equipment
+      status: room.status
     },
     dentist: room.assignedDentist,
     nurse: room.assignedNurse

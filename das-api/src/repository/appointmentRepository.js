@@ -1,4 +1,4 @@
-﻿import { getCollection, toObjectId } from "../config/mongodb.js";
+import { getCollection, toObjectId } from "../config/mongodb.js";
 import { COLLECTIONS } from "../models/index.js";
 import {
   findById,
@@ -18,7 +18,7 @@ export const appointmentPopulate = [
   { path: "confirmationBy", select: "fullName role" },
   { path: "dentist", select: "fullName phone avatarUrl yearsOfExperience bio" },
   { path: "nurse", select: "fullName phone" },
-  { path: "room", select: "name status equipment" },
+  { path: "room", select: "name status" },
   { path: "slot", select: "slotName startTime endTime order" },
   {
     path: "service",

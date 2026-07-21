@@ -106,6 +106,17 @@ function assertAppointmentCanRescheduleOrCancel(appointment) {
   }
 }
 
+function assertAppointmentIsToday(appointment, actionText) {
+  const today = toDateInputValue(new Date());
+  const appointmentDate = toDateInputValue(appointment.startAt);
+  if (appointmentDate < today) {
+    throw createError(`Lịch khám đã qua ngày nên không thể ${actionText}.`, 409);
+  }
+  if (appointmentDate > today) {
+    throw createError(`Chỉ được ${actionText} trong ngày diễn ra lịch khám.`, 409);
+  }
+}
+
 function formatClinicDateTime(value) {
   return new Intl.DateTimeFormat("vi-VN", {
     timeZone: "Asia/Ho_Chi_Minh",
@@ -337,6 +348,15 @@ export async function updateAppointmentStatus(appointmentId, user, body) {
   if (user.role === "receptionist" && ["in_treatment", "completed"].includes(data.status)) {
     throw createError("Lễ tân chỉ được ghi nhận có mặt hoặc vắng mặt, không hoàn tất lịch khám.", 403);
   }
+  if (data.status === "checked_in") {
+    assertAppointmentIsToday(appointment, "ghi nhận có mặt");
+  }
+  if (data.status === "no_show") {
+    assertAppointmentIsToday(appointment, "đánh dấu vắng mặt");
+  }
+  if (data.status === "in_treatment") {
+    assertAppointmentIsToday(appointment, "chuyển sang đang khám");
+  }
   if (data.status === "in_treatment" && appointment.status !== "checked_in") {
     throw createError("Cần ghi nhận bệnh nhân có mặt trước khi chuyển sang trạng thái đang khám.", 409);
   }
@@ -447,9 +467,7 @@ export async function checkInAppointment(appointmentId, user, body) {
   if (!appointment) throw createError("Không tìm thấy lịch hẹn.", 404);
 
   assertAppointmentCanChange(appointment, user);
-  if (toDateInputValue(new Date()) < toDateInputValue(appointment.startAt)) {
-    throw createError("Chỉ được ghi nhận có mặt trong ngày diễn ra lịch khám.", 409);
-  }
+  assertAppointmentIsToday(appointment, "ghi nhận có mặt");
   appointment.status = "checked_in";
   appointment.checkedInAt = new Date();
 
@@ -474,9 +492,7 @@ export async function markNoShow(appointmentId, user, body) {
   if (appointment.status === "checked_in") {
     throw createError("Lịch khám đã ghi nhận có mặt nên không thể chuyển sang vắng mặt.", 409);
   }
-  if (appointment.startAt > new Date()) {
-    throw createError("Chỉ có thể cập nhật vắng mặt sau giờ hẹn.", 409);
-  }
+  assertAppointmentIsToday(appointment, "đánh dấu vắng mặt");
 
   appointment.status = "no_show";
   appointment.receptionist = user._id;

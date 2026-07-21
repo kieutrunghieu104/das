@@ -1,4 +1,4 @@
-﻿import { ClipboardPenLine, ReceiptText, Stethoscope } from "lucide-react";
+import { ClipboardPenLine, ReceiptText, Stethoscope } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import ClinicalTreatmentForm from "../../components/clinical/ClinicalTreatmentForm.jsx";
@@ -287,7 +287,9 @@ export default function ClinicalDashboard() {
 
   async function deleteTreatmentRecord(record) {
     if (!record?._id) return;
-    if (!window.confirm("Xóa hồ sơ điều trị này khỏi hệ thống?")) return;
+    const recordName = record.serviceSnapshot?.name || record.appointment?.service?.name || "hồ sơ điều trị";
+    const patientName = record.patient?.fullName || "bệnh nhân";
+    if (!window.confirm(`Xóa ${recordName} của ${patientName} khỏi hệ thống?`)) return;
 
     try {
       setError("");
@@ -296,7 +298,7 @@ export default function ClinicalDashboard() {
       setTreatmentSearchResults((current) => current.filter((item) => item._id !== record._id));
       setRecords((current) => current.filter((item) => item._id !== record._id));
       setRecordForm(defaultRecordForm);
-      setMessage("Đã xóa hồ sơ điều trị khỏi hệ thống.");
+      setMessage(`Đã xóa ${recordName} của ${patientName} khỏi hệ thống.`);
       if (treatmentSearchPhone) await searchTreatmentRecords(treatmentSearchPhone);
       await load();
     } catch (err) {

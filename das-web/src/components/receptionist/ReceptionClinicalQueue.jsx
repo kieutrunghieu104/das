@@ -89,9 +89,13 @@ export default function ReceptionClinicalQueue({
                   {appointments.length ? (
                     appointments.map((appointment) => {
                       const locked = isLockedScheduleAppointment(appointment);
-                      const isFutureAppointment = clinicDateInput(appointment.startAt) > todayInput();
-                      const canCheckIn = !locked && !isFutureAppointment && ["scheduled", "confirmed"].includes(appointment.status);
-                      const canMarkNoShow = !locked && ["scheduled", "confirmed"].includes(appointment.status);
+                      const appointmentDate = clinicDateInput(appointment.startAt);
+                      const today = todayInput();
+                      const isTodayAppointment = appointmentDate === today;
+                      const isFutureAppointment = appointmentDate > today;
+                      const isPastAppointment = appointmentDate < today;
+                      const canCheckIn = !locked && isTodayAppointment && ["scheduled", "confirmed"].includes(appointment.status);
+                      const canMarkNoShow = !locked && isTodayAppointment && ["scheduled", "confirmed"].includes(appointment.status);
                       const queueNumber = appointment.queueNumber;
                       return (
                         <article className={`schedule-cell-card ${locked ? "locked" : ""}`} key={appointment._id}>
@@ -107,6 +111,9 @@ export default function ReceptionClinicalQueue({
                             {locked && <small>Lịch đã hủy hoặc bị từ chối, không thể đổi trạng thái.</small>}
                             {isFutureAppointment && ["scheduled", "confirmed"].includes(appointment.status) && (
                               <small>Chỉ ghi nhận có mặt trong ngày diễn ra lịch khám.</small>
+                            )}
+                            {isPastAppointment && ["scheduled", "confirmed"].includes(appointment.status) && (
+                              <small>Lịch khám đã qua ngày nên không thể cập nhật có mặt hoặc vắng mặt.</small>
                             )}
                           </div>
                           <div className="row-actions schedule-status-actions">

@@ -126,7 +126,7 @@ export default function ClinicalTreatmentForm({
                     <div className="treatment-record-info">
                       <strong>{record.serviceSnapshot?.name || record.appointment?.service?.name || "Hồ sơ điều trị"}</strong>
                       <span>{patientLabel(record.patient)}</span>
-                      <small>Ngày điều trị: {formatDateOnly(record.treatmentDate || record.createdAt)}</small>
+                      <small>Ngày bắt đầu điều trị: {formatDateOnly(record.treatmentDate || record.createdAt)}</small>
                     </div>
                     <div className="row-actions">
                       <StatusBadge value={record.status || "active"} />
@@ -213,7 +213,7 @@ export default function ClinicalTreatmentForm({
                   <div className="treatment-record-info">
                     <strong>{record.serviceSnapshot?.name || record.appointment?.service?.name || "Hồ sơ điều trị"}</strong>
                     <span>{patientLabel(record.patient)}</span>
-                    <small>Ngày điều trị: {formatDateOnly(record.treatmentDate || record.createdAt)}</small>
+                    <small>Ngày bắt đầu điều trị: {formatDateOnly(record.treatmentDate || record.createdAt)}</small>
                   </div>
                   <div className="row-actions">
                     <StatusBadge value={record.status || "active"} />
@@ -266,6 +266,9 @@ function TreatmentEditor({
   onSubmit,
   visibleVisitCount
 }) {
+  const isLockedVisit = Boolean(activeVisit);
+  const isReadOnly = isDentist || isLockedVisit;
+
   return (
     <form className="stack" onSubmit={onSubmit}>
       <div className="form-grid">
@@ -296,60 +299,66 @@ function TreatmentEditor({
           <strong>Lần {form.visitNumber}</strong>
           <span>{activeVisit?.updatedAt ? `Cập nhật: ${formatDateOnly(activeVisit.updatedAt)}` : "Chưa cập nhật"}</span>
         </div>
+        {isLockedVisit && !isDentist && (
+          <div className="empty-state wide">
+            <strong>Lần điều trị này đã được lưu</strong>
+            <span>Không thể cập nhật lại lần cũ. Hãy chọn lần kế tiếp để nhập thông tin mới.</span>
+          </div>
+        )}
         <label className="field">
-          <span>Ngày điều trị</span>
-          <input type="date" disabled={isDentist} value={form.visitDate} onChange={(event) => onChange("visitDate", event.target.value)} />
+          <span>Ngày lần điều trị</span>
+          <input type="date" disabled={isReadOnly} value={form.visitDate} onChange={(event) => onChange("visitDate", event.target.value)} />
         </label>
         <label className="field">
           <span>Huyết áp</span>
-          <input disabled={isDentist} value={form.bloodPressure} onChange={(event) => onChange("bloodPressure", event.target.value)} />
+          <input disabled={isReadOnly} value={form.bloodPressure} onChange={(event) => onChange("bloodPressure", event.target.value)} />
         </label>
         <label className="field">
           <span>Nhịp tim</span>
-          <input disabled={isDentist} value={form.heartRate} onChange={(event) => onChange("heartRate", event.target.value)} />
+          <input disabled={isReadOnly} value={form.heartRate} onChange={(event) => onChange("heartRate", event.target.value)} />
         </label>
         <label className="field">
           <span>SpO2</span>
-          <input disabled={isDentist} value={form.spo2} onChange={(event) => onChange("spo2", event.target.value)} />
+          <input disabled={isReadOnly} value={form.spo2} onChange={(event) => onChange("spo2", event.target.value)} />
         </label>
         <label className="field">
           <span>Nhiệt độ</span>
-          <input disabled={isDentist} value={form.temperature} onChange={(event) => onChange("temperature", event.target.value)} />
+          <input disabled={isReadOnly} value={form.temperature} onChange={(event) => onChange("temperature", event.target.value)} />
         </label>
         <label className="field">
           <span>Nhịp thở</span>
-          <input disabled={isDentist} value={form.respiratoryRate} onChange={(event) => onChange("respiratoryRate", event.target.value)} />
+          <input disabled={isReadOnly} value={form.respiratoryRate} onChange={(event) => onChange("respiratoryRate", event.target.value)} />
         </label>
         <label className="field wide">
           <span>Tiền sử bệnh án</span>
-          <textarea disabled={isDentist} value={form.medicalHistory || ""} onChange={(event) => onChange("medicalHistory", event.target.value)} rows="3" />
+          <textarea disabled={isReadOnly} value={form.medicalHistory || ""} onChange={(event) => onChange("medicalHistory", event.target.value)} rows="3" />
         </label>
         <label className="field wide">
           <span>Chẩn đoán</span>
-          <textarea disabled={isDentist} value={form.diagnosis} onChange={(event) => onChange("diagnosis", event.target.value)} rows="3" />
+          <textarea disabled={isReadOnly} value={form.diagnosis} onChange={(event) => onChange("diagnosis", event.target.value)} rows="3" />
         </label>
         <label className="field wide">
           <span>Điều trị đã thực hiện</span>
-          <textarea disabled={isDentist} value={form.treatmentResult} onChange={(event) => onChange("treatmentResult", event.target.value)} rows="3" />
+          <textarea disabled={isReadOnly} value={form.treatmentResult} onChange={(event) => onChange("treatmentResult", event.target.value)} rows="3" />
         </label>
         <label className="field wide">
           <span>Đơn thuốc</span>
-          <textarea disabled={isDentist} value={form.prescription} onChange={(event) => onChange("prescription", event.target.value)} rows="3" />
+          <textarea disabled={isReadOnly} value={form.prescription} onChange={(event) => onChange("prescription", event.target.value)} rows="3" />
         </label>
         <label className="field wide">
           <span>Điều trị dự kiến</span>
-          <textarea disabled={isDentist} value={form.treatmentPlan} onChange={(event) => onChange("treatmentPlan", event.target.value)} rows="3" />
+          <textarea disabled={isReadOnly} value={form.treatmentPlan} onChange={(event) => onChange("treatmentPlan", event.target.value)} rows="3" />
         </label>
         <label className="field wide">
           <span>Hướng dẫn sau điều trị</span>
-          <textarea disabled={isDentist} value={form.aftercareInstructions} onChange={(event) => onChange("aftercareInstructions", event.target.value)} rows="3" />
+          <textarea disabled={isReadOnly} value={form.aftercareInstructions} onChange={(event) => onChange("aftercareInstructions", event.target.value)} rows="3" />
         </label>
         <label className="field wide">
           <span>Ghi chú điều trị</span>
-          <textarea disabled={isDentist} value={form.treatmentNote} onChange={(event) => onChange("treatmentNote", event.target.value)} rows="3" />
+          <textarea disabled={isReadOnly} value={form.treatmentNote} onChange={(event) => onChange("treatmentNote", event.target.value)} rows="3" />
         </label>
       </div>
-      {!isDentist && (
+      {!isDentist && !isLockedVisit && (
         <div className="row-actions clinical-treatment-actions">
           <button className="button primary">Lưu hồ sơ điều trị</button>
         </div>

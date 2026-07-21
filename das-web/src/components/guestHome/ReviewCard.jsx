@@ -8,7 +8,7 @@ export default function ReviewCard({ review }) {
           <Star size={16} fill="currentColor" key={index} />
         ))}
       </div>
-      <p>"{review.text}"</p>
+      <p>{review.text}</p>
       <div>
         <span>{review.name[0]}</span>
         <strong>{review.name}</strong>

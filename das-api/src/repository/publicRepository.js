@@ -160,7 +160,7 @@ export async function findActiveRooms() {
 export async function findPublicReviews(limit = 8) {
   const reviews = await findMany(
     COLLECTIONS.reviews,
-    { comment: { $exists: true, $ne: "" }, isHidden: { $ne: true } },
+    { isHidden: { $ne: true } },
     { sort: { createdAt: -1 }, limit }
   );
   await populate(reviews, [

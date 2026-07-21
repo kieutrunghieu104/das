@@ -1,4 +1,4 @@
-﻿import { getCollection, toObjectId } from "../config/mongodb.js";
+import { getCollection, toObjectId } from "../config/mongodb.js";
 import { COLLECTIONS } from "../models/index.js";
 import {
   findById,
@@ -271,10 +271,9 @@ export function findClinicRoomAssignmentConflict(field, staffId, excludeRoomId) 
 
 export function createClinicRoom(data) {
   return insertDocuments(COLLECTIONS.clinicRooms, {
-    equipment: [],
     status: "available",
     ...data,
-    assignedDentist: data.assignedDentist ? toObjectId(data.assignedDentist) : undefined,
+    assignedDentist: toObjectId(data.assignedDentist),
     assignedNurse: data.assignedNurse ? toObjectId(data.assignedNurse) : undefined
   });
 }

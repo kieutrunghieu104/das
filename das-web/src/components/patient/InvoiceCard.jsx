@@ -22,6 +22,8 @@ export default function InvoiceCard({
 }) {
   const total = Number(invoice.total || 0);
   const paidAmount = Number(invoice.paidAmount || 0);
+  const discountPercent = Number(invoice.discountPercent || 0);
+  const discountAmount = Number(invoice.discountAmount || 0);
   const items = (invoice.items || []).length
     ? invoice.items
     : [{ name: invoice.appointment?.service?.name || "Dịch vụ nha khoa", amount: total }];
@@ -37,6 +39,9 @@ export default function InvoiceCard({
       <strong>{invoice.appointment?.service?.name || "Hóa đơn dịch vụ"}</strong>
       <p>Đã thanh toán: {formatMoney(paidAmount)} / Tổng: {formatMoney(total)}</p>
       <span className="mini">Thời gian tạo hóa đơn: {formatDateTime(invoice.invoiceDate || invoice.createdAt)}</span>
+      <span className="mini">
+        Giảm giá: {discountPercent}%{discountAmount > 0 ? ` (-${formatMoney(discountAmount)})` : ""}
+      </span>
       <span className="mini">
         Hình thức: {paymentPlanLabels[invoice.paymentPlan] || paymentPlanLabels.one_time}
         {invoice.paymentPlan === "monthly" ? ` (${invoice.installmentMonths} tháng, mỗi lần ${formatMoney(invoice.installmentAmount)})` : ""}

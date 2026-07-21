@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   nameSchema,
   noteSchema,
+  objectIdSchema,
   optionalEmailSchema,
   optionalObjectIdSchema,
   optionalPhoneSchema,
@@ -52,14 +53,12 @@ export const updateDentalServiceSchema = z.object({
 
 export const createClinicRoomSchema = z.object({
   name: nameSchema,
-  equipment: z.array(z.string().trim().min(1).max(80)).max(20).default([]),
-  assignedDentist: optionalObjectIdSchema,
+  assignedDentist: objectIdSchema,
   assignedNurse: optionalObjectIdSchema
 });
 
 export const updateClinicRoomSchema = z.object({
   name: nameSchema.optional(),
-  equipment: z.array(z.string().trim().min(1).max(80)).max(20).optional(),
   assignedDentist: optionalObjectIdSchema,
   assignedNurse: optionalObjectIdSchema
 });

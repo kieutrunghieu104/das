@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Feedback from "../../components/Feedback.jsx";
 import BookAppointmentForPatientForm from "../../components/receptionist/BookAppointmentForPatientForm.jsx";

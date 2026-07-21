@@ -30,7 +30,7 @@ export default function ClinicRoomManagement({
           </label>
           <label className="field">
             <span>Bác sĩ phụ trách</span>
-            <select value={roomForm.assignedDentist} onChange={(event) => onRoomFormChange({ assignedDentist: event.target.value })}>
+            <select value={roomForm.assignedDentist} onChange={(event) => onRoomFormChange({ assignedDentist: event.target.value })} required>
               <option value="">Chưa gán</option>
               {dentistUsers.map((dentist) => (
                 <option key={dentist._id} value={dentist._id}>{dentist.fullName}</option>
@@ -92,7 +92,7 @@ export default function ClinicRoomManagement({
               </label>
               <label className="field">
                 <span>Bác sĩ phụ trách</span>
-                <select value={editingRoom.assignedDentist} onChange={(event) => onEditingRoomChange({ assignedDentist: event.target.value })}>
+                <select value={editingRoom.assignedDentist} onChange={(event) => onEditingRoomChange({ assignedDentist: event.target.value })} required>
                   <option value="">Chưa gán</option>
                   {dentistUsers.map((dentist) => (
                     <option key={dentist._id} value={dentist._id}>{dentist.fullName}</option>
@@ -109,15 +109,6 @@ export default function ClinicRoomManagement({
                 </select>
               </label>
             </div>
-            <label className="field">
-              <span>Thiết bị</span>
-              <textarea
-                value={editingRoom.equipmentText || ""}
-                onChange={(event) => onEditingRoomChange({ equipmentText: event.target.value })}
-                rows="3"
-                placeholder="Máy chụp X-quang, máy đo huyết áp"
-              />
-            </label>
             <div className="row-actions">
               <button className="button primary">Lưu cập nhật</button>
               <button className="button ghost" type="button" onClick={onCancelEditRoom}>

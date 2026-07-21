@@ -1,4 +1,4 @@
-﻿import { BarChart3, DoorOpen, Settings2, Star, UsersRound } from "lucide-react";
+import { BarChart3, DoorOpen, Settings2, Star, UsersRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import AccountManagement from "../../components/admin/AccountManagement.jsx";
@@ -215,8 +215,7 @@ export default function AdminDashboard() {
       _id: room._id,
       name: room.name || "",
       assignedDentist: room.assignedDentist?._id || "",
-      assignedNurse: room.assignedNurse?._id || "",
-      equipmentText: Array.isArray(room.equipment) ? room.equipment.join(", ") : ""
+      assignedNurse: room.assignedNurse?._id || ""
     });
   }
 
@@ -236,7 +235,10 @@ export default function AdminDashboard() {
   async function updateRoom(event) {
     event.preventDefault();
     if (!editingRoom) return;
-    const validationError = firstError(validateName(editingRoom.name, "Tên phòng"));
+    const validationError = firstError(
+      validateName(editingRoom.name, "Tên phòng"),
+      editingRoom.assignedDentist ? "" : "Vui lòng chọn bác sĩ phụ trách phòng khám."
+    );
     if (validationError) {
       setError(validationError);
       return;
@@ -248,8 +250,7 @@ export default function AdminDashboard() {
       await api.patch(`/admin/rooms/${editingRoom._id}`, {
         name: editingRoom.name,
         assignedDentist: editingRoom.assignedDentist,
-        assignedNurse: editingRoom.assignedNurse,
-        equipment: parseCommaList(editingRoom.equipmentText)
+        assignedNurse: editingRoom.assignedNurse
       });
       setEditingRoom(null);
       setMessage("Đã cập nhật thông tin phòng khám.");
@@ -303,7 +304,10 @@ export default function AdminDashboard() {
 
   async function createRoom(event) {
     event.preventDefault();
-    const validationError = firstError(validateName(roomForm.name, "Tên phòng"));
+    const validationError = firstError(
+      validateName(roomForm.name, "Tên phòng"),
+      roomForm.assignedDentist ? "" : "Vui lòng chọn bác sĩ phụ trách phòng khám."
+    );
     if (validationError) {
       setError(validationError);
       return;
@@ -314,7 +318,7 @@ export default function AdminDashboard() {
       setMessage("");
       await api.post("/admin/rooms", {
         ...roomForm,
-        assignedDentist: roomForm.assignedDentist || undefined,
+        assignedDentist: roomForm.assignedDentist,
         assignedNurse: roomForm.assignedNurse || undefined
       });
       setRoomForm(defaultRoomForm);
@@ -447,13 +451,6 @@ export default function AdminDashboard() {
       )}
     </div>
   );
-}
-
-function parseCommaList(value) {
-  return String(value || "")
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
 }
 
 function normalizeServicePrice(value) {

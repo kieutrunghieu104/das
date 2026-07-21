@@ -1,4 +1,4 @@
-﻿import mongoose from "mongoose";
+import mongoose from "mongoose";
 import { env } from "./environment.js";
 import { COLLECTION_INDEXES, MODELS } from "../models/index.js";
 import "../models/index.js";

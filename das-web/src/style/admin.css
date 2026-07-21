@@ -8,6 +8,15 @@
   min-height: 0;
 }
 
+.admin-review-meta {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-review-meta b {
+  color: var(--primary-dark);
+}
+
 .locked-note {
   display: inline-flex;
   width: fit-content;

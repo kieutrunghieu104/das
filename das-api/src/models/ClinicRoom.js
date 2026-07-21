@@ -10,12 +10,10 @@ const clinicRoomSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "users"
   },
-  equipment: [String],
   status: String
 }, {
   timestamps: true,
   collection: "clinicrooms",
-  strict: false,
   versionKey: false
 });
 

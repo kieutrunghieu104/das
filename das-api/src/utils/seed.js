@@ -306,13 +306,6 @@ async function seedClinic(dentists, nurses) {
       name: `Phòng khám ${index + 1}`,
       assignedDentist: dentist._id,
       assignedNurse: nurses[index]?._id,
-      equipment: [
-        "Máy chụp X-quang",
-        "Máy đo huyết áp",
-        "Máy đo SpO2",
-        "Nhiệt kế",
-        "Máy theo dõi hô hấp"
-      ],
       status: "available"
     }))
   );

@@ -1,4 +1,4 @@
-﻿import {
+import {
   CheckCircle2,
   ChevronRight,
   PhoneCall,
@@ -42,13 +42,12 @@ function getServiceCards(services) {
 
 function getReviewCards(reviews) {
   return newestFirst(reviews)
-    .filter((review) => review.comment)
     .slice(0, 8)
     .map((review) => ({
       _id: review._id,
       name: review.patient?.fullName || "Khách hàng SmileCare",
       service: review.service?.name || "Dịch vụ nha khoa",
-      text: review.comment,
+      text: review.comment || "",
       rating: Math.min(Math.max(Number(review.rating || 5), 1), 5)
     }));
 }

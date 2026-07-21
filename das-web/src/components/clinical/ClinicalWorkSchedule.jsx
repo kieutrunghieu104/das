@@ -1,8 +1,8 @@
-﻿import { Fragment } from "react";
+import { Fragment } from "react";
 import { Stethoscope } from "lucide-react";
 import EmptyState from "../EmptyState.jsx";
 import StatusBadge from "../StatusBadge.jsx";
-import { formatDateTime } from "../../utils/format.js";
+import { clinicDateInput, formatDateTime, todayInput } from "../../utils/format.js";
 
 export default function ClinicalWorkSchedule({
   appointments,
@@ -88,7 +88,10 @@ export default function ClinicalWorkSchedule({
                 {row.cells.map((cellAppointments, columnIndex) => (
                   <div className="schedule-cell" key={`${row.slotId}-${clinicalColumns[columnIndex]._id}`}>
                     {cellAppointments.length ? (
-                      cellAppointments.map((appointment) => (
+                      cellAppointments.map((appointment) => {
+                        const isTodayAppointment = clinicDateInput(appointment.startAt) === todayInput();
+                        const canStartTreatment = isTodayAppointment && appointment.status === "checked_in";
+                        return (
                         <article className={`schedule-cell-card ${isLockedAppointment(appointment) ? "locked" : ""}`} key={appointment._id}>
                           <div>
                             <div className="schedule-card-heading">
@@ -103,7 +106,13 @@ export default function ClinicalWorkSchedule({
                             {canEditAppointment(user, appointment) && (
                               <>
                                 {user?.role === "nurse" && appointment.status === "checked_in" && (
-                                  <button className="button small secondary" type="button" onClick={() => onUpdateStatus(appointment, "in_treatment")}>
+                                  <button
+                                    className="button small secondary"
+                                    disabled={!canStartTreatment}
+                                    title={!canStartTreatment ? "Chỉ chuyển sang đang khám trong ngày diễn ra lịch khám." : undefined}
+                                    type="button"
+                                    onClick={() => onUpdateStatus(appointment, "in_treatment")}
+                                  >
                                     Đang khám
                                   </button>
                                 )}
@@ -119,7 +128,8 @@ export default function ClinicalWorkSchedule({
                             )}
                           </div>
                         </article>
-                      ))
+                      );
+                      })
                     ) : (
                       <div className="schedule-empty-cell">Chưa có bệnh nhân</div>
                     )}

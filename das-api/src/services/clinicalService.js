@@ -259,11 +259,7 @@ export async function upsertAppointmentTreatmentRecord(user, appointmentId, body
   const visitPayload = buildVisitPayload(data, visitNumber, user);
   const existingVisitIndex = visits.findIndex((visit) => Number(visit.visitNumber) === visitNumber);
   if (existingVisitIndex >= 0) {
-    visits[existingVisitIndex] = {
-      ...visits[existingVisitIndex],
-      ...visitPayload,
-      createdAt: visits[existingVisitIndex].createdAt || visits[existingVisitIndex].updatedAt || new Date()
-    };
+    throw createError("Lần điều trị đã có thông tin nên không thể cập nhật lại. Vui lòng tạo lần điều trị tiếp theo.", 409);
   } else {
     visits.push({ ...visitPayload, createdAt: new Date() });
   }
@@ -273,7 +269,7 @@ export async function upsertAppointmentTreatmentRecord(user, appointmentId, body
     patient: appointment.patient,
     dentist: appointment.dentist,
     nurse: user.role === "nurse" ? user._id : appointment.nurse,
-    treatmentDate: data.visitDate ? dateInputToDateText(data.visitDate) : existingRecord?.treatmentDate || dateInputToDateText(appointment.startAt),
+    treatmentDate: existingRecord?.treatmentDate || dateInputToDateText(appointment.startAt),
     visits,
     status: "active"
   };
@@ -301,11 +297,7 @@ export async function updateTreatmentRecord(user, recordId, body) {
   const visitPayload = buildVisitPayload(data, visitNumber, user);
   const existingVisitIndex = visits.findIndex((visit) => Number(visit.visitNumber) === visitNumber);
   if (existingVisitIndex >= 0) {
-    visits[existingVisitIndex] = {
-      ...visits[existingVisitIndex],
-      ...visitPayload,
-      createdAt: visits[existingVisitIndex].createdAt || visits[existingVisitIndex].updatedAt || new Date()
-    };
+    throw createError("Lần điều trị đã có thông tin nên không thể cập nhật lại. Vui lòng tạo lần điều trị tiếp theo.", 409);
   } else {
     visits.push({ ...visitPayload, createdAt: new Date() });
   }
@@ -314,7 +306,7 @@ export async function updateTreatmentRecord(user, recordId, body) {
   const updateFields = {
     nurse: user.role === "nurse" ? user._id : existingRecord.nurse?._id || existingRecord.nurse,
     visits,
-    treatmentDate: data.visitDate ? dateInputToDateText(data.visitDate) : existingRecord.treatmentDate,
+    treatmentDate: existingRecord.treatmentDate,
     status: "active"
   };
 
