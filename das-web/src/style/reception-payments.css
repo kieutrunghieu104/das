@@ -3,6 +3,16 @@
   grid-template-columns: minmax(360px, 1fr) minmax(260px, auto);
   border-left-color: var(--primary);
   background: linear-gradient(180deg, #ffffff 0%, #f3f7ff 100%);
+  font-family: var(--font-main);
+  letter-spacing: 0;
+}
+
+.reception-checkin-card button,
+.reception-checkin-card input,
+.reception-checkin-card select,
+.reception-checkin-card textarea {
+  font-family: var(--font-main);
+  letter-spacing: 0;
 }
 
 .empty-invoice-delete {
@@ -31,19 +41,31 @@
   border-radius: var(--radius);
   padding: 10px;
   background: #ffffff;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.invoice-payment-summary strong {
+  color: var(--primary-dark);
+  font-size: 1rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
 }
 
 .invoice-items-list span {
   color: #425768;
   font-size: 0.88rem;
-  font-weight: 760;
+  font-weight: 600;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .payment-plan-note,
 .payment-plan-preview {
   color: #23415a;
   font-size: 0.9rem;
-  font-weight: 850;
+  font-weight: 700;
+  line-height: 1.45;
 }
 
 .payment-plan-preview {
@@ -57,5 +79,5 @@
 
 .paid-complete-note {
   color: var(--success);
-  font-weight: 900;
+  font-weight: 800;
 }

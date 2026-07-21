@@ -29,7 +29,7 @@ function dateInputToDateText(value) {
 }
 
 function buildScheduleQuery(user, date) {
-  const visibleStatuses = ["scheduled", "confirmed", "checked_in", "in_treatment"];
+  const visibleStatuses = ["scheduled", "confirmed", "checked_in", "in_treatment", "completed"];
   const query = { status: { $in: visibleStatuses } };
   if (user.role === "dentist") query.dentist = user._id;
   if (user.role === "nurse") query.nurse = user._id;
@@ -344,6 +344,10 @@ export async function deleteTreatmentRecord(user, recordId) {
 
 export async function updateClinicalRoomStatus(user, roomId, body) {
   const data = clinicalRoomStatusSchema.parse(body);
+  const activeTreatment = await clinicalRepository.findActiveTreatmentByRoom(roomId);
+  if (activeTreatment) {
+    throw createError("Phòng đang có bệnh nhân trong trạng thái đang khám nên không thể đổi trạng thái sẵn sàng/chưa sẵn sàng.", 409);
+  }
   const room = await clinicalRepository.updateRoomStatus(roomId, data);
   if (!room) throw createError("Không tìm thấy phòng khám.", 404);
 

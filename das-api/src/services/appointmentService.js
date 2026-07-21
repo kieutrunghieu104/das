@@ -83,7 +83,7 @@ function canAccessAppointment(user, appointment) {
 }
 
 function isPatientCancelled(appointment) {
-  return appointment.status === "cancelled" && appointment.cancelledByRole === "patient";
+  return appointment.status === "cancelled" && sameId(appointment.cancelledBy, appointment.patient);
 }
 
 function assertAppointmentCanChange(appointment, user) {
@@ -260,7 +260,6 @@ export async function rescheduleAppointment(appointmentId, user, body) {
 
   updated.status = user.role === "patient" ? "pending" : previousStatus === "pending" ? "pending" : "confirmed";
   if (user.role === "patient") {
-    updated.patientRequestedAt = new Date();
     updated.receptionistNote = "Bệnh nhân đã thay đổi lịch và đang chờ lễ tân xác nhận lại.";
   }
   await appointmentRepository.saveAppointment(updated);
@@ -309,7 +308,6 @@ export async function cancelAppointment(appointmentId, user, body) {
   appointment.status = "cancelled";
   appointment.cancelledAt = new Date();
   appointment.cancelledBy = user._id;
-  appointment.cancelledByRole = user.role;
   appointment.cancellationReason = data.reason;
   await appointmentRepository.updateAppointmentRoomStatus(normalizeId(appointment.room), "available");
   await appointmentRepository.saveAppointment(appointment);
@@ -342,6 +340,13 @@ export async function updateAppointmentStatus(appointmentId, user, body) {
   if (data.status === "in_treatment" && appointment.status !== "checked_in") {
     throw createError("Cần ghi nhận bệnh nhân có mặt trước khi chuyển sang trạng thái đang khám.", 409);
   }
+  if (data.status === "in_treatment") {
+    const activeTreatment = await appointmentRepository.findActiveTreatmentConflict(appointment);
+    if (activeTreatment) {
+      const patientName = activeTreatment.patient?.fullName || activeTreatment.guestPatient?.fullName || "bệnh nhân hiện tại";
+      throw createError(`Đang có ${patientName} trong trạng thái đang khám. Cần hoàn tất lịch khám đó trước khi chuyển bệnh nhân khác sang đang khám.`, 409);
+    }
+  }
   if (data.status === "completed") {
     if (appointment.status !== "in_treatment") {
       throw createError("Chỉ có thể hoàn tất lịch đang khám.", 409);
@@ -372,18 +377,15 @@ export async function updateAppointmentStatus(appointmentId, user, body) {
   }
   if (data.status === "checked_in" && !appointment.checkedInAt) {
     appointment.checkedInAt = new Date();
-    appointment.checkInTime = appointment.checkedInAt;
   }
   if (data.status === "cancelled" || data.status === "rejected") {
     appointment.cancelledAt = new Date();
     appointment.cancelledBy = user._id;
-    appointment.cancelledByRole = user.role;
     appointment.cancellationReason =
       data.note || (data.status === "rejected" ? "Lễ tân từ chối lịch hẹn." : appointment.cancellationReason);
   } else if (["cancelled", "rejected"].includes(previousStatus)) {
     appointment.cancelledAt = undefined;
     appointment.cancelledBy = undefined;
-    appointment.cancelledByRole = undefined;
     appointment.cancellationReason = undefined;
   }
 
@@ -422,9 +424,8 @@ export async function recordConfirmationCall(appointmentId, user, body) {
     throw createError("Lịch hẹn này không còn cần gọi xác nhận.", 409);
   }
 
-  appointment.confirmationCalledAt = new Date();
   appointment.confirmationBy = user._id;
-  appointment.confirmationNote = data.note || "Lễ tân đã gọi xác nhận lịch hẹn.";
+  appointment.receptionistNote = data.note || "Lễ tân đã gọi xác nhận lịch hẹn.";
   appointment.receptionist = user._id;
   if (["pending", "scheduled"].includes(appointment.status)) {
     appointment.status = "confirmed";
@@ -451,7 +452,6 @@ export async function checkInAppointment(appointmentId, user, body) {
   }
   appointment.status = "checked_in";
   appointment.checkedInAt = new Date();
-  appointment.checkInTime = appointment.checkedInAt;
 
   appointment.paymentStatus = "not_required";
 

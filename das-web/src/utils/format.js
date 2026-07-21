@@ -157,13 +157,13 @@ export function compareAppointmentsNewestFirst(a, b) {
 }
 
 export function compareQueueWithinSlot(a, b) {
-  const aChecked = Boolean(a.checkedInAt || a.checkInTime);
-  const bChecked = Boolean(b.checkedInAt || b.checkInTime);
+  const aChecked = Boolean(a.checkedInAt);
+  const bChecked = Boolean(b.checkedInAt);
   if (aChecked !== bChecked) return aChecked ? -1 : 1;
 
   if (aChecked && bChecked) {
-    const aCheckInTime = new Date(a.checkInTime || a.checkedInAt).getTime();
-    const bCheckInTime = new Date(b.checkInTime || b.checkedInAt).getTime();
+    const aCheckInTime = new Date(a.checkedInAt).getTime();
+    const bCheckInTime = new Date(b.checkedInAt).getTime();
     return aCheckInTime - bCheckInTime;
   }
 

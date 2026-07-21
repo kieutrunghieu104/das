@@ -197,6 +197,10 @@ export function deleteConsultationRequest(requestId) {
   return removeById(COLLECTIONS.consultationRequests, requestId);
 }
 
+export function findConsultationRequestById(requestId) {
+  return findOne(COLLECTIONS.consultationRequests, { _id: toObjectId(requestId) });
+}
+
 export function updateConsultationRequest(requestId, data) {
   return updateById(COLLECTIONS.consultationRequests, requestId, data);
 }

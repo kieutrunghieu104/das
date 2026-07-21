@@ -144,7 +144,19 @@ export async function updateConsultation(requestId, body) {
     throw createError("Trạng thái tư vấn không hợp lệ.", 400);
   }
 
-  const request = await receptionRepository.updateConsultationRequest(requestId, { status });
+  const existingRequest = await receptionRepository.findConsultationRequestById(requestId);
+  if (!existingRequest) {
+    throw createError("Không tìm thấy yêu cầu tư vấn.", 404);
+  }
+  if (existingRequest.status === "contacted" && status !== "contacted") {
+    throw createError("Yêu cầu tư vấn đã hoàn tất nên không thể chuyển lại trạng thái chờ tư vấn.", 409);
+  }
+
+  const updateData = {
+    status,
+    ...(status === "contacted" && !existingRequest.contactedAt ? { contactedAt: new Date() } : {})
+  };
+  const request = await receptionRepository.updateConsultationRequest(requestId, updateData);
   if (!request) {
     throw createError("Không tìm thấy yêu cầu tư vấn.", 404);
   }

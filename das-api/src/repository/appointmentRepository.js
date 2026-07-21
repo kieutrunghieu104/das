@@ -82,6 +82,26 @@ export async function findAppointmentWithServiceName(appointmentId) {
   return attachGuestPatient(appointment);
 }
 
+export async function findActiveTreatmentConflict(appointment) {
+  const resourceFilters = ["room", "dentist", "nurse"]
+    .map((field) => {
+      const id = appointment[field]?._id || appointment[field];
+      return id ? { [field]: toObjectId(id) } : null;
+    })
+    .filter(Boolean);
+
+  if (!resourceFilters.length) return null;
+
+  const conflict = await findOne(COLLECTIONS.appointments, {
+    _id: { $ne: toObjectId(appointment._id) },
+    status: "in_treatment",
+    $or: resourceFilters
+  });
+  if (!conflict) return null;
+  await populate(conflict, appointmentPopulate);
+  return attachGuestPatient(conflict);
+}
+
 export function populateAppointment(appointment) {
   return populate(appointment, appointmentPopulate).then(attachGuestPatient);
 }

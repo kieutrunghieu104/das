@@ -8,7 +8,8 @@ const consultationRequestSchema = new mongoose.Schema({
   status: {
     type: String,
     default: "waiting"
-  }
+  },
+  contactedAt: Date
 }, {
   timestamps: { createdAt: true, updatedAt: false },
   collection: "consultationrequests",

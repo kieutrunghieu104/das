@@ -7,7 +7,7 @@ import ClinicalPerformedServices from "../../components/clinical/nurse/ClinicalP
 import Feedback from "../../components/Feedback.jsx";
 import { useAuth } from "../../redux/AuthContext.jsx";
 import { api, getErrorMessage } from "../../utils/api.js";
-import { bookingSlotOptions, compareQueueWithinSlot, getAppointmentSlot, normalizeAppointmentSlots, todayInput } from "../../utils/format.js";
+import { bookingSlotOptions, clinicDateInput, compareQueueWithinSlot, getAppointmentSlot, normalizeAppointmentSlots, todayInput } from "../../utils/format.js";
 
 function getClinicalFeatures(role) {
   return [
@@ -184,7 +184,7 @@ export default function ClinicalDashboard() {
     const keepSelection = Boolean(options.keepSelection);
     if (!normalizedPhone) {
       setError("Nhập số điện thoại bệnh nhân để tìm hồ sơ điều trị.");
-      return;
+      return { patient: null, records: [] };
     }
 
     try {
@@ -211,8 +211,10 @@ export default function ClinicalDashboard() {
       } else if (!nextRecords.length) {
         setMessage("Bệnh nhân chưa có hồ sơ điều trị. Y tá có thể tạo hồ sơ mới nếu cần.");
       }
+      return { patient: res.data.patient || null, records: nextRecords };
     } catch (err) {
       setError(getErrorMessage(err));
+      return { patient: null, records: [] };
     }
   }
 
@@ -228,6 +230,16 @@ export default function ClinicalDashboard() {
       appointmentId: "",
       recordId: record._id,
       ...recordValuesFromVisit(visits.find((visit) => visit.visitNumber === visitNumber), visitNumber, record)
+    }));
+    setError("");
+  }
+
+  function startCreateTreatmentRecord() {
+    setRecordForm((current) => ({
+      ...current,
+      appointmentId: "",
+      recordId: "",
+      visitNumber: 1
     }));
     setError("");
   }
@@ -292,23 +304,33 @@ export default function ClinicalDashboard() {
     }
   }
 
-  function selectTreatmentAppointment(appointment) {
-    const matchingRecords = getPatientTreatmentRecords(records, appointment);
-    const latestRecord = matchingRecords[0] || null;
-    const visits = normalizeTreatmentVisits(latestRecord);
-    const visitNumber = visits.length ? visits[visits.length - 1].visitNumber : 1;
-    setRecordForm((current) => ({
+  async function selectTreatmentAppointment(appointment) {
+    const patientPhone = appointment.patient?.phone || appointment.guestPatient?.phone || "";
+    openFeature("treatment");
+    setRecordForm(defaultRecordForm);
+    setTreatmentCreateForm((current) => ({
       ...current,
-      appointmentId: appointment._id,
-      ...recordValuesFromVisit(visits.find((visit) => visit.visitNumber === visitNumber), visitNumber)
+      phone: patientPhone,
+      serviceId: appointment.service?._id || current.serviceId || services[0]?._id || "",
+      treatmentDate: clinicDateInput(appointment.startAt) || todayInput()
     }));
-    if (user?.role === "dentist" && !matchingRecords.length) {
+
+    if (!patientPhone) {
+      setError("Không có số điện thoại bệnh nhân để tìm hồ sơ điều trị.");
+      return;
+    }
+
+    const result = await searchTreatmentRecords(patientPhone);
+    setTreatmentCreateForm((current) => ({
+      ...current,
+      phone: patientPhone,
+      serviceId: appointment.service?._id || current.serviceId || services[0]?._id || "",
+      treatmentDate: clinicDateInput(appointment.startAt) || todayInput()
+    }));
+    if (user?.role === "dentist" && !result.records.length) {
       setMessage("");
       setError("Bệnh nhân này chưa có hồ sơ điều trị.");
-    } else {
-      setError("");
     }
-    openFeature("treatment");
   }
 
   function selectTreatmentVisit(visitNumber) {
@@ -556,6 +578,7 @@ export default function ClinicalDashboard() {
           onSearch={searchTreatmentRecords}
           onSearchPhoneChange={setTreatmentSearchPhone}
           onSelectRecord={selectTreatmentRecord}
+          onStartCreateRecord={startCreateTreatmentRecord}
           onSubmit={submitRecord}
           records={records}
           searchedPatient={treatmentSearchPatient}
@@ -690,6 +713,8 @@ function buildClinicalColumns(appointments, rooms) {
 }
 
 function buildClinicalRows(appointments, columns, slotOptions = bookingSlotOptions) {
+  const dailyQueueNumbers = buildDailyQueueNumbers(appointments, columns);
+
   return slotOptions.map((slot) => ({
     slotId: slot.slotId,
     slotName: slot.slotName,
@@ -698,8 +723,25 @@ function buildClinicalRows(appointments, columns, slotOptions = bookingSlotOptio
       appointments
         .filter((appointment) => appointment.dentist?._id === column._id && getAppointmentSlot(appointment.startAt, slotOptions).slotId === slot.slotId)
         .sort(compareQueueWithinSlot)
+        .map((appointment) => ({
+          ...appointment,
+          queueNumber: dailyQueueNumbers.get(appointment._id)
+        }))
     )
   }));
+}
+
+function buildDailyQueueNumbers(appointments, columns) {
+  const queueNumbers = new Map();
+  columns.forEach((column) => {
+    appointments
+      .filter((appointment) => appointment.dentist?._id === column._id && appointment.checkedInAt && appointment.status !== "no_show")
+      .sort(compareQueueWithinSlot)
+      .forEach((appointment, index) => {
+        queueNumbers.set(appointment._id, index + 1);
+      });
+  });
+  return queueNumbers;
 }
 
 function canEditAppointment(user, appointment) {

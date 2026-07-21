@@ -518,6 +518,16 @@ export default function ReceptionistDashboard() {
 
   const queueSlots = useMemo(() => {
     const visibleSlots = allSlotOptions.length ? allSlotOptions : slotOptions;
+    const dailyQueueNumbers = new Map();
+    dentistColumns.forEach((dentist) => {
+      clinicalQueueAppointments
+        .filter((appointment) => appointment.dentist?._id === dentist._id && appointment.checkedInAt && appointment.status !== "no_show")
+        .sort(compareQueueWithinSlot)
+        .forEach((appointment, index) => {
+          dailyQueueNumbers.set(appointment._id, index + 1);
+        });
+    });
+
     return visibleSlots.map((slot) => ({
       slot,
       dentistQueues: dentistColumns.map((dentist) => ({
@@ -529,6 +539,10 @@ export default function ReceptionistDashboard() {
               getAppointmentSlot(appointment.startAt, allSlotOptions).slotId === slot.slotId
           )
           .sort(compareQueueWithinSlot)
+          .map((appointment) => ({
+            ...appointment,
+            queueNumber: dailyQueueNumbers.get(appointment._id)
+          }))
       }))
     }));
   }, [allSlotOptions, clinicalQueueAppointments, dentistColumns, slotOptions]);

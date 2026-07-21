@@ -87,16 +87,12 @@ export default function ReceptionClinicalQueue({
               {dentistQueues.map(({ dentist, appointments }) => (
                 <div className="reception-dentist-queue" key={`${slot.slotId}-${dentist._id}`}>
                   {appointments.length ? (
-                    appointments.map((appointment, appointmentIndex) => {
+                    appointments.map((appointment) => {
                       const locked = isLockedScheduleAppointment(appointment);
                       const isFutureAppointment = clinicDateInput(appointment.startAt) > todayInput();
                       const canCheckIn = !locked && !isFutureAppointment && ["scheduled", "confirmed"].includes(appointment.status);
                       const canMarkNoShow = !locked && ["scheduled", "confirmed"].includes(appointment.status);
-                      const queueNumber = appointment.status === "no_show"
-                        ? null
-                        : appointments
-                          .slice(0, appointmentIndex + 1)
-                          .filter((item) => item.status !== "no_show").length;
+                      const queueNumber = appointment.queueNumber;
                       return (
                         <article className={`schedule-cell-card ${locked ? "locked" : ""}`} key={appointment._id}>
                           <div>

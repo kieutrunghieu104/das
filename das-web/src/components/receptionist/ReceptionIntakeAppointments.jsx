@@ -67,7 +67,7 @@ export default function ReceptionIntakeAppointments({
                   <div className="appointment-slot-box">
                     <strong>{appointment.service?.name || "Dịch vụ nha khoa"}</strong>
                     <span>Khung giờ bệnh nhân chọn: {formatSlotWithDate(appointment.startAt, appointment.slot?.startTime ? appointment.slot : slotOptions)}</span>
-                    <span>Thời gian bệnh nhân gửi: {formatDateTime(appointment.patientRequestedAt || appointment.createdAt)}</span>
+                    <span>Thời gian bệnh nhân gửi: {formatDateTime(appointment.createdAt)}</span>
                     <span>Bác sĩ: {appointment.dentist?.fullName || "Lễ tân sắp xếp"}</span>
                     <span>Kênh: {appointment.channel === "online" ? "Online" : "Tại quầy"}</span>
                   </div>

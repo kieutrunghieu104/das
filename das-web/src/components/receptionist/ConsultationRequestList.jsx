@@ -45,6 +45,7 @@ export default function ConsultationRequestList({
               <strong>{genderLabels[item.gender] || "Chưa chọn"} {item.fullName} - {item.phone}</strong>
               <span>Dịch vụ quan tâm: {item.service?.name || "Chưa chọn"}</span>
               <span>Thời gian đặt tư vấn: {formatDateTime(item.createdAt)}</span>
+              {item.contactedAt && <span>Đã tư vấn lúc: {formatDateTime(item.contactedAt)}</span>}
             </div>
             <div className="row-actions consultation-actions">
               <StatusBadge value={item.status || "waiting"} />
@@ -52,6 +53,7 @@ export default function ConsultationRequestList({
                 aria-label="Cập nhật trạng thái tư vấn"
                 value={item.status || "waiting"}
                 onChange={(event) => onUpdateConsultationStatus?.(item, event.target.value)}
+                disabled={(item.status || "waiting") === "contacted"}
               >
                 <option value="waiting">Chờ tư vấn</option>
                 <option value="contacted">Đã tư vấn</option>

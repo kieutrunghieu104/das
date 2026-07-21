@@ -1,6 +1,5 @@
 import * as schedulingRepository from "../repository/schedulingRepository.js";
 import {
-  calculateArrivalAt,
   combineDateAndTime,
   endOfLocalDay,
   isWorkingDate,
@@ -236,7 +235,6 @@ export async function findAvailableSlots({ date, serviceId, excludeAppointmentId
 function buildSlot({ room, service, startAt, slotConfig, conflictingAppointments = [] }) {
   return {
     startAt,
-    arrivalAt: calculateArrivalAt(startAt),
     slot: slotOption(slotConfig),
     session: slotConfig.slotName,
     isBooked: conflictingAppointments.length > 0,
@@ -335,8 +333,6 @@ export async function createAppointmentFromSlot({
       channel,
       dentistPreference: requiresReceptionScheduling ? "random" : dentistPreference,
       startAt: requestedSlot.startAt,
-      arrivalAt: calculateArrivalAt(requestedSlot.startAt),
-      patientRequestedAt: new Date(),
       status: "pending",
       paymentStatus: "not_required",
       patientNote: note,
@@ -388,8 +384,6 @@ export async function createAppointmentFromSlot({
     channel,
     dentistPreference,
     startAt: selected.startAt,
-    arrivalAt: selected.arrivalAt,
-    patientRequestedAt: new Date(),
     status: appointmentStatus,
     paymentStatus: "not_required",
     patientNote: note
@@ -456,7 +450,6 @@ export async function rescheduleAppointmentFromSlot({ appointment, serviceId, da
   appointment.nurse = nurse?._id;
   appointment.slot = selected.slot._id;
   appointment.startAt = confirmedStartAt;
-  appointment.arrivalAt = calculateArrivalAt(confirmedStartAt);
   appointment.status = "scheduled";
   return schedulingRepository.saveAppointment(appointment);
 }

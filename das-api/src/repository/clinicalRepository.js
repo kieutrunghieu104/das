@@ -204,6 +204,13 @@ export function updateRoomStatus(roomId, data) {
   return updateById(COLLECTIONS.clinicRooms, roomId, data);
 }
 
+export function findActiveTreatmentByRoom(roomId) {
+  return findOne(COLLECTIONS.appointments, {
+    room: toObjectId(roomId),
+    status: "in_treatment"
+  });
+}
+
 export function createRoomStatus(data) {
   return insertDocuments(COLLECTIONS.roomStatuses, data);
 }

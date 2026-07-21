@@ -12,6 +12,7 @@ export default function ClinicalTreatmentForm({
   onDeleteRecord,
   onSearch,
   onSearchPhoneChange,
+  onStartCreateRecord,
   onSelectRecord,
   onSubmit,
   searchedPatient,
@@ -71,7 +72,14 @@ export default function ClinicalTreatmentForm({
             <button className="button small secondary" type="submit">
               Tìm hồ sơ
             </button>
-            <button className="button small primary" type="button" onClick={() => setShowCreateForm((current) => !current)}>
+            <button
+              className="button small primary"
+              type="button"
+              onClick={() => {
+                onStartCreateRecord?.();
+                setShowCreateForm((current) => !current);
+              }}
+            >
               <Plus size={16} />
               Tạo hồ sơ điều trị
             </button>

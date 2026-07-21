@@ -30,23 +30,30 @@ export default function ClinicalWorkSchedule({
       <div className="clinical-schedule-toolbar">
         <div className="clinical-room-strip">
           {visibleRooms.length ? (
-            visibleRooms.map((room) => (
-              <div className="room-chip clinical-room-status-chip" key={room._id}>
-                <span>{room.name} / {room.assignedDentist?.fullName || "Chưa gán bác sĩ"}</span>
-                <StatusBadge value={room.status} />
-                {user?.role === "nurse" && (
-                  <span className="room-chip-actions">
-                    <button
-                      className="button tiny secondary"
-                      type="button"
-                      onClick={() => onSetRoomStatus(room._id, room.status === "available" ? "unavailable" : "available")}
-                    >
-                      {room.status === "available" ? "Chưa sẵn sàng" : "Sẵn sàng"}
-                    </button>
-                  </span>
-                )}
-              </div>
-            ))
+            visibleRooms.map((room) => {
+              const roomInUse = room.status === "in_use" || appointments.some(
+                (appointment) => appointment.status === "in_treatment" && (appointment.room?._id || appointment.room) === room._id
+              );
+              return (
+                <div className="room-chip clinical-room-status-chip" key={room._id}>
+                  <span>{room.name} / {room.assignedDentist?.fullName || "Chưa gán bác sĩ"}</span>
+                  <StatusBadge value={roomInUse ? "in_use" : room.status} />
+                  {user?.role === "nurse" && (
+                    <span className="room-chip-actions">
+                      <button
+                        className="button tiny secondary"
+                        disabled={roomInUse}
+                        title={roomInUse ? "Phòng đang có bệnh nhân đang khám nên không thể đổi trạng thái." : undefined}
+                        type="button"
+                        onClick={() => onSetRoomStatus(room._id, room.status === "available" ? "unavailable" : "available")}
+                      >
+                        {roomInUse ? "Đang dùng" : room.status === "available" ? "Chưa sẵn sàng" : "Sẵn sàng"}
+                      </button>
+                    </span>
+                  )}
+                </div>
+              );
+            })
           ) : (
             <span className="room-chip muted">Chưa có phòng được phân công</span>
           )}
@@ -84,7 +91,10 @@ export default function ClinicalWorkSchedule({
                       cellAppointments.map((appointment) => (
                         <article className={`schedule-cell-card ${isLockedAppointment(appointment) ? "locked" : ""}`} key={appointment._id}>
                           <div>
-                            <strong>{[appointment.patient?.fullName || "Bệnh nhân", appointment.patient?.phone].filter(Boolean).join(" - ")}</strong>
+                            <div className="schedule-card-heading">
+                              {appointment.queueNumber && <span className="queue-number-badge">STT {appointment.queueNumber}</span>}
+                              <strong>{[appointment.patient?.fullName || "Bệnh nhân", appointment.patient?.phone].filter(Boolean).join(" - ")}</strong>
+                            </div>
                             <span>{appointment.service?.name || "Dịch vụ"} / {appointment.room?.name || "Phòng khám"}</span>
                             <small>Giờ khám: {formatDateTime(appointment.startAt)}</small>
                           </div>
@@ -102,11 +112,9 @@ export default function ClinicalWorkSchedule({
                                     Hoàn tất
                                   </button>
                                 )}
-                                {user?.role !== "nurse" && (
-                                  <button className="button small" type="button" onClick={() => onSelectTreatment(appointment)}>
-                                    Xem hồ sơ điều trị
-                                  </button>
-                                )}
+                                <button className="button small" type="button" onClick={() => onSelectTreatment(appointment)}>
+                                  Hồ sơ điều trị
+                                </button>
                               </>
                             )}
                           </div>
