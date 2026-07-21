@@ -13,7 +13,6 @@ const treatmentRecordSchema = new mongoose.Schema({
 }, {
   timestamps: true,
   collection: "treatmentrecords",
-  strict: false,
   versionKey: false
 });
 

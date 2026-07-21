@@ -7,7 +7,7 @@ import ClinicalPerformedServices from "../../components/clinical/nurse/ClinicalP
 import Feedback from "../../components/Feedback.jsx";
 import { useAuth } from "../../redux/AuthContext.jsx";
 import { api, getErrorMessage } from "../../utils/api.js";
-import { bookingSlotOptions, clinicDateInput, compareQueueWithinSlot, getAppointmentSlot, normalizeAppointmentSlots, todayInput } from "../../utils/format.js";
+import { clinicDateInput, compareQueueWithinSlot, getAppointmentSlot, normalizeAppointmentSlots, todayInput } from "../../utils/format.js";
 
 function getClinicalFeatures(role) {
   return [
@@ -75,7 +75,7 @@ export default function ClinicalDashboard() {
   const [performedServicesForm, setPerformedServicesForm] = useState(defaultPerformedServicesForm);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const slotOptions = useMemo(() => normalizeAppointmentSlots(slots, { fallback: false }), [slots]);
+  const slotOptions = useMemo(() => normalizeAppointmentSlots(slots), [slots]);
 
   async function load() {
     setLoading(true);
@@ -714,7 +714,7 @@ function buildClinicalColumns(appointments, rooms) {
   return Array.from(columns.values());
 }
 
-function buildClinicalRows(appointments, columns, slotOptions = bookingSlotOptions) {
+function buildClinicalRows(appointments, columns, slotOptions = []) {
   const dailyQueueNumbers = buildDailyQueueNumbers(appointments, columns);
 
   return slotOptions.map((slot) => ({

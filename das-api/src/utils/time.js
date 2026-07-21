@@ -26,14 +26,6 @@ export function endOfLocalDay(dateString) {
   return new Date(clinicDateTimeToUtcDate(year, month, day, 0, 0).getTime() + 24 * 60 * 60 * 1000 - 1);
 }
 
-export function addMinutes(date, minutes) {
-  return new Date(date.getTime() + minutes * 60_000);
-}
-
-export function minutesBetween(start, end) {
-  return Math.floor((end.getTime() - start.getTime()) / 60_000);
-}
-
 function clinicDateTimeToUtcDate(year, month, day, hour, minute) {
   return new Date(Date.UTC(year, month - 1, day, hour, minute) - CLINIC_UTC_OFFSET_MINUTES * 60_000);
 }
@@ -54,8 +46,4 @@ export function toDateInputValue(date) {
   const month = String(shifted.getUTCMonth() + 1).padStart(2, "0");
   const day = String(shifted.getUTCDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
-}
-
-export function calculateArrivalAt(startAt) {
-  return new Date(startAt);
 }

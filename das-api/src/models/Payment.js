@@ -9,7 +9,6 @@ const paymentSchema = new mongoose.Schema({
 }, {
   timestamps: true,
   collection: "payments",
-  strict: false,
   versionKey: false
 });
 

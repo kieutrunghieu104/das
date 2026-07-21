@@ -13,7 +13,6 @@ const reviewSchema = new mongoose.Schema({
 }, {
   timestamps: true,
   collection: "reviews",
-  strict: false,
   versionKey: false
 });
 

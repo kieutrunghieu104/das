@@ -9,7 +9,6 @@ const clinicSettingSchema = new mongoose.Schema({
 }, {
   timestamps: true,
   collection: "clinicsettings",
-  strict: false,
   versionKey: false
 });
 

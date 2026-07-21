@@ -96,10 +96,6 @@ export function findActiveServices() {
   return findMany(COLLECTIONS.dentalServices, {}, { sort: { name: 1 } });
 }
 
-export function findActiveAppointmentSlots() {
-  return findMany(COLLECTIONS.appointmentSlots, {}, { sort: { order: 1, startTime: 1 } });
-}
-
 export function findAppointmentSlots() {
   return findMany(COLLECTIONS.appointmentSlots, {}, { sort: { order: 1, startTime: 1 } });
 }

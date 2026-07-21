@@ -7,7 +7,6 @@ const dentalServiceSchema = new mongoose.Schema({
 }, {
   timestamps: true,
   collection: "dentalservices",
-  strict: false,
   versionKey: false
 });
 

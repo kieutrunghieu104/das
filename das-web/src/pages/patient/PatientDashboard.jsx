@@ -27,7 +27,7 @@ export default function PatientDashboard() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const { services, dentists, rooms, slots, slotClosures } = usePublicBootstrap();
-  const allSlotOptions = useMemo(() => normalizeAppointmentSlots(slots, { fallback: false }), [slots]);
+  const allSlotOptions = useMemo(() => normalizeAppointmentSlots(slots), [slots]);
 
   const dentistOptions = useMemo(() => {
     const roomDentists = rooms.map((room) => room.assignedDentist).filter(Boolean);
@@ -136,7 +136,7 @@ export default function PatientDashboard() {
     setRescheduleForms((current) => {
       const previous = current[appointment._id] || {};
       const date = values.date || previous.date || clinicDateInput(appointment.startAt) || todayInput();
-      const dateSlots = filterOpenSlotsForDate(slots, slotClosures, date, { fallback: false });
+      const dateSlots = filterOpenSlotsForDate(slots, slotClosures, date);
       const requestedTime = values.time || previous.time || getAppointmentSlot(appointment.startAt, dateSlots)?.value || "";
       const time = dateSlots.some((slot) => slot.value === requestedTime) ? requestedTime : dateSlots[0]?.value || "";
 
@@ -193,7 +193,7 @@ export default function PatientDashboard() {
     }
 
     const form = rescheduleForms[appointment._id] || {};
-    const formSlotOptions = filterOpenSlotsForDate(slots, slotClosures, form.date, { fallback: false });
+    const formSlotOptions = filterOpenSlotsForDate(slots, slotClosures, form.date);
     if (!form.date || !form.time || !form.dentistId) {
       setError("Chọn đầy đủ ngày, khung giờ và bác sĩ trước khi đổi lịch.");
       return false;

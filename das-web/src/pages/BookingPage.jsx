@@ -42,7 +42,7 @@ export default function BookingPage({ embedded = false }) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const slotOptions = useMemo(
-    () => filterOpenSlotsForDate(slots, slotClosures, date, { fallback: false }),
+    () => filterOpenSlotsForDate(slots, slotClosures, date),
     [date, slotClosures, slots]
   );
 

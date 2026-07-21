@@ -8,7 +8,6 @@ const roomStatusSchema = new mongoose.Schema({
 }, {
   timestamps: true,
   collection: "roomstatuses",
-  strict: false,
   versionKey: false
 });
 

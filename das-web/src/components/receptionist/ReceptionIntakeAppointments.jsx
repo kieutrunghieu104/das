@@ -48,7 +48,7 @@ export default function ReceptionIntakeAppointments({
               time: appointment.startAt ? getAppointmentSlot(appointment.startAt, slotOptions).value : slotOptions[0]?.value || "",
               roomId: appointment.room?._id || rooms[0]?._id || ""
             };
-            const rowSlotOptions = filterOpenSlotsForDate(slots, slotClosures, manualForm.date, { fallback: false });
+            const rowSlotOptions = filterOpenSlotsForDate(slots, slotClosures, manualForm.date);
             const manualTime = rowSlotOptions.some((slot) => slot.value === manualForm.time) ? manualForm.time : rowSlotOptions[0]?.value || "";
             const selectedSlot = rowSlotOptions.find((slot) => slot.value === manualTime) || rowSlotOptions[0];
             const arrivalTime = isArrivalTimeInsideSlot(manualForm.arrivalTime, selectedSlot)
@@ -82,7 +82,7 @@ export default function ReceptionIntakeAppointments({
                       value={manualForm.date}
                       onChange={(event) => {
                         const nextDate = event.target.value;
-                        const nextSlotOptions = filterOpenSlotsForDate(slots, slotClosures, nextDate, { fallback: false });
+                        const nextSlotOptions = filterOpenSlotsForDate(slots, slotClosures, nextDate);
                         const nextSlot = nextSlotOptions[0];
                         updateManualSchedule(appointment, {
                           date: nextDate,

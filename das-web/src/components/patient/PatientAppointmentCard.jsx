@@ -1,6 +1,6 @@
 import { useState } from "react";
 import StatusBadge from "../StatusBadge.jsx";
-import { bookingSlotOptions, clinicDateInput, filterOpenSlotsForDate, formatDateTime, formatSlotWithDate, getAppointmentSlot, todayInput } from "../../utils/format.js";
+import { clinicDateInput, filterOpenSlotsForDate, formatDateTime, formatSlotWithDate, getAppointmentSlot, todayInput } from "../../utils/format.js";
 import RescheduleAppointmentModal from "./RescheduleAppointmentModal.jsx";
 
 const cancelReasons = [
@@ -21,7 +21,7 @@ export default function PatientAppointmentCard({
   rescheduleAppointment,
   rescheduleForm,
   slotClosures = [],
-  slotOptions = bookingSlotOptions,
+  slotOptions = [],
   updateRescheduleForm
 }) {
   const [rescheduleOpen, setRescheduleOpen] = useState(false);
@@ -34,7 +34,7 @@ export default function PatientAppointmentCard({
     time: "",
     dentistId: appointment.dentist?._id || dentistOptions[0]?._id || ""
   };
-  const currentSlotOptions = filterOpenSlotsForDate(slotOptions, slotClosures, currentRescheduleForm.date, { fallback: false });
+  const currentSlotOptions = filterOpenSlotsForDate(slotOptions, slotClosures, currentRescheduleForm.date);
   const effectiveRescheduleForm = {
     ...currentRescheduleForm,
     time: currentRescheduleForm.time || getAppointmentSlot(appointment.startAt, currentSlotOptions)?.value || currentSlotOptions[0]?.value || ""

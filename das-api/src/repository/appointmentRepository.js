@@ -11,6 +11,10 @@ import {
   updateById
 } from "./mongoRepository.js";
 
+function compact(data) {
+  return Object.fromEntries(Object.entries(data).filter(([, value]) => value !== undefined));
+}
+
 export const appointmentPopulate = [
   { path: "patient", select: "fullName email phone" },
   { path: "createdBy", select: "fullName role" },
@@ -164,11 +168,22 @@ export function createInvoice(data) {
 }
 
 export function saveInvoice(invoice) {
-  const update = { ...invoice };
-  delete update._id;
-  delete update.payments;
-  if (update.appointment?._id) update.appointment = update.appointment._id;
-  if (update.patient?._id) update.patient = update.patient._id;
+  const update = compact({
+    appointment: invoice.appointment?._id || invoice.appointment,
+    patient: invoice.patient?._id || invoice.patient,
+    items: invoice.items,
+    subtotal: invoice.subtotal,
+    discountPercent: invoice.discountPercent,
+    discountAmount: invoice.discountAmount,
+    total: invoice.total,
+    paidAmount: invoice.paidAmount,
+    paymentPlan: invoice.paymentPlan,
+    installmentMonths: invoice.installmentMonths,
+    installmentAmount: invoice.installmentAmount,
+    status: invoice.status,
+    invoiceDate: invoice.invoiceDate,
+    paidAt: invoice.paidAt
+  });
   return updateById(COLLECTIONS.invoices, invoice._id, update);
 }
 

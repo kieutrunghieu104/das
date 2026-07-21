@@ -68,24 +68,8 @@ function timeFromValue(value) {
   return formatTime(value);
 }
 
-export const bookingSlotOptions = [
-  { value: "08:00", slotId: "slot-0800", slotName: "Slot 1", startMinutes: 8 * 60, endMinutes: 10 * 60 + 30 },
-  { value: "10:30", slotId: "slot-1030", slotName: "Slot 2", startMinutes: 10 * 60 + 30, endMinutes: 12 * 60 },
-  { value: "14:00", slotId: "slot-1400", slotName: "Slot 3", startMinutes: 14 * 60, endMinutes: 16 * 60 },
-  { value: "16:00", slotId: "slot-1600", slotName: "Slot 4", startMinutes: 16 * 60, endMinutes: 17 * 60 + 30 }
-].map((slot) => {
-  const startText = timeTextFromMinutes(slot.startMinutes);
-  const endText = timeTextFromMinutes(slot.endMinutes);
-  return {
-    ...slot,
-    timeLabel: `${startText} - ${endText}`,
-    label: `${slot.slotName} (${startText} - ${endText})`
-  };
-});
-
-export function normalizeAppointmentSlots(slots = [], options = {}) {
-  const { fallback = true } = options;
-  const normalized = slots
+export function normalizeAppointmentSlots(slots = []) {
+  return slots
     .filter(Boolean)
     .map((slot, index) => {
       const startTime = slot.startTime || slot.value;
@@ -107,16 +91,14 @@ export function normalizeAppointmentSlots(slots = [], options = {}) {
       };
     })
     .sort((first, second) => (first.order ?? first.startMinutes) - (second.order ?? second.startMinutes));
-
-  return normalized.length ? normalized : fallback ? bookingSlotOptions : [];
 }
 
 function slotIdentity(value) {
   return String(value?._id || value?.slotId || value || "");
 }
 
-export function filterOpenSlotsForDate(slots = [], slotClosures = [], date, options = {}) {
-  const normalizedSlots = normalizeAppointmentSlots(slots, options);
+export function filterOpenSlotsForDate(slots = [], slotClosures = [], date) {
+  const normalizedSlots = normalizeAppointmentSlots(slots);
   if (!date) return normalizedSlots;
 
   const closedSlotIds = new Set(
@@ -129,7 +111,7 @@ export function filterOpenSlotsForDate(slots = [], slotClosures = [], date, opti
   return normalizedSlots.filter((slot) => !closedSlotIds.has(slotIdentity(slot)));
 }
 
-export function getAppointmentSlot(value, slotOptions = bookingSlotOptions) {
+export function getAppointmentSlot(value, slotOptions = []) {
   const options = normalizeAppointmentSlots(slotOptions);
   const time = timeFromValue(value);
   const [hour, minute] = time.split(":").map(Number);
@@ -144,9 +126,9 @@ export function getAppointmentSlot(value, slotOptions = bookingSlotOptions) {
   };
 }
 
-export function formatSlotWithDate(value, slotOrOptions = bookingSlotOptions) {
+export function formatSlotWithDate(value, slotOrOptions = []) {
   const directSlot = Array.isArray(slotOrOptions) ? null : slotOrOptions?.startTime ? normalizeAppointmentSlots([slotOrOptions])[0] : null;
-  const slot = directSlot || getAppointmentSlot(value, Array.isArray(slotOrOptions) ? slotOrOptions : bookingSlotOptions);
+  const slot = directSlot || getAppointmentSlot(value, Array.isArray(slotOrOptions) ? slotOrOptions : []);
   return `${formatDateOnly(value)} - ${slot.label}`;
 }
 

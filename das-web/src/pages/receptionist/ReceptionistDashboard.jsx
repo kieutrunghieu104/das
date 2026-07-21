@@ -8,7 +8,7 @@ import ReceptionCheckInAppointments from "../../components/receptionist/Receptio
 import ReceptionClinicalQueue from "../../components/receptionist/ReceptionClinicalQueue.jsx";
 import ReceptionIntakeAppointments from "../../components/receptionist/ReceptionIntakeAppointments.jsx";
 import { api, getErrorMessage } from "../../utils/api.js";
-import { bookingSlotOptions, clinicDateInput, compareQueueWithinSlot, filterOpenSlotsForDate, getAppointmentSlot, normalizeAppointmentSlots, todayInput } from "../../utils/format.js";
+import { clinicDateInput, compareQueueWithinSlot, filterOpenSlotsForDate, getAppointmentSlot, normalizeAppointmentSlots, todayInput } from "../../utils/format.js";
 import { firstError, requireValue, validateDate, validateName, validateNote, validatePhone } from "../../utils/validation.js";
 import { maxBookingDate, toClinicIso } from "../BookingPage.jsx";
 
@@ -54,12 +54,12 @@ export default function ReceptionistDashboard() {
       .filter(Boolean)
   ), [date, slotClosures]);
   const allSlotOptions = useMemo(
-    () => normalizeAppointmentSlots(slots, { fallback: false })
+    () => normalizeAppointmentSlots(slots)
       .map((slot) => ({ ...slot, isClosed: closedSlotIdsForDate.has(String(slot._id || slot.slotId)) })),
     [closedSlotIdsForDate, slots]
   );
   const slotOptions = useMemo(
-    () => filterOpenSlotsForDate(slots, slotClosures, date, { fallback: false }),
+    () => filterOpenSlotsForDate(slots, slotClosures, date),
     [date, slotClosures, slots]
   );
 
@@ -75,7 +75,7 @@ export default function ReceptionistDashboard() {
       setRooms(res.data.rooms);
       const nextSlots = res.data.slots || [];
       const nextSlotClosures = res.data.slotClosures || [];
-      const nextSlotOptions = filterOpenSlotsForDate(nextSlots, nextSlotClosures, date, { fallback: false });
+      const nextSlotOptions = filterOpenSlotsForDate(nextSlots, nextSlotClosures, date);
       setSlots(nextSlots);
       setSlotClosures(nextSlotClosures);
       setBooking((current) => ({
@@ -334,7 +334,7 @@ export default function ReceptionistDashboard() {
       setError(validationError);
       return;
     }
-    const formSlotOptions = filterOpenSlotsForDate(slots, slotClosures, form.date, { fallback: false });
+    const formSlotOptions = filterOpenSlotsForDate(slots, slotClosures, form.date);
     if (!formSlotOptions.some((slot) => slot.value === form.time)) {
       setError("Khung giờ này đã đóng trong ngày đã chọn.");
       return;
@@ -673,12 +673,12 @@ function compareConsultationsOldestFirst(a, b) {
   return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
 }
 
-function defaultManualSchedule(appointment, rooms, slots = bookingSlotOptions, slotClosures = []) {
+function defaultManualSchedule(appointment, rooms, slots = [], slotClosures = []) {
   const startAt = appointment.startAt ? new Date(appointment.startAt) : new Date();
   const appointmentDate = Number.isNaN(startAt.getTime()) ? "" : clinicDateInput(startAt);
   const date = appointmentDate && appointmentDate >= todayInput() ? appointmentDate : todayInput();
-  const slotOptions = filterOpenSlotsForDate(slots, slotClosures, date, { fallback: false });
-  const currentSlotValue = Number.isNaN(startAt.getTime()) ? "" : getAppointmentSlot(startAt, slotOptions.length ? slotOptions : bookingSlotOptions).value;
+  const slotOptions = filterOpenSlotsForDate(slots, slotClosures, date);
+  const currentSlotValue = Number.isNaN(startAt.getTime()) ? "" : getAppointmentSlot(startAt, slotOptions).value;
   const slot = slotOptions.find((option) => option.value === currentSlotValue) || slotOptions[0];
   return {
     date,

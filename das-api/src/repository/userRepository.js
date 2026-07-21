@@ -10,6 +10,10 @@ import {
   updateOneAndReturn
 } from "./mongoRepository.js";
 
+function compact(data) {
+  return Object.fromEntries(Object.entries(data).filter(([, value]) => value !== undefined));
+}
+
 async function attachRole(user) {
   await populate(user, { path: "roleRef", select: "roleName" });
   if (user?.roleRef?.roleName) user.role = user.roleRef.roleName;
@@ -82,9 +86,16 @@ export function updateUserById(id, data) {
 }
 
 export function saveUser(user) {
-  const update = { ...user };
-  delete update._id;
-  delete update.role;
+  const update = compact({
+    fullName: user.fullName,
+    email: user.email,
+    phone: user.phone,
+    passwordHash: user.passwordHash,
+    roleRef: user.roleRef?._id || user.roleRef,
+    status: user.status,
+    resetPasswordCodeHash: user.resetPasswordCodeHash,
+    resetPasswordExpiresAt: user.resetPasswordExpiresAt
+  });
   return updateById(COLLECTIONS.users, user._id, update);
 }
 

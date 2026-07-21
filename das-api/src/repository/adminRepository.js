@@ -211,13 +211,6 @@ export async function updateUser(userId, data) {
   return user;
 }
 
-export function saveUser(user) {
-  const update = { ...user };
-  delete update._id;
-  delete update.role;
-  return updateById(COLLECTIONS.users, user._id, update);
-}
-
 export function createPatientProfile(data) {
   return insertDocuments(COLLECTIONS.patients, { gender: "unknown", ...data });
 }
@@ -304,4 +297,3 @@ export async function updateClinicRoom(roomId, data) {
 export function deleteClinicRoom(roomId) {
   return removeById(COLLECTIONS.clinicRooms, roomId);
 }
-

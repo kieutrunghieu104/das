@@ -18,7 +18,6 @@ const invoiceSchema = new mongoose.Schema({
 }, {
   timestamps: true,
   collection: "invoices",
-  strict: false,
   versionKey: false
 });
 
