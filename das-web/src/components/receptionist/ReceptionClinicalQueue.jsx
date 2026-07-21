@@ -87,15 +87,23 @@ export default function ReceptionClinicalQueue({
               {dentistQueues.map(({ dentist, appointments }) => (
                 <div className="reception-dentist-queue" key={`${slot.slotId}-${dentist._id}`}>
                   {appointments.length ? (
-                    appointments.map((appointment) => {
+                    appointments.map((appointment, appointmentIndex) => {
                       const locked = isLockedScheduleAppointment(appointment);
                       const isFutureAppointment = clinicDateInput(appointment.startAt) > todayInput();
                       const canCheckIn = !locked && !isFutureAppointment && ["scheduled", "confirmed"].includes(appointment.status);
                       const canMarkNoShow = !locked && ["scheduled", "confirmed"].includes(appointment.status);
+                      const queueNumber = appointment.status === "no_show"
+                        ? null
+                        : appointments
+                          .slice(0, appointmentIndex + 1)
+                          .filter((item) => item.status !== "no_show").length;
                       return (
                         <article className={`schedule-cell-card ${locked ? "locked" : ""}`} key={appointment._id}>
                           <div>
-                            <strong>{[appointment.patient?.fullName || "Bệnh nhân", appointment.patient?.phone].filter(Boolean).join(" - ")}</strong>
+                            <div className="schedule-card-heading">
+                              {queueNumber && <span className="queue-number-badge">STT {queueNumber}</span>}
+                              <strong>{[appointment.patient?.fullName || "Bệnh nhân", appointment.patient?.phone].filter(Boolean).join(" - ")}</strong>
+                            </div>
                             <span>{appointment.service?.name || "Dịch vụ"} / {appointment.room?.name || "Phòng"}</span>
                             <span>Giờ khám: {formatTime(appointment.startAt)}</span>
                             {appointment.checkedInAt && <span>Có mặt: {formatTime(appointment.checkedInAt)}</span>}

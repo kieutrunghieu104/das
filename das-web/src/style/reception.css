@@ -326,6 +326,28 @@
   gap: 5px;
 }
 
+.schedule-card-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.queue-number-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 54px;
+  min-height: 26px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: #0f4c8f !important;
+  background: #e9f3ff;
+  border: 1px solid #bfdbfe;
+  font-size: 0.78rem !important;
+  font-weight: 900;
+}
+
 .schedule-cell-card span,
 .schedule-cell-card small {
   color: var(--muted);
