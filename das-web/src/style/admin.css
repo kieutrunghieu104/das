@@ -8,6 +8,10 @@
   min-height: 0;
 }
 
+.admin-review-toolbar {
+  margin-bottom: 14px;
+}
+
 .admin-review-meta {
   display: grid;
   gap: 6px;
