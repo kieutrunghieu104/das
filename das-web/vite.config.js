@@ -7,7 +7,7 @@ export default defineConfig({
     port: 5174,
     proxy: {
       "/api": {
-        target: "http://127.0.0.1:4100",
+        target: "http://127.0.0.1:9999",
         changeOrigin: true,
         proxyTimeout: 15000,
         timeout: 15000,
